@@ -1,0 +1,9 @@
+Scheisse an VS 12:
+- Shortcuts nicht exportierbar, keine eigene Shortcutprofilerstellung
+- Serach next (F3) & and replace next (alt + R) have completley unrelated shortcuts
+- Shortcut characters are not underlined
+- Refresh folder structure with standard short cut F5 or right click impossible, weak HCI
+- Simple Copy & Paste in the Solution Explorer impossible
+- Adding a new file in the folder structure, refresh, clean, rebuild do not show the new added file, a restart of VS does it
+- Special and blank characters are ignored on Ctrl + Shift + Arrow Key
+- No recent opend list

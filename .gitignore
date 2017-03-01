@@ -1,0 +1,16 @@
+# Git ignore file of the project Escape the University
+
+# Data endings
+*.v12
+*.opensdf
+*.sdf
+*.suo
+*.user
+
+# Folders
+/Debug
+/Release
+/build-Debug
+/build-Release
+/bin
+/Escape_The_University
