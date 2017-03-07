@@ -6,6 +6,8 @@
 *.sdf
 *.suo
 *.user
+*.db
+*.VC.opendb
 
 # Folders
 /Debug
@@ -14,3 +16,4 @@
 /build-Release
 /bin
 /Escape_The_University
+/.vs

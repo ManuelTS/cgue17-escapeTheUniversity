@@ -99,7 +99,7 @@ namespace irrklang
 		 Note: You need to call ISound::drop() when setting this parameter to true and you don't need the ISound
 		 object anymore. See 'return' for details.
 		 \param track Makes it possible to track the sound. Causes the method to return an ISound interface. See 'return' for details.
-		 \param streamMode Specifies if the file should be streamed or loaded completely into memory for playing.
+ 		 \param streamMode Specifies if the file should be streamed or loaded completely into memory for playing.
 		 ESM_AUTO_DETECT sets this to autodetection. Note: if the sound has been loaded or played before into the
 		 engine, this parameter has no effect.
 		 \param enableSoundEffects Makes it possible to use sound effects such as chorus, distorsions, echo, 
@@ -148,7 +148,7 @@ namespace irrklang
 		//! Stops all currently playing sounds.
 		virtual void stopAllSounds() = 0;
 
-		//! Pauses or unpauses all currently playing sounds.
+        //! Pauses or unpauses all currently playing sounds.
 		virtual void setAllSoundsPaused( bool bPaused = true ) = 0;
 
 		//! Gets a sound source by sound name. Adds the sound source as file into the sound engine if not loaded already.
@@ -188,7 +188,7 @@ namespace irrklang
 		exist as long as you don't delete irrKlang or call removeSoundSource(). However,
 		you are free to call grab() if you want and drop() it then later of course. */	
 		virtual ISoundSource* addSoundSourceFromFile(const ik_c8* fileName, E_STREAM_MODE mode=ESM_AUTO_DETECT,
-													 bool preload=false) = 0;
+			                                         bool preload=false) = 0;
 
 		//! Adds a sound source into the sound engine as memory source.
 		/** Note: This method only accepts a file (.wav, .ogg, etc) which is totally loaded into memory.
@@ -210,7 +210,7 @@ namespace irrklang
 		delete irrKlang or call removeSoundSource(). However, you are free to call grab() if you
 		want and drop() it then later of course. */
 		virtual ISoundSource* addSoundSourceFromMemory(void* memory, ik_s32 sizeInBytes, const ik_c8* soundName,
-														   bool copyMemory=true) = 0;
+											               bool copyMemory=true) = 0;
 
 
 		//! Adds a sound source into the sound engine from plain PCM data in memory.
@@ -227,7 +227,7 @@ namespace irrklang
 		example a sound already existed with that name. If not successful, the reason will be printed
 		into the log. */
 		virtual ISoundSource* addSoundSourceFromPCMData(void* memory, ik_s32 sizeInBytes, 
-														const ik_c8* soundName, SAudioStreamFormat format,
+			                                            const ik_c8* soundName, SAudioStreamFormat format,
 														bool copyMemory=true) = 0;
 
 		//! Adds a sound source as alias for an existing sound source, but with a different name or optional different default settings.
