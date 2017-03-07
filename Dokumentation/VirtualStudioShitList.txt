@@ -1,4 +1,4 @@
-Scheisse an VS 12:
+Shit in VS 13 and VS 15:
 - Shortcuts nicht exportierbar, keine eigene Shortcutprofilerstellung
 - Serach next (F3) & and replace next (alt + R) have completley unrelated shortcuts
 - Shortcut characters are not underlined
@@ -7,3 +7,4 @@ Scheisse an VS 12:
 - Adding a new file in the folder structure, refresh, clean, rebuild do not show the new added file, a restart of VS does it
 - Special and blank characters are ignored on Ctrl + Shift + Arrow Key
 - No recent opend list
+- VS15 had no clear statement to find on google about the new project structure
