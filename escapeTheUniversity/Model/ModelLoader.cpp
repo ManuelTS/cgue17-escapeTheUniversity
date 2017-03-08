@@ -22,6 +22,7 @@ void ModelLoader::load(string path)
 {
 	if (loadModels)
 	{
+		path = MODEL_DIR + path;
 		loadModels = false; // Makes sure in the hole game that the models are loaded only once!
 		Assimp::Importer importer;// Read file via ASSIMP
 		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -320,7 +321,7 @@ unsigned int ModelLoader::loadPicture(string path)
 	ilGenImages(1, &ilHandle);
 	ilBindImage(ilHandle);
 
-	ILboolean error = ilLoadImage((ILstring)path.c_str());// load  the image and check to see if everything went OK
+	ILboolean error = ilLoadImage((ILstring) path.c_str());// load  the image and check to see if everything went OK
 
 	if (error != IL_TRUE) {
 		ilDeleteImages(1, &ilHandle);

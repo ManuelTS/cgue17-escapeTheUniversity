@@ -18,6 +18,8 @@ private:
 	ik_f32 volume;
 	int position;
 
+	const std::string SOUND_DIR = ".\\Sound\\";
+
 	SoundManager(void){};// Private constructor to allow only one instance
 	SoundManager(SoundManager const&);// Private constructor to prevent copies
 	void operator=(SoundManager const&);// Private constructor to prevent assignments

@@ -25,7 +25,7 @@ void SoundManager::initFileName(string soundFile)
 		exit(0);
 	}
 
-	fileName = soundFile;
+	fileName = SOUND_DIR + soundFile;
 	volume = 50;
 	position = 0;
 	soundEngine->setSoundVolume(1);
@@ -71,7 +71,7 @@ void SoundManager::playSound()
 
 void SoundManager::playSound(string soundFile)
 {
-	setFileName(soundFile);
+	setFileName(SOUND_DIR + soundFile);
 
 	currentSound = soundEngine->play2D(fileName.c_str(), false, false, true);
 
@@ -123,7 +123,7 @@ GET/SET FILENAME
 void SoundManager::setFileName(string soundFile)
 {
 	if (soundFile != "")
-		fileName = soundFile;
+		fileName = SOUND_DIR + soundFile;
 }
 
 string SoundManager::getFileName()

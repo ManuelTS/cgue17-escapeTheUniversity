@@ -3,10 +3,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Text.hpp"
+#include "Model/ModelLoader.hpp"
 #include "Shader.hpp"
-#include "Model\ModelLoader.hpp"
-#include "Debug\Debugger.hpp"
 #include "RenderLoop.hpp"
+#include "Debug\Debugger.hpp"
 
 
 using namespace std;
@@ -18,7 +18,8 @@ Text::~Text(){
 }
 
 void Text::init(){
-	textShader = new Shader(".\\Shader\\text.vert", ".\\Shader\\text.frag");
+	ModelLoader* ml = ModelLoader::getInstance();
+	textShader = new Shader("text.vert", "text.frag");
 	textShader->useProgram();
 
 	/// Quad set-up
@@ -52,10 +53,10 @@ void Text::init(){
 	glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind VBO
 	glBindVertexArray(0); // Unbind VAO
 
-	characterTextureHandle = ModelLoader::getInstance()->loadPicture(loadingImagePath); // Load and bind textures
+	characterTextureHandle =ml->loadPicture(loadingImagePath); // Load and bind textures
 
 	if (characterTextureHandle < 0)
-		Debugger::getInstance()->pauseExit("Malfunction: Character image " + loadingImagePath + " not found.");
+		Debugger::getInstance()->pauseExit("Malfunction: Character image " + ml->MODEL_DIR + loadingImagePath + " not found.");
 
 	// Character texture coordination calculation
 	const float imageSize = 2048.0f; // In pixels

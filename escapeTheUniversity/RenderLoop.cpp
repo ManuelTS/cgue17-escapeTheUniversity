@@ -233,8 +233,9 @@ void RenderLoop::initGLFWandGLEW(){
 
 void RenderLoop::start()
 { // Init all
+	ModelLoader* ml = ModelLoader::getInstance();
 	SoundManager* sm = SoundManager::getInstance();
-	sm->initFileName(".\\Sound\\Music\\Jahzzar_-_01_-_The_last_ones.mp3"); // Init SM with music file to play
+	sm->initFileName("Music\\Jahzzar_-_01_-_The_last_ones.mp3"); // Init SM with music file to play
 	sm->playSound();
 
 	initVar = new Initialization();
@@ -247,11 +248,10 @@ void RenderLoop::start()
 
 	glViewport(0, 0, width, height);
 
-	ModelLoader* ml = ModelLoader::getInstance();
 	displayLoadingScreen(ml);
-	Shader* gBufferShader = new Shader(".\\Shader\\gBuffer.vert", ".\\Shader\\gBuffer.frag");
-	Shader* deferredShader = new Shader(".\\Shader\\deferredShading.vert", ".\\Shader\\deferredShading.frag");
-	ml->load(".\\Model\\Playground.dae");
+	Shader* gBufferShader = new Shader("gBuffer.vert", "gBuffer.frag");
+	Shader* deferredShader = new Shader("deferredShading.vert", "deferredShading.frag");
+	ml->load("Playground.dae");
 
 	//glEnable(GL_CULL_FACE);
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
@@ -302,7 +302,7 @@ void RenderLoop::start()
 		glfwSwapBuffers(window);
 	}
 
-	sm->playSound(".\\Sound\\Dialog\\Bye.mp3"); // Exit sound
+	sm->playSound("Dialog\\Bye.mp3"); // Exit sound
 	Sleep(1600);
 
 	// TODO: Write with initVar game statistics, play time etc...
@@ -369,7 +369,7 @@ void RenderLoop::displayLoadingScreen(ModelLoader* ml){
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
-	Shader* shader = new Shader(".\\Shader\\image.vert", ".\\Shader\\image.frag");
+	Shader* shader = new Shader("image.vert", "image.frag");
 	const unsigned int positionLocation = 0;      // Used in image.vert
 	const unsigned int colorLocation = 1;         // Used in image.vert
 	const unsigned int texCoordsLocation = 2;     // Used in image.vert
@@ -382,7 +382,7 @@ void RenderLoop::displayLoadingScreen(ModelLoader* ml){
 	glEnableVertexAttribArray(texCoordsLocation);
 	glVertexAttribPointer(texCoordsLocation, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(5 * sizeof(float)));
 
-	const string loadingImagePath = "Models/Loading_Text.jpg"; // Load and bind textures
+	const string loadingImagePath = ml->MODEL_DIR + "Loading_Text.jpg"; // Load and bind textures
 	const unsigned int loadingImageHande = ml->loadPicture(loadingImagePath);
 
 	if (loadingImageHande < 0)

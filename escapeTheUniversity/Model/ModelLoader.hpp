@@ -43,6 +43,9 @@ public:
 	// General
 	Node* root;
 
+	// Resource top folder directories
+	const std::string MODEL_DIR = ".\\Model\\";
+
 	/*Returns the pointer to the unique instance of this class.*/
 	static ModelLoader* ModelLoader::getInstance()
 	{

@@ -13,8 +13,8 @@ Shader::Shader(const string& vertexShader, const string& fragmentShader)
 
 	check(programHandle, "program");
 
-	loadShader(vertexShader, GL_VERTEX_SHADER, vertexHandle);
-	loadShader(fragmentShader, GL_FRAGMENT_SHADER, fragmentHandle);
+	loadShader(SHADER_DIR + vertexShader, GL_VERTEX_SHADER, vertexHandle);
+	loadShader(SHADER_DIR + fragmentShader, GL_FRAGMENT_SHADER, fragmentHandle);
 	link();
 }
 

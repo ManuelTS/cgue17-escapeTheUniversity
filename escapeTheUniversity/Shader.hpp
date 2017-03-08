@@ -19,6 +19,8 @@ public:
 
 	void useProgram() const;
 private:
+	const std::string SHADER_DIR = ".\\Shader\\";
+
 	unsigned int vertexHandle;
 	unsigned int fragmentHandle;
 

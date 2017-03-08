@@ -9,7 +9,7 @@ class Shader;
 class Text{
 private:
 	// Image path and name
-	const std::string loadingImagePath = "Models/characters-df.png";
+	const std::string loadingImagePath = "characters-df.png";
 	const unsigned int charSize = 128; // Pixelchar size in image
 	// Locations in the text.vert and -.frag shaders.
 	const unsigned int positionLocation = 0; // Usage in text.vert
