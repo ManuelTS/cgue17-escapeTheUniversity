@@ -295,7 +295,7 @@ void RenderLoop::start()
 			// Render 2D quad
 			gBuffer->renderQuad();
 
-			//text->write("Ha");
+			text->write("He");
 		}
 
 		glfwGetWindowSize(window, &width, &height);

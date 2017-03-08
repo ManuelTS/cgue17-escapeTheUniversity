@@ -53,7 +53,7 @@ void Text::init(){
 	glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind VBO
 	glBindVertexArray(0); // Unbind VAO
 
-	characterTextureHandle =ml->loadPicture(loadingImagePath); // Load and bind textures
+	characterTextureHandle =ml->loadPicture(ml->MODEL_DIR + loadingImagePath); // Load and bind textures
 
 	if (characterTextureHandle < 0)
 		Debugger::getInstance()->pauseExit("Malfunction: Character image " + ml->MODEL_DIR + loadingImagePath + " not found.");
@@ -89,8 +89,8 @@ void Text::init(){
 void Text::write(const char* text){
 	textShader->useProgram();
 
-	double scale = 1.0; // Text transformation params
-	float angle = 0.0;
+	float scale = 1.0f; // Text transformation params
+	float angle = 0.0f;
 	glm::mat4 trans = glm::mat4(1);
 	trans = glm::scale(trans, glm::vec3(scale, scale, 1));
 	trans = glm::rotate(trans, glm::radians(angle), glm::vec3(0.0, 0.0, 1.0));
@@ -107,33 +107,32 @@ void Text::write(const char* text){
 	vector<float> vertices;
 	float x = 0.1f; // Position of first character on screen in screen coords
 	float y = 0.1f;
-	const float advance = charSize / RenderLoop::getInstance()->width;
+	float cursor = 0.0f;
+	const float advance = charSize / (float) RenderLoop::getInstance()->width;
 
-	for (const char* p = text; *p; p++, x += advance)
+	for (const char* p = text; *p; p++, cursor += advance)
 	{
 		const glm::mat4x2 uv = charLocations[(unsigned char)*p];
 		//Position.x(lr)y(tb),Texture coordinates uv.xy
-		vertices.push_back(-x);//left-top, 0 x
+		vertices.push_back(-x + cursor);//left-top, 0 x
 		vertices.push_back(y); // y
 		vertices.push_back(uv[0].x); //uv.x
 		vertices.push_back(uv[0].y); //uv.y
-		vertices.push_back(-x); //left-bottom, 1 x
+		vertices.push_back(-x + cursor); //left-bottom, 1 x
 		vertices.push_back(-y); // ...
 		vertices.push_back(uv[1].x);
 		vertices.push_back(uv[1].y); 
-		vertices.push_back(x); //right-top, 2 x
+		vertices.push_back(x + cursor); //right-top, 2 x
 		vertices.push_back(y);
 		vertices.push_back(uv[2].x);
 		vertices.push_back(uv[2].y); 
-		vertices.push_back(x); //right-bottom, 3 x
+		vertices.push_back(x + cursor); //right-bottom, 3 x
 		vertices.push_back(-y);
 		vertices.push_back(uv[3].x);
 		vertices.push_back(uv[3].y);
 	}
 
-	// Optimization to have one draw call for the hole text: https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Text_Rendering_02#Rendering_lines_of_text_using_the_atlas
-	// Cache buffer size for new buffer allocation with glBufferData if the new words are bigger than the other ones otherwise use glBufferSubData
-	//TODO
+	// TODO skalierung in die position mit einbauen
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
