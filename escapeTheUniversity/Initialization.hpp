@@ -24,7 +24,7 @@ public:
 	~Initialization();
 
 private:
-	const string inifile = "./Settings/StartOptions.ini"; // Ini file location and name
+	const string inifile = "./Setting/StartOptions.ini"; // Ini file location and name
 
 	void readIni();
 };

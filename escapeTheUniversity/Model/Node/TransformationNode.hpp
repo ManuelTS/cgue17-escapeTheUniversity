@@ -4,9 +4,9 @@
 class TransformationNode : public Node
 {
 private:
-	const float ANGLE = 0.0015;
-	const float MAX_ROTATION = 0.010;
-	float currentRotation = 0.0;
+	const float ANGLE = 0.0015f;
+	const float MAX_ROTATION = 0.010f;
+	float currentRotation = 0.0f;
 	bool transform = false;
 public:
 	TransformationNode();

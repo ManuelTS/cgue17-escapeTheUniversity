@@ -136,11 +136,17 @@
       <IgnoreSpecificDefaultLibraries>LIBCMTD</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)External\DLLs\*.dll" "$(SolutionDir)Debug\"
-
-</Command>
+      <Command>xcopy /q /s /e /y "$(SolutionDir)External\DLLs"  "$(SolutionDir)$(Configuration)" 
+xcopy /q /s /e /y "$(SolutionDir)Setting"  "$(SolutionDir)$(Configuration)\Setting\" 
+xcopy /q /s /e /y "$(SolutionDir)Shader"  "$(SolutionDir)$(Configuration)\Shader\" 
+xcopy /q /s /e /y "$(SolutionDir)Sound"  "$(SolutionDir)$(Configuration)\Sound\" 
+xcopy /q /s /e /y "$(SolutionDir)Model"  "$(SolutionDir)$(Configuration)\Model\" </Command>
       <Message>copy all the needed dlls</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -175,9 +181,11 @@
       <AdditionalDependencies>opengl32.lib;irrKlang.lib;glfw3.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)External\DLLs\*.dll" "$(SolutionDir)Release\"
-
-</Command>
+      <Command>xcopy /q /s /e /y "$(SolutionDir)External\DLLs"  "$(SolutionDir)$(Configuration)" 
+xcopy /q /s /e /y "$(SolutionDir)Setting"  "$(SolutionDir)$(Configuration)\Setting\" 
+xcopy /q /s /e /y "$(SolutionDir)Shader"  "$(SolutionDir)$(Configuration)\Shader\" 
+xcopy /q /s /e /y "$(SolutionDir)Sound"  "$(SolutionDir)$(Configuration)\Sound\" 
+xcopy /q /s /e /y "$(SolutionDir)Model"  "$(SolutionDir)$(Configuration)\Model\" </Command>
       <Message>copy all the needed dlls</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

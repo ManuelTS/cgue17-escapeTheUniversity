@@ -32,8 +32,8 @@ class RenderLoop{
 
 		int width; // Current window width
 		int height; // Current window height
-		double xScroll = 0.f; // The last x value scrolled
-		double yScroll = 0.f; // The last y value scrolled
+		double xScroll = 0.0; // The last x value scrolled
+		double yScroll = 0.0; // The last y value scrolled
 		double lastX = 400;
 		double lastY = 300;
 		bool firstMouse = true; // True if the mouse is used for the first time, false if not

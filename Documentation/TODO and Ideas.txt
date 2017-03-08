@@ -1,0 +1,103 @@
+All ordered by priority!
+
+Programming (Manuel):
+
+Display text on screen with signed distance fields.
+
+Skymap, with a beautiful night sky full of stars in OGLSB as cube map on page 640.
+
+Collision detection, https://www.informatik-forum.at/showthread.php?112790-Bullet-Collisionshape-Convx-Decomposition-tool
+with PhysiX
+
+Face culling http://www.learnopengl.com/#!Advanced-OpenGL/Face-culling
+http://www.lighthouse3d.com/tutorials/view-frustum-culling/
+
+Rim lighting openGL super Bibile page 634
+
+Game over scree, If the player fails, show a game over screen with text, sound, or music, and restart.
+
+Fade for sound
+
+
+
+
+
+Textures (Stefan):
+
+University interriors,
+- Furnitures, books, bookshelfs, pc, monitors, bakets
+- Name tags / signs on doors, conspiracy wirtings on the toiled
+- Plants
+- Pictures and graffitty on the walls, but only few
+- lecture hall, black board, projector, overhead projector, chairs
+- laterns
+
+Critical books, use only critical literature about the following topics:
+- 9/11
+- Bank System
+- MK Ultra
+- Biocybernetics
+- Money system
+- NWO
+- Charls Darwin
+- 8 Todsünden der Zivilisierten Menschheit
+- books from danielle ganser
+...
+
+Our real life pictures somewhere in an office on the wall as framed pictures.
+
+Perspective Room from https://youtu.be/xleyq2oJt_8?t=30m53s as art installation in a room with a sign beside the door which says "There is only a perspective seeing, only a perspective "knowing"". - Friedrich Nietzsche 1844 - 1900
+
+Roof revision:
+- roof with stairs up to it and door on top
+- handrails to not to fall down
+- roofgarden
+
+Uniform Texture Pre- and Suffixes:
+const std::string ANGLE_SUFFIX = "Angle";
+const std::string DOOR_PREFIX = "Door";
+const std::string LIGHT_SUFFIX = "_Licht";
+Questions:
+Why are there pre- and suffixes in the first place, why not only one?
+Why is german mixed with englisch?
+Unification is needed.
+
+Elevator, from the basement up to to roof top, must be dirty with typical elevator music.
+
+Compress all textures to reduce loading time with: http://gpuopen.com/gaming-product/compressonator/
+
+Define all texture material and light ambient, diffuse, and specular colors in textures, logic for that is already in the model loader. If it gives points do:
+http://learnopengl.com/#!Lighting/Lighting-maps
+Light Mapping 0.5 Points
+Use an external tool to bake the static light information of your scene into the diffuse textures of your objects. All static objects combined with all static lights in your scene should use this technique. However, dynamic lights and the lighting of dynamic objects have to be calculated additionally.
+Separate Textures 0.5 Points
+Instead of baking into the diffuse texture the Light Map should be baked into a separate texture and combined at runtime.
+In-Game-Calculation 1 Points
+Instead of baking the Light Map with an external tool, precalculate it in your game engine at startup.
+Let's discuss that
+After "text on screen" is finished I can take a look how complex In-Game-Calculation is, I rather to it before Seperate Textures, texture usage is reciprocal to performance during gaming, (pre) calculation on startup would be better, maybe even with threading.
+
+
+
+
+
+
+Ideas (both):
+
+Austiran tradition, insert a basement, optional a parkinglot too, maybe combine it with "fatal decisions".
+
+Fatal decisions During sneaking dark secrets of the university can be discovered, e.g. the player puts the hand in a hole (safe or vault) after entering a code, but it gets chopped of if entered wrong. Best in the cellar in combination with "austrian tradition".
+
+Normal Mapping, https://en.wikipedia.org/wiki/Normal_mapping
+
+Time doors, you have to sneak fast otherwise the door(s) will close.
+
+Cars, let it shake as if someone has sex in it, with sound.
+
+Laser laboratorium, a room contains a laiser with a sign "do not look with the remaining eye in the laiser" and a blind professor in it with extended hearing capabilities.
+
+Octopus, put somewhere a big fucking octopus from a professor who's experiment went wrong, or at least its arms.
+
+Cloning, a gun, box, room, crazy person, or whatsoever which allows you to clone things.
+
+Gras, done with a single, perfect culm as in the openGL SB. Use instanced drawing 294, draw many objects with a single function call gldraw***instanced(); On page 305 is good simple instanced example. Either transform feedback or compute shader usage is a must, look into the OGLSB.

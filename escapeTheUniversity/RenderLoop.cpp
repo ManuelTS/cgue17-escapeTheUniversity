@@ -234,7 +234,7 @@ void RenderLoop::initGLFWandGLEW(){
 void RenderLoop::start()
 { // Init all
 	SoundManager* sm = SoundManager::getInstance();
-	sm->initFileName("Sounds/Music/Jahzzar_-_01_-_The_last_ones.mp3"); // Init SM with music file to play
+	sm->initFileName(".\\Sound\\Music\\Jahzzar_-_01_-_The_last_ones.mp3"); // Init SM with music file to play
 	sm->playSound();
 
 	initVar = new Initialization();
@@ -251,7 +251,7 @@ void RenderLoop::start()
 	displayLoadingScreen(ml);
 	Shader* gBufferShader = new Shader(".\\Shader\\gBuffer.vert", ".\\Shader\\gBuffer.frag");
 	Shader* deferredShader = new Shader(".\\Shader\\deferredShading.vert", ".\\Shader\\deferredShading.frag");
-	ml->load(".\\Models\\Playground.dae");
+	ml->load(".\\Model\\Playground.dae");
 
 	//glEnable(GL_CULL_FACE);
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
@@ -302,7 +302,7 @@ void RenderLoop::start()
 		glfwSwapBuffers(window);
 	}
 
-	sm->playSound("Sounds/Dialog/Bye.mp3"); // Exit sound
+	sm->playSound(".\\Sound\\Dialog\\Bye.mp3"); // Exit sound
 	Sleep(1600);
 
 	// TODO: Write with initVar game statistics, play time etc...
