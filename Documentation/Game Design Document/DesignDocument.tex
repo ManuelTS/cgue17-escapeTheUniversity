@@ -1,0 +1,228 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{amssymb}
+\usepackage{acronym}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{verbatim}
+\usepackage{multicol}
+\usepackage{wrapfig}
+\usepackage[colorlinks,pdfpagelabels,pdfstartview = FitH,bookmarksopen = true,bookmarksnumbered = true, ,plainpages = false,hypertexnames = false, citecolor=blue,filecolor=blue,linkcolor=blue,urlcolor=blue] {hyperref}
+
+
+\geometry{a4paper,left=2cm,right=2cm, top=2cm, bottom=2cm}
+
+\definecolor{sh_comment}{rgb}{0.12, 0.38, 0.18 } %adjusted, in Eclipse: {0.25, 0.42, 0.30 } = #3F6A4D
+\definecolor{sh_keyword}{rgb}{0.37, 0.08, 0.25}  % #5F1441
+\definecolor{sh_string}{rgb}{0.06, 0.10, 0.98} % #101AF9
+
+\def\lstsmallmath{\leavevmode\ifmmode \scriptstyle \else  \fi}
+\def\lstsmallmathend{\leavevmode\ifmmode  \else  \fi}
+
+\lstset {
+ language=Java,
+ frame=shadowbox,
+ rulesepcolor=\color{black},
+ showspaces=false,showtabs=false,tabsize=2,
+ numberstyle=\tiny,numbers=left,
+ basicstyle= \footnotesize\ttfamily,
+ stringstyle=\color{sh_string},
+ keywordstyle = \color{sh_keyword}\bfseries,
+ commentstyle=\color{sh_comment}\itshape,
+ captionpos=b,
+ xleftmargin=0.7cm, xrightmargin=0.5cm,
+ lineskip=-0.3em,
+ escapebegin={\lstsmallmath}, escapeend={\lstsmallmathend}
+}
+
+\setlength{\parindent}{0pt} % Kein Einzug
+\begin{document}
+
+%\listoffigures
+%\listoftables
+%\lstlistoflistings 
+\newpage
+\pagestyle{plain}
+\setcounter{page}{1}
+
+\begin{Huge}
+\textbf{
+Escape the University}
+	
+\end{Huge}
+
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.25\linewidth]{Images/poster}
+\end{figure}  
+
+
+
+Manuel Schrempf e0920136\\
+Stefan Wilker   e0920293
+
+\textbf{Escape the University} is a 3D single-player stealth-game. You play a student who failed his exam completely and has to steal it, in order to be not graded with an excuse. 
+
+\section*{Gameplay} 
+
+The player is controlling a figure in a first person view. The mouse controls the camera has the primary interaction keys which are left and right click. The movement of the played figure is controlled by the keyboard (W,A,S,D). You can interact with different objects and walk freely through the different floors of the 3D building, but other NPCs, for example students, tutors, professors, assistants, staff members, facility managers etc. should not see you sneaking around, since this results into your ex-matriculation or simply GAME OVER.
+
+The line of sight from NPCs is:
+
+\begin{itemize}
+	\item reduced by two thirds, if the player is ducked and in the darkness.
+	\item reduced by one third, if the player is ducked or in the darkness.
+	\item normal if the player is in the light.
+\end{itemize}
+
+Of course if the player is behind an opague object he is also out of sight. Sometimes the player can stand behind objects, sometimes the player will have to duck to stay out of sight.
+
+\section*{Features} 
+\begin{itemize}
+	\item Singleplayer
+	\item First person
+	\item Stealth elements
+	\item Animated characters
+	\item Explore university buildings
+	\item Easter eggs
+	\item Toggle light
+\end{itemize}
+
+\section*{Background story}
+You control a student in a fictional university building who does not take this studies very seriously. It is bad, he is bad and he should feel bad, because the third try on the hardest exam in this study is failed already. Why? Not even the first read question on the just received paper makes any sense: 
+
+> Elisa studies tibetic overtone singing in her tenth bachelor semester. She lays slightly drunk in the sun in the Arctic without sun oil and has nothing but the radio on. Calculate the orbit of Uranus's moon Oberon and derive the weather of the 22.12.1913 in Washington D.C and Woodrow Wilson's location at 7 P.M.
+
+This and each other question read raises your stress level to a never known climax - you know you will fail your studies if you stay even one more minute. The professor is still handing out the exam sheets, so you take a chance and somehow you manage to slip out of the room without being noticed, fortunately with the exam sheet in your hands. On the most quiet place, the toilet room, you find yourself getting a clear mind with the cold water from the faucet.
+
+Your silent and undetected escape of the university must succeed in order to head home and get a medical certificate from your father's friend to be able to "prove" that on this very day you were not even near the university. You should just have prepared better for this exam, but with the exam questions in your hands, there is a shimmer of hope to pass next time.
+
+
+
+\section*{Controls} 
+
+You are able to control the main character with the keys W,A,S,D. You are able to freely move around the following camera , that will always be around you in a certain radius. Therefore, looking around corners without being noticed by NPCs is possible for you. By pressing the key "E", you are able to interact with objects like doors or light switches. 
+
+\begin{table}[h!]
+  \centering
+  \label{table1}
+  \begin{tabular}{p{3cm} | c c}
+Key & Function\\
+    \hline
+W & Walk forwards	\\
+A & Strafe left \\
+S & Walk backwards \\
+D & Strafe right \\
+E & Open door\\
+
+Mouse & Look around\\
+
+ ESC & Quit game \\
+ F3 & Wireframe mode on or off \\
+ F4 & Textur-Sampling-Quality: Nearest Neighbor/Bilinear\\
+ F5 & Mip Mapping-Quality: Off/Nearest Neighbor/Linear\\
+ F6 & Depth visualization on or off\\ 
+ F7 & Pause or Resume game \\
+ F8 & Viewfrustum-Culling on/off\\
+ F9 & Blending on/off\\
+  \end{tabular}
+\end{table}
+
+
+\section*{Technical Details} 
+\subsection*{Types of objects in the Game}
+
+All objects in the scene are textured and illuminated. The following distinct object types are rendered:
+
+\begin{itemize}
+	\item  NPCs
+	\item Walls
+	\item Rooms
+	\item Furniture
+	\item Interactable objects
+	\item Windows
+\end{itemize}
+
+
+\subsection*{Camera}
+A typical third person camera behind the played character controlled by the mouse to swing up, down, left and right which automatically follow the character from a distance of several meters.
+\subsection*{Illumination}
+The university is a normal illuminated building with switches to turn the light off and on. This means nearly every room, corridor, or courtyard is lit by a light blub or floodlight. Haruki Murakami once said:\\\\
+\textit{"Where there is light, there must be shadow, where there is shadow there must be light. There is no shadow without light and no light without shadow. [...]"}\\\\
+So light and shadow will be implemented as stated in the effect list.
+
+\subsection*{Collision Detection}
+
+For being able to determine whether the line of sight of a NPC is crossed or not collision detection is needed. Of course if you ran into a NPC you will be detected too.
+
+\subsection*{Effects}
+
+The single effect lists may change according to the knowledge gained in the lecture, tutorial class, and through programming itself.
+
+\begin{table}[h!]
+	\centering
+	\label{table1}
+	\begin{tabular}{p{3cm} | c | p{12cm}}
+		Effect & Points & Description\\
+		\hline
+		Deferred Shading & 1 & Use the Deferred Shading technique to speed up lighting for many light sources. 
+		It uses several render targets and processes light information (shadows etc) in a post process effect (decoupling it from the scenes geometry). 
+		Transparency, however, is more difficult to handle	\\
+		\hline
+GPU Vertex Skinning &	2 &	A complete bone structure is loaded from a model file and assigned to the model according to weighted indices. 
+		The skinning is done on the GPU. \\
+		\hline
+		
+		\hline
+	\end{tabular}
+\end{table}
+
+
+\section*{Sketches} 
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\linewidth]{Images/mapoverview}
+	\caption{A first design on the first complex. You have to figure out, at which door you can Escape the University without being seen!}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\linewidth]{Images/lighton}
+	\caption{A sketch on the main character and an enemy. You must not move into his line of sight!}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\linewidth]{Images/lightoff}
+	\caption{After activating the switch, it is save to pass by.|}
+\end{figure}
+                    
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\linewidth]{Images/movingintosightfield}
+	\caption{|Moving forward...}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\linewidth]{Images/gotcaught}
+	\caption{You ran into the line of sight... Game over man!}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\linewidth]{Images/notgotcaught}
+	\caption{Use doors as a line of sight blocker to activate switches}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\linewidth]{Images/lightsofflineofsight}
+	\caption{Without light, the NPC cannot see as far as before!}
+\end{figure}        
+
+\end{document}
