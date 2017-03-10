@@ -3,10 +3,12 @@
 \usepackage{geometry}
 \usepackage{amssymb}
 \usepackage{acronym}
+\usepackage{float}
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{color}
 \usepackage{verbatim}
+\usepackage{subcaption}
 \usepackage{multicol}
 \usepackage{wrapfig}
 \usepackage[colorlinks,pdfpagelabels,pdfstartview = FitH,bookmarksopen = true,bookmarksnumbered = true, ,plainpages = false,hypertexnames = false, citecolor=blue,filecolor=blue,linkcolor=blue,urlcolor=blue] {hyperref}
@@ -14,28 +16,6 @@
 
 \geometry{a4paper,left=2cm,right=2cm, top=2cm, bottom=2cm}
 
-\definecolor{sh_comment}{rgb}{0.12, 0.38, 0.18 } %adjusted, in Eclipse: {0.25, 0.42, 0.30 } = #3F6A4D
-\definecolor{sh_keyword}{rgb}{0.37, 0.08, 0.25}  % #5F1441
-\definecolor{sh_string}{rgb}{0.06, 0.10, 0.98} % #101AF9
-
-\def\lstsmallmath{\leavevmode\ifmmode \scriptstyle \else  \fi}
-\def\lstsmallmathend{\leavevmode\ifmmode  \else  \fi}
-
-\lstset {
- language=Java,
- frame=shadowbox,
- rulesepcolor=\color{black},
- showspaces=false,showtabs=false,tabsize=2,
- numberstyle=\tiny,numbers=left,
- basicstyle= \footnotesize\ttfamily,
- stringstyle=\color{sh_string},
- keywordstyle = \color{sh_keyword}\bfseries,
- commentstyle=\color{sh_comment}\itshape,
- captionpos=b,
- xleftmargin=0.7cm, xrightmargin=0.5cm,
- lineskip=-0.3em,
- escapebegin={\lstsmallmath}, escapeend={\lstsmallmathend}
-}
 
 \setlength{\parindent}{0pt} % Kein Einzug
 \begin{document}
@@ -54,17 +34,35 @@ Escape the University}
 \end{Huge}
 
 
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.25\linewidth]{Images/poster}
-\end{figure}  
+\begin{minipage}{0.45\textwidth}
+
+
+\textbf{Escape the University} is a 3D single-player stealth-game. You play as a student who failed his exam completely and has to steal it, in order to be not graded with the help of an excuse. \\\\
+	Manuel Schrempf (e0920136)\\
+	Stefan Wilker   (e0920293)
+	
+	\section*{Features} 
+	\begin{itemize}
+		\item Singleplayer
+		\item First person
+		\item Stealth elements
+		\item Animated characters
+		\item Explore university buildings
+		\item Easter eggs
+		\item Toggle light
+	\end{itemize}
+
+\end{minipage} \hfill
+\begin{minipage}{0.5\textwidth}
+	\begin{figure}[H]
+	\includegraphics[width=1\linewidth]{Images/poster}
+ 
+\end{figure}
+
+\end{minipage}
 
 
 
-Manuel Schrempf e0920136\\
-Stefan Wilker   e0920293
-
-\textbf{Escape the University} is a 3D single-player stealth-game. You play a student who failed his exam completely and has to steal it, in order to be not graded with an excuse. 
 
 \section*{Gameplay} 
 
@@ -80,21 +78,12 @@ The line of sight from NPCs is:
 
 Of course if the player is behind an opague object he is also out of sight. Sometimes the player can stand behind objects, sometimes the player will have to duck to stay out of sight.
 
-\section*{Features} 
-\begin{itemize}
-	\item Singleplayer
-	\item First person
-	\item Stealth elements
-	\item Animated characters
-	\item Explore university buildings
-	\item Easter eggs
-	\item Toggle light
-\end{itemize}
+
 
 \section*{Background story}
 You control a student in a fictional university building who does not take this studies very seriously. It is bad, he is bad and he should feel bad, because the third try on the hardest exam in this study is failed already. Why? Not even the first read question on the just received paper makes any sense: 
 
-> Elisa studies tibetic overtone singing in her tenth bachelor semester. She lays slightly drunk in the sun in the Arctic without sun oil and has nothing but the radio on. Calculate the orbit of Uranus's moon Oberon and derive the weather of the 22.12.1913 in Washington D.C and Woodrow Wilson's location at 7 P.M.
+\textit{Elisa studies tibetic overtone singing in her tenth bachelor semester. She lays slightly drunk in the sun in the Arctic without sun oil and has nothing but the radio on. Calculate the orbit of Uranus's moon Oberon and derive the weather of the 22.12.1913 in Washington D.C and Woodrow Wilson's location at 7 P.M.}
 
 This and each other question read raises your stress level to a never known climax - you know you will fail your studies if you stay even one more minute. The professor is still handing out the exam sheets, so you take a chance and somehow you manage to slip out of the room without being noticed, fortunately with the exam sheet in your hands. On the most quiet place, the toilet room, you find yourself getting a clear mind with the cold water from the faucet.
 
@@ -175,54 +164,60 @@ The single effect lists may change according to the knowledge gained in the lect
 GPU Vertex Skinning &	2 &	A complete bone structure is loaded from a model file and assigned to the model according to weighted indices. 
 		The skinning is done on the GPU. \\
 		\hline
-		
+		Shadow Maps (with PCF) & 1.5 & As presented in the lectures, shadow maps calculate the shadows via rendering the scene from the light source. 
+		PCF samples the shadow map several times to improve quality. 
+		Make sure to counter all artifacts.\\		
 		\hline
 	\end{tabular}
 \end{table}
 
 
 \section*{Sketches} 
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1\linewidth]{Images/mapoverview}
-	\caption{A first design on the first complex. You have to figure out, at which door you can Escape the University without being seen!}
+\begin{figure}[H] 
+		\includegraphics[width=\textwidth]{Images/mapoverview}
+		\caption{A first design on the first complex. You have to figure out, at which door you can Escape the University without being seen!}
 \end{figure}
-
-\begin{figure}[ht]
+\begin{figure}
 	\centering
-	\includegraphics[width=1\linewidth]{Images/lighton}
-	\caption{A sketch on the main character and an enemy. You must not move into his line of sight!}
+	\begin{minipage}{0.45\textwidth}
+		\centering
+		\includegraphics[width=0.9\textwidth]{Images/lighton} % first figure itself
+		\caption{A sketch on the main character and an enemy. You must not move into his line of sight!}
+	\end{minipage}\hfill
+	\begin{minipage}{0.45\textwidth}
+		\centering
+		\includegraphics[width=0.9\textwidth]{Images/lightoff} % second figure itself
+		\caption{After activating the switch, it is save to pass by.}
+	\end{minipage}
 \end{figure}
-
-\begin{figure}[ht]
+\begin{figure}
 	\centering
-	\includegraphics[width=1\linewidth]{Images/lightoff}
-	\caption{After activating the switch, it is save to pass by.|}
+	\begin{minipage}{0.45\textwidth}
+		\centering
+		\includegraphics[width=0.9\textwidth]{Images/movingintosightfield} % first figure itself
+		\caption{Moving forward...}
+	\end{minipage}\hfill
+	\begin{minipage}{0.45\textwidth}
+		\centering
+		\includegraphics[width=0.9\textwidth]{Images/gotcaught} % second figure itself
+		\caption{You ran into the line of sight... Game over man!}
+	\end{minipage}
 \end{figure}
+ \begin{figure}
+       	\centering
+       	\begin{minipage}{0.45\textwidth}
+       		\centering
+       		\includegraphics[width=0.9\textwidth]{Images/notgotcaught} % first figure itself
+       		\caption{Use doors as a line of sight blocker to activate switches}
+       	\end{minipage}\hfill
+       	\begin{minipage}{0.45\textwidth}
+       		\centering
+       		\includegraphics[width=0.9\textwidth]{Images/lightsofflineofsight} % second figure itself
+       		\caption{Without light, the NPC cannot see as far as before!}
+      	\end{minipage}
+ \end{figure}
                     
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1\linewidth]{Images/movingintosightfield}
-	\caption{|Moving forward...}
-\end{figure}
+ 
 
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1\linewidth]{Images/gotcaught}
-	\caption{You ran into the line of sight... Game over man!}
-\end{figure}
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1\linewidth]{Images/notgotcaught}
-	\caption{Use doors as a line of sight blocker to activate switches}
-\end{figure}
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1\linewidth]{Images/lightsofflineofsight}
-	\caption{Without light, the NPC cannot see as far as before!}
-\end{figure}        
-
+  
 \end{document}
