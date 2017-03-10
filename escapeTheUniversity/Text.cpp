@@ -86,11 +86,9 @@ void Text::init(){
 	}
 }
 
-void Text::write(const char* text){
+void Text::write(const char* text, const float x, float y, const float scale, const float angle){
 	textShader->useProgram();
 
-	float scale = 1.0f; // Text transformation params
-	float angle = 0.0f;
 	glm::mat4 trans = glm::mat4(1);
 	trans = glm::scale(trans, glm::vec3(scale, scale, 1));
 	trans = glm::rotate(trans, glm::radians(angle), glm::vec3(0.0, 0.0, 1.0));
@@ -105,29 +103,37 @@ void Text::write(const char* text){
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	vector<float> vertices;
-	float x = 0.1f; // Position of first character on screen in screen coords
-	float y = 0.1f;
 	float cursor = 0.0f;
-	const float advance = charSize / (float) RenderLoop::getInstance()->width;
+	const float advance = scale * charSize / (float) RenderLoop::getInstance()->width;
+
+	// TODO make scale dependent on screen size!
 
 	for (const char* p = text; *p; p++, cursor += advance)
 	{
+		if (*p == '\\' && *(p + 1) == 'n') // TODO test!
+		{
+			y -= advance;
+			cursor = 0.0f;
+			p += 2;
+			continue;
+		}
+
 		const glm::mat4x2 uv = charLocations[(unsigned char)*p];
 		//Position.x(lr)y(tb),Texture coordinates uv.xy
-		vertices.push_back(-x + cursor);//left-top, 0 x
-		vertices.push_back(y); // y
+		vertices.push_back(x + cursor);//left-top, 0 x
+		vertices.push_back(y + advance); // y
 		vertices.push_back(uv[0].x); //uv.x
 		vertices.push_back(uv[0].y); //uv.y
-		vertices.push_back(-x + cursor); //left-bottom, 1 x
-		vertices.push_back(-y); // ...
+		vertices.push_back(x + cursor); //left-bottom, 1 x
+		vertices.push_back(y); // ...
 		vertices.push_back(uv[1].x);
 		vertices.push_back(uv[1].y); 
-		vertices.push_back(x + cursor); //right-top, 2 x
-		vertices.push_back(y);
+		vertices.push_back(x + advance + cursor); //right-top, 2 x
+		vertices.push_back(y + advance);
 		vertices.push_back(uv[2].x);
 		vertices.push_back(uv[2].y); 
-		vertices.push_back(x + cursor); //right-bottom, 3 x
-		vertices.push_back(-y);
+		vertices.push_back(x + advance + cursor); //right-bottom, 3 x
+		vertices.push_back(y);
 		vertices.push_back(uv[3].x);
 		vertices.push_back(uv[3].y);
 	}

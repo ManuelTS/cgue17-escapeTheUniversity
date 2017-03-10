@@ -43,8 +43,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		else if (key == GLFW_KEY_F1)
 			cout << "TODO: Help" << endl; // TODO help
 		else if (key == GLFW_KEY_F2){
-			// TODO Display it on the screen not in console with own shader
-			cout << printf("%s %8f %s %4.2f %s", "Frametime in MS:", rl->deltaTime * 1000, "~", 1.0 / rl->deltaTime, "FPS") << endl;
+			rl->fps = !rl->fps;
 		}
 		else if (key == GLFW_KEY_F3)// Wireframe on/off
 		{
@@ -179,6 +178,7 @@ void RenderLoop::initGLFWandGLEW(){
 		Debugger* d = Debugger::getInstance();
 		d->setDebugContext();
 		glfwSetErrorCallback(errorCallback);
+
 		cout << endl << "Working on:" << endl;
 		cout << glGetString(GL_VENDOR) << endl;
 		cout << glGetString(GL_VERSION) << endl;
@@ -209,7 +209,7 @@ void RenderLoop::initGLFWandGLEW(){
 		const unsigned int charArrayLength = 2;
 		unsigned char chars[charArrayLength] = { Text::FIRST_CHARACTER, Text::LAST_CHARACTER };
 
-		cout << "Supported extended ASCII characters from to are:"<< endl;
+		cout << "Supported extended ASCII characters from to are:" << endl;
 
 		for (unsigned int i = 0; i < charArrayLength; i++)
 			printf("character: '%c' with ASCII decimal value: %2i\n", chars[i], (unsigned int)chars[i]);
@@ -245,19 +245,19 @@ void RenderLoop::start()
 
 	width = initVar->width;
 	height = initVar->height;
-
 	glViewport(0, 0, width, height);
 
 	displayLoadingScreen(ml);
+
 	Shader* gBufferShader = new Shader("gBuffer.vert", "gBuffer.frag");
 	Shader* deferredShader = new Shader("deferredShading.vert", "deferredShading.frag");
+
 	ml->load("Playground.dae");
 
 	//glEnable(GL_CULL_FACE);
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
 	GBuffer* gBuffer = new GBuffer(initVar->maxWidth, initVar->maxHeight);
-	
 	Text* text = Text::getInstance();
 	text->init();
 
@@ -295,7 +295,7 @@ void RenderLoop::start()
 			// Render 2D quad
 			gBuffer->renderQuad();
 
-			text->write("He");
+			renderFPS();
 		}
 
 		glfwGetWindowSize(window, &width, &height);
@@ -309,6 +309,25 @@ void RenderLoop::start()
 	delete gBuffer;
 	glfwDestroyWindow(window);
 	glfwTerminate();
+}
+
+// Calculates the delta time, e.g. the time between frames
+void RenderLoop::calculateDeltaTime()
+{
+	timeNow = glfwGetTime();
+	deltaTime = timeNow - timePast;
+	timePast = timeNow;
+}
+
+void RenderLoop::renderFPS() {
+	if(fps)
+	{
+		Text* text = Text::getInstance();
+		char buffer[11];
+		snprintf(buffer, 11, "%4.2f %s", (1.0 / deltaTime), "FPS");
+		text->write(buffer, 0.5f, 0.9f, 0.6f, 0.0f);
+		//cout << buffer << endl;
+	}
 }
 
 void RenderLoop::draw(Node* current)
@@ -410,14 +429,6 @@ void RenderLoop::displayLoadingScreen(ModelLoader* ml){
 	glDeleteBuffers(1, &ebo);
 	glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);
-}
-
-// Calculates the delta time, e.g. the time between frames
-void RenderLoop::calculateDeltaTime()
-{
-	timeNow = glfwGetTime();
-	deltaTime = timeNow - timePast;
-	timePast = timeNow;
 }
 
 /*Listens for user input.*/

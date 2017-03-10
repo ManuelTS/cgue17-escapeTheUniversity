@@ -27,6 +27,7 @@ class RenderLoop{
 		void draw(Node* current); // Draws all lights except light nodes
 		void drawLights(ModelLoader* ml); // Draws all lights
 		void displayLoadingScreen(ModelLoader* ml);
+		void renderFPS(); // Renders the FPS on the screen
 	public:
 		Camera* camera;
 
@@ -39,6 +40,7 @@ class RenderLoop{
 		bool firstMouse = true; // True if the mouse is used for the first time, false if not
 		bool render = true; // Stop or start rendering with a key
 		bool wireFrameMode = false; // True if the wireframe mode is activated, false if not
+		bool fps = false;
 		
 		double deltaTime; // Difference of variable timeNew and timeOld
 
