@@ -49,6 +49,10 @@ public:
 
 	/*Initializes this class for rendering text to the screen.*/
 	void init();
-	/*Renders text to the screen.*/
-	void write(const char* text);
+	/*Renders text to the screen. "\n" for a linebreak is possible.
+		text to write
+		xy position in screen coordinates
+		scale of the text
+		angle of the text, zero is horizontal*/
+	void write(const char* text, const float x, const float y, const float scale, const float angle);
 };
