@@ -4,17 +4,17 @@ Programming (Manuel):
 
 Display text on screen with signed distance fields.
 
+view frutsum culling, face culling http://www.learnopengl.com/#!Advanced-OpenGL/Face-culling
+http://www.lighthouse3d.com/tutorials/view-frustum-culling/
+
+Rim lighting openGL super Bibile page 634
+
 Skymap, with a beautiful night sky full of stars in OGLSB as cube map on page 640.
 
 Collision detection, https://www.informatik-forum.at/showthread.php?112790-Bullet-Collisionshape-Convx-Decomposition-tool
 with PhysiX
 
-Face culling http://www.learnopengl.com/#!Advanced-OpenGL/Face-culling
-http://www.lighthouse3d.com/tutorials/view-frustum-culling/
-
-Rim lighting openGL super Bibile page 634
-
-Game over scree, If the player fails, show a game over screen with text, sound, or music, and restart.
+Game over screen, If the player fails, show a game over screen with text, sound, or music, and restart.
 
 Fade for sound
 
@@ -40,7 +40,7 @@ Critical books, use only critical literature about the following topics:
 - Money system
 - NWO
 - Charls Darwin
-- 8 Todsünden der Zivilisierten Menschheit
+- 8 TodsÃ¼nden der Zivilisierten Menschheit
 - books from danielle ganser
 ...
 
