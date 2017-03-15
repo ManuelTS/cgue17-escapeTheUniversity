@@ -2,9 +2,14 @@ All ordered by priority!
 
 Programming (Manuel):
 
-Display text on screen with signed distance fields.
+view frutsum culling radar approach:
+http://www.lighthouse3d.com/tutorials/view-frustum-culling/radar-approach-testing-points/
+http://www.lighthouse3d.com/tutorials/view-frustum-culling/radar-approach-implementation-ii/
+Transform feedback: https://open.gl/feedback
 
-view frutsum culling: http://www.lighthouse3d.com/tutorials/view-frustum-culling/clip-space-approach-extracting-the-planes/
+Count the rendered triangles with:
+https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBeginQuery.xhtml
+and associated methods
 
 Rim lighting openGL super Bibile page 634
 
