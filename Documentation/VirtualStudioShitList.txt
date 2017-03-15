@@ -12,3 +12,5 @@ Shit in VS 13:
 Shit in VS 15:
 - VS 15 had no clear statement to find on google about the new project structure
 - In the build events the "inherit from parent or project defaults" the entered content
+- Some of the shortcuts work, some don't http://visualstudioshortcuts.com/2015/
+- The solution explorer shows only the files inside the project name folder inside the solution folder, but not the overall solution folder

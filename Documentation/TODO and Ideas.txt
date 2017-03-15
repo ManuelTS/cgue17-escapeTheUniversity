@@ -4,8 +4,7 @@ Programming (Manuel):
 
 Display text on screen with signed distance fields.
 
-view frutsum culling, face culling http://www.learnopengl.com/#!Advanced-OpenGL/Face-culling
-http://www.lighthouse3d.com/tutorials/view-frustum-culling/
+view frutsum culling: http://www.lighthouse3d.com/tutorials/view-frustum-culling/clip-space-approach-extracting-the-planes/
 
 Rim lighting openGL super Bibile page 634
 
@@ -18,6 +17,8 @@ Game over screen, If the player fails, show a game over screen with text, sound,
 
 Fade for sound
 
+Optimization:
+Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines
 
 
 

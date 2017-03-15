@@ -1,6 +1,6 @@
 #version 430 core
 
-layout (location = 0) in vec4 positionAndTC; // position.xy and texture coordinates.zw, usage in text.cpp
+layout (location = 0) in vec4 positionAndTC; // screen position.xy and texture coordinates.zw, usage in text.cpp
 
 layout (location = 0) out vec2 texCoord; // Usage in text.frag
 

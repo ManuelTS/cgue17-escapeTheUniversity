@@ -15,7 +15,7 @@ private:
 	const unsigned int positionLocation = 0; // Usage in text.vert
 	const unsigned int textCoordsLocation = 1; // Usage in text.vert
 	const unsigned int transformLocation = 0; // Usage in text.vert
-	const unsigned int scaleLocation = 4; // Usage in text.frag
+	const unsigned int colorScaleLocation = 4; // Usage in text.frag
 	// Handles
 	unsigned int VAO = 0;
 	unsigned int VBO = 0;
@@ -24,6 +24,10 @@ private:
 	std::map<unsigned char, glm::mat4x2, std::less<unsigned char> > charLocations;
 	// Max buffer size
 	unsigned int previousMaxBufferSize = 0;
+	// Last time since draw
+	double timeThreashold = 0.0;
+	// Buffers
+	char fpsBuffer[9]; // FPS
 
 	Shader* textShader;
 	unsigned int characterTextureHandle = 0;
@@ -54,5 +58,6 @@ public:
 		xy position in screen coordinates
 		scale of the text
 		angle of the text, zero is horizontal*/
-	void write(const char* text, const float x, const float y, const float scale, const float angle);
+	void write(const char* text, float x, float y, const float scale, const float angle);
+	void writeFPS(const double pastTime, const double deltaTime);
 };

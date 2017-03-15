@@ -8,6 +8,7 @@ class Shader;
 class Camera;
 class Node;
 class ModelLoader;
+class GBuffer;
 
 /*Manages all parts of the game and contains the render loop. This class has the singelton design pattern implemented.*/
 class RenderLoop{
@@ -23,11 +24,12 @@ class RenderLoop{
 		void operator=(RenderLoop const&); // Private constructor to prevent assignments
 		void initGLFWandGLEW(); // Initializes GLFW and GLEW
 		void doMovement(double timeDelta);
+		void doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, ModelLoader* ml); // Does the deferred shading gemetry and lighning pass and draws the screen quad afterwards
 		void calculateDeltaTime(); // Calculates the delta time, e.g. the time between frames
 		void draw(Node* current); // Draws all lights except light nodes
-		void drawLights(ModelLoader* ml); // Draws all lights
 		void displayLoadingScreen(ModelLoader* ml);
-		void renderFPS(); // Renders the FPS on the screen
+		void renderText(); // Renders the FPS on the screen
+		unsigned int copyInBuffer(char buffer[], unsigned int i, const unsigned char* toCopy);
 	public:
 		Camera* camera;
 
