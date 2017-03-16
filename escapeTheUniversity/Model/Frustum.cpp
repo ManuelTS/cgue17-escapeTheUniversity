@@ -114,3 +114,22 @@ int Frustum::sphereInFrustum(glm::vec3 &p, float radius) {
 
 	return(result);
 }
+
+// TODO Adapt this to radar frustum culling when the bounding boxes from collision detection are available:
+// Source http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes-ii/
+// signature is the bounding bos class
+int Frustum::boxInFrustum() {
+
+	int result = INSIDE;
+	//for each plane do ...
+	for (int i = 0; i < 6; i++) {
+
+		// is the positive vertex outside?
+		/*if (pl[i].distance(b.getVertexP(pl[i].normal)) < 0)
+			return OUTSIDE;
+		// is the negative vertex outside?
+		else if (pl[i].distance(b.getVertexN(pl[i].normal)) < 0)
+			result = INTERSECT;*/
+	}
+	return(result);
+}

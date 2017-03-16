@@ -22,6 +22,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Debug\Debugger.cpp" />
     <ClCompile Include="Debug\MemoryLeakTracker.cpp" />
+    <ClCompile Include="Model\Frustum.cpp" />
     <ClCompile Include="GBuffer.cpp" />
     <ClCompile Include="Initialization.cpp" />
     <ClCompile Include="Model\Mesh.cpp" />
@@ -40,6 +41,7 @@
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Debug\Debugger.hpp" />
     <ClInclude Include="Debug\MemoryLeakTracker.h" />
+    <ClInclude Include="Model\Frustum.hpp" />
     <ClInclude Include="GBuffer.hpp" />
     <ClInclude Include="Initialization.hpp" />
     <ClInclude Include="Model\Mesh.hpp" />

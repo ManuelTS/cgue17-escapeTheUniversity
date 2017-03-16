@@ -111,11 +111,10 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 
 	for (const char* p = text; *p; p++, cursor += advance)
 	{
-		if (*p == '\r\n') // TODO test!
+		if (*p == '\n') // TODO test!
 		{
 			y -= advance;
-			cursor = 0.0f;
-			p++;
+			cursor = -advance;
 			continue;
 		}
 
@@ -158,13 +157,72 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 }   
 
 
-void Text::writeFPS(const double pastTime, const double deltaTime)
+void Text::fps(const double pastTime, const double deltaTime)
 {
 	if (timeThreashold < pastTime)
 	{
 		timeThreashold = pastTime + 1; // Only print all seconds not MS (it is frames per second not seconds per frame)
-		snprintf(fpsBuffer, 9, "FPS:%3.0f", (1.0 / deltaTime));
+		snprintf(fpsBuffer, 9, "FPS:%.0f", (1.0 / deltaTime));
 	}
 	
-	write(fpsBuffer, 0.7f, 0.9f, 0.5f, 0.0f);
+	write(fpsBuffer, -0.9f, 0.9f, 0.5f, 0.0f);
+}
+
+void Text::loadingScreenInfo(){
+	char infoText[1024] = "Working on:\n";
+	unsigned int i;
+	for (i = 0; infoText[i] != '\0'; i++);
+
+	i = copyInBuffer(infoText, i, glGetString(GL_VENDOR));
+	i = copyInBuffer(infoText, i, glGetString(GL_VERSION));
+	i = copyInBuffer(infoText, i, glGetString(GL_RENDERER));
+
+	string temp = "\nOpenGL Version: "; // TODO debug linebreak
+	temp.append((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+	int param = 0;
+	glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &param);
+	temp.append("\nMaximal 3D Texture Size: " + param);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &param);
+	temp.append("\nMaximal texture size: " + param);
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &param);
+	temp.append("\nMaximal texture image units: " + param);
+	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &param);
+	temp.append("\nMaximal uniform buffer binding points: " + param);
+	////glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &param); // Prodcues error
+	////temp.append("\nMaximal uniform block size: " + param);
+	glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &param);
+	temp.append("\nMaximal color attachments: " + param);
+	glGetIntegerv(GL_MAX_FRAMEBUFFER_HEIGHT, &param);
+	temp.append("\nMaximal framebuffer height: " + param);
+	glGetIntegerv(GL_MAX_FRAMEBUFFER_WIDTH, &param);
+	temp.append("\nMaximal framebuffer width: " + param);
+	glGetIntegerv(GL_MAX_FRAMEBUFFER_SAMPLES, &param);
+	temp.append("\nMaximal framebuffer samples: " + param);
+	glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS, &param);
+	temp.append("\nMaximal framebuffer layers: " + param);
+	temp.append("\n\nSupported extended ASCII characters from to are:\n");
+
+	i = copyInBuffer(infoText, i, (const unsigned char*)temp.c_str());
+	write(infoText, -1.0f, 1.0f, 0.45f, 0.0f);
+}
+
+unsigned int Text::copyInBuffer(char buffer[], unsigned int i, const unsigned char* toCopy)
+{
+	while (*toCopy)
+		buffer[i++] = *toCopy++;
+	buffer[i++] = '\n';
+	return i;
+}
+
+void Text::pause(){
+	write("Game paused", -0.3f, -0.01f, 0.6f, 0.0f);
+}
+
+void Text::help()
+{
+	char* help = "Keybindings";
+	write(help, -1.0, 0.9, 0.7, 0.0f);
+	help = "F1 = Help\nF2 = Toggle FPS\n..."; // TODO complete the list
+	write(help, -1.0, 0.8, 0.5, 0.0f);
 }

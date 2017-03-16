@@ -41,30 +41,26 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_END))
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		else if (key == GLFW_KEY_F1) // Help
-			cout << "TODO: Help" << endl; // TODO Display text on screen
+		{
+			rl->render = !rl->render;
+			rl->help = !rl->help;
+		}
 		else if (key == GLFW_KEY_F2)
 			rl->fps = !rl->fps;
-		else if (key == GLFW_KEY_F3)// Wireframe on/off
+		else if (key == GLFW_KEY_F3) // Wireframe on/off
 			rl->wireFrameMode = !rl->wireFrameMode;
 		else if (key == GLFW_KEY_F4)
-			cout << "TODO: Texture-Sampling-Quality: Nearest Neighbor/Bilinear" << endl;
+			cout << "TODO: Texture-Sampling-Quality: Nearest Neighbor/Bilinear" << endl; // TODO
 		else if (key == GLFW_KEY_F5)
-			cout << "TODO: Mip Maping-Quality: Off/Nearest Neighbour/Linear" << endl;
+			cout << "TODO: Mip Maping-Quality: Off/Nearest Neighbour/Linear" << endl; // TODO
 		else if (key == GLFW_KEY_F6)
 			cout << "TODO: Visualizing the depth buffer." << endl; // TODO Visualizing the depth buffer http://learnopengl.com/#!Advanced-OpenGL/Depth-testing, swith shaders to depth ones
-		else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE){
-			if (rl->render){
-				cout << "Game is paused! " << endl; // TODO Display text on screen
-			}
-			else{
-				cout << "Game is resumed! " << endl;
-			}
+		else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE) // Pause game
 			rl->render = !rl->render;
-		}
 		else if (key == GLFW_KEY_F8)
-			cout << "TODO: Viewfrustum-Culling on/off" << endl;
+			cout << "TODO: Viewfrustum-Culling on/off" << endl; // TODO
 		else if (key == GLFW_KEY_F9)
-			cout << "TODO: Transparency on/off" << endl;
+			cout << "TODO: Transparency on/off" << endl; // TODO
 		else if (key == GLFW_KEY_E)
 		{
 			for (Node* n : ModelLoader::getInstance()->getAllNodes())
@@ -219,12 +215,15 @@ void RenderLoop::start()
 		calculateDeltaTime();
 		glfwPollEvents(); // Check and call events
 
-		if (render){
+		if (render)
+		{
 			doMovement(deltaTime);
 			doDeferredShading(gBuffer, gBufferShader, deferredShader, ml);
-			renderText();
 		}
+		else
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		renderText();
 		glfwGetWindowSize(window, &width, &height);
 		glfwSwapBuffers(window);
 	}
@@ -284,9 +283,15 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	gBuffer->renderQuad();
 }
 
-void RenderLoop::renderText() {
+void RenderLoop::renderText() 
+{ // It is important to leave the if else structure here as it is
 	if(fps)
-		Text::getInstance()->writeFPS(timeNow, deltaTime);
+		Text::getInstance()->fps(timeNow, deltaTime);
+
+	if (help)
+		Text::getInstance()->help();
+	else if(!render)
+		Text::getInstance()->pause();
 }
 
 // Calculates the delta time, e.g. the time between frames
@@ -375,46 +380,7 @@ void RenderLoop::displayLoadingScreen(ModelLoader* ml){
 	//Write text
 	Text* t = Text::getInstance();
 	t->init();
-	char infoText[1024] = "Working on:\r\n";
-	unsigned int i;
-	for (i = 0; infoText[i] != '\0'; i++);
-	i = copyInBuffer(infoText, i, glGetString(GL_VENDOR));
-	i = copyInBuffer(infoText, i, glGetString(GL_VERSION));
-	i = copyInBuffer(infoText, i, glGetString(GL_RENDERER));
-
-	t->write(infoText, -0.9f, 0.9f, 0.5f, 0.0f);
-
-	//string temp = "OpenGL Version: ";
-	//temp.append((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
-	//int param = 0;
-	//glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &param);
-	//temp.append("\r\nMaximal 3D Texture Size: " + param);
-	//glGetIntegerv(GL_MAX_TEXTURE_SIZE, &param);
-	//temp.append("\r\nMaximal texture size: " + param);
-	//glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &param);
-	//temp.append("\r\nMaximal texture image units: " + param);
-	//glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &param);
-	//temp.append("\r\nMaximal uniform buffer binding points: " + param);
-	////glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &param); // Prodcues error
-	////temp.append("\r\nMaximal uniform block size: " + param);
-	//glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &param);
-	//temp.append("\r\nMaximal color attachments: " + param);
-	//glGetIntegerv(GL_MAX_FRAMEBUFFER_HEIGHT, &param);
-	//temp.append("\r\nMaximal framebuffer height: " + param);
-	//glGetIntegerv(GL_MAX_FRAMEBUFFER_WIDTH, &param);
-	//temp.append("\r\nMaximal framebuffer width: " + param);
-	//glGetIntegerv(GL_MAX_FRAMEBUFFER_SAMPLES, &param);
-	//temp.append("\r\nMaximal framebuffer samples: " + param);
-	//glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS, &param);
-	//temp.append("\r\nMaximal framebuffer layers: " + param);
-	//temp.append("\r\n\r\nSupported extended ASCII characters from to are:\r\n");
-	//i = copyInBuffer(infoText, i, (const unsigned char*)temp.c_str());
-
-	//const unsigned int charArrayLength = 2;
-	//unsigned char chars[charArrayLength] = { Text::FIRST_CHARACTER, Text::LAST_CHARACTER };
-
-	//for (unsigned int i = 0; i < charArrayLength; i++)
-	//	printf("character: '%c' with ASCII decimal value: %2i\r\n", chars[i], (unsigned int)chars[i]);
+	t->loadingScreenInfo();
 	//Text writing end
 	glfwSwapBuffers(window);
 	// Loop end
@@ -424,14 +390,6 @@ void RenderLoop::displayLoadingScreen(ModelLoader* ml){
 	glDeleteBuffers(1, &ebo);
 	glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);
-}
-
-unsigned int RenderLoop::copyInBuffer(char buffer[], unsigned int i, const unsigned char* toCopy)
-{
-	while (*toCopy)
-		buffer[i++] = *toCopy++;
-	buffer[i++] = '\r\n';
-	return i;
 }
 
 /*Listens for user input.*/
