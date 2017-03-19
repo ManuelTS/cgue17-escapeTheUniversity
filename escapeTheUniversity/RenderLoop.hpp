@@ -8,6 +8,7 @@ class Shader;
 class Camera;
 class Node;
 class ModelLoader;
+class GBuffer;
 
 /*Manages all parts of the game and contains the render loop. This class has the singelton design pattern implemented.*/
 class RenderLoop{
@@ -23,11 +24,10 @@ class RenderLoop{
 		void operator=(RenderLoop const&); // Private constructor to prevent assignments
 		void initGLFWandGLEW(); // Initializes GLFW and GLEW
 		void doMovement(double timeDelta);
+		void doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, ModelLoader* ml); // Does the deferred shading gemetry and lighning pass and draws the screen quad afterwards
 		void calculateDeltaTime(); // Calculates the delta time, e.g. the time between frames
 		void draw(Node* current); // Draws all lights except light nodes
-		void drawLights(ModelLoader* ml); // Draws all lights
 		void displayLoadingScreen(ModelLoader* ml);
-		void renderFPS(); // Renders the FPS on the screen
 	public:
 		Camera* camera;
 
@@ -40,12 +40,14 @@ class RenderLoop{
 		bool firstMouse = true; // True if the mouse is used for the first time, false if not
 		bool render = true; // Stop or start rendering with a key
 		bool wireFrameMode = false; // True if the wireframe mode is activated, false if not
-		bool fps = false;
+		bool fps = false; // Display FPS on screen or not
+		bool help = false; // Display help on screen or not
 		
 		double deltaTime; // Difference of variable timeNew and timeOld
 
 		~RenderLoop();
 		void start(); // Initializes and starts the actual renderloop
+		void renderText(); // Renders the FPS on the screen
 
 		/*Returns the pointer to the unique instance of the render loop class.*/
 		static RenderLoop* RenderLoop::getInstance()

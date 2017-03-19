@@ -40,41 +40,27 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 		if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_END))
 			glfwSetWindowShouldClose(window, GL_TRUE);
-		else if (key == GLFW_KEY_F1)
-			cout << "TODO: Help" << endl; // TODO help
-		else if (key == GLFW_KEY_F2){
-			rl->fps = !rl->fps;
-		}
-		else if (key == GLFW_KEY_F3)// Wireframe on/off
+		else if (key == GLFW_KEY_F1) // Help
 		{
-			if (rl->wireFrameMode == true){
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				rl->wireFrameMode = false;
-			}
-			else if (rl->wireFrameMode == false){ //has to be an else-if otherwise it turns it off again
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				rl->wireFrameMode = true;
-			}
+			rl->render = !rl->render;
+			rl->help = !rl->help;
 		}
+		else if (key == GLFW_KEY_F2)
+			rl->fps = !rl->fps;
+		else if (key == GLFW_KEY_F3) // Wireframe on/off
+			rl->wireFrameMode = !rl->wireFrameMode;
 		else if (key == GLFW_KEY_F4)
-			cout << "TODO: Texture-Sampling-Quality: Nearest Neighbor/Bilinear" << endl;
+			cout << "TODO: Texture-Sampling-Quality: Nearest Neighbor/Bilinear" << endl; // TODO
 		else if (key == GLFW_KEY_F5)
-			cout << "TODO: Mip Maping-Quality: Off/Nearest Neighbour/Linear" << endl;
+			cout << "TODO: Mip Maping-Quality: Off/Nearest Neighbour/Linear" << endl; // TODO
 		else if (key == GLFW_KEY_F6)
 			cout << "TODO: Visualizing the depth buffer." << endl; // TODO Visualizing the depth buffer http://learnopengl.com/#!Advanced-OpenGL/Depth-testing, swith shaders to depth ones
-		else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE){
-			if (rl->render){
-				cout << "Game is paused! " << endl;
-			}
-			else{
-				cout << "Game is resumed! " << endl;
-			}
+		else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE) // Pause game
 			rl->render = !rl->render;
-		}
 		else if (key == GLFW_KEY_F8)
-			cout << "TODO: Viewfrustum-Culling on/off" << endl;
+			cout << "TODO: Viewfrustum-Culling on/off" << endl; // TODO
 		else if (key == GLFW_KEY_F9)
-			cout << "TODO: Transparency on/off" << endl;
+			cout << "TODO: Transparency on/off" << endl; // TODO
 		else if (key == GLFW_KEY_E)
 		{
 			for (Node* n : ModelLoader::getInstance()->getAllNodes())
@@ -178,41 +164,6 @@ void RenderLoop::initGLFWandGLEW(){
 		Debugger* d = Debugger::getInstance();
 		d->setDebugContext();
 		glfwSetErrorCallback(errorCallback);
-
-		cout << endl << "Working on:" << endl;
-		cout << glGetString(GL_VENDOR) << endl;
-		cout << glGetString(GL_VERSION) << endl;
-		cout << glGetString(GL_RENDERER) << endl;
-		cout << "OpenGL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl << endl;
-		int param = 0;
-		glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &param);
-		cout << "Maximal 3D Texture Size: " << param << endl;
-		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &param);
-		cout << "Maximal texture size: " << param << endl;
-		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &param);
-		cout << "Maximal texture image units: " << param << endl;
-		glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &param);
-		cout << "Maximal uniform buffer binding points: " << param << endl;
-		glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &param);
-		cout << "Maximal uniform block size: " << param << endl;
-		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &param);
-		cout << "Maximal color attachments: " << param << endl;
-		glGetIntegerv(GL_MAX_FRAMEBUFFER_HEIGHT, &param);
-		cout << "Maximal framebuffer height: " << param << endl;
-		glGetIntegerv(GL_MAX_FRAMEBUFFER_WIDTH, &param);
-		cout << "Maximal framebuffer width: " << param << endl;
-		glGetIntegerv(GL_MAX_FRAMEBUFFER_SAMPLES, &param);
-		cout << "Maximal framebuffer samples: " << param << endl;
-		glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS, &param);
-		cout << "Maximal framebuffer layers: " << param << endl << endl;
-
-		const unsigned int charArrayLength = 2;
-		unsigned char chars[charArrayLength] = { Text::FIRST_CHARACTER, Text::LAST_CHARACTER };
-
-		cout << "Supported extended ASCII characters from to are:" << endl;
-
-		for (unsigned int i = 0; i < charArrayLength; i++)
-			printf("character: '%c' with ASCII decimal value: %2i\n", chars[i], (unsigned int)chars[i]);
 	#endif
 
 	glfwSetKeyCallback(window, keyCallback);// Set callbacks
@@ -254,12 +205,9 @@ void RenderLoop::start()
 
 	ml->load("Playground.dae");
 
-	//glEnable(GL_CULL_FACE);
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
 	GBuffer* gBuffer = new GBuffer(initVar->maxWidth, initVar->maxHeight);
-	Text* text = Text::getInstance();
-	text->init();
 
 	sm->stopAll(); // Stop loading sound
 	while (!glfwWindowShouldClose(window)) // Start rendering
@@ -267,37 +215,15 @@ void RenderLoop::start()
 		calculateDeltaTime();
 		glfwPollEvents(); // Check and call events
 
-		if (render){
+		if (render)
+		{
 			doMovement(deltaTime);
-
-			// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
-			glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->handle); // Must be first!
-			glViewport(0, 0, width, height);
-			glDepthMask(GL_TRUE); // Must be before glClear()!
-			glEnable(GL_DEPTH_TEST);
-			glDepthFunc(GL_LEQUAL);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glm::mat4 projectionMatrix = glm::perspective((float)camera->zoom, (float)width / (float)height, 0.1f, 100.0f);
-			gBufferShader->useProgram();
-			glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-			glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
-			draw(ml->root); // Draw all nodes except light ones
-			glDisable(GL_DEPTH_TEST);
-			glDepthMask(GL_FALSE);
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-			// Deferred Shading: Light Pass
-			deferredShader->useProgram();
-			gBuffer->bindTextures();
-			drawLights(ml);
-			glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->Position[0]);
-
-			// Render 2D quad
-			gBuffer->renderQuad();
-
-			renderFPS();
+			doDeferredShading(gBuffer, gBufferShader, deferredShader, ml);
 		}
+		else
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		renderText();
 		glfwGetWindowSize(window, &width, &height);
 		glfwSwapBuffers(window);
 	}
@@ -311,23 +237,69 @@ void RenderLoop::start()
 	glfwTerminate();
 }
 
+void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, ModelLoader* ml) {
+	if (wireFrameMode)
+	{
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+
+	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->handle); // Must be first!
+	glViewport(0, 0, width, height);
+	glDepthMask(GL_TRUE); // Must be before glClear()!
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glm::mat4 projectionMatrix = glm::perspective((float)camera->zoom, (float)width / (float)height, 0.1f, 100.0f);
+	gBufferShader->useProgram();
+	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
+	draw(ml->root); // Draw all nodes except light ones
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	if(wireFrameMode)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	// Deferred Shading: Light Pass
+	deferredShader->useProgram();
+	gBuffer->bindTextures();
+	// TODO: Performance optimization, only set one specific light if its position or light properties have changed, otherwise set all only once!
+	// Bind buffer and fill all light node data in there
+	vector<LightNode::Light> lights;
+
+	for (LightNode* ln : ml->lights) {
+		lights.push_back(ln->light);
+	}
+	glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
+	glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, lights.size() * sizeof(lights[0]), &lights[0]);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->Position[0]);
+	
+	// Render 2D quad
+	gBuffer->renderQuad();
+}
+
+void RenderLoop::renderText() 
+{ // It is important to leave the if else structure here as it is
+	if(fps)
+		Text::getInstance()->fps(timeNow, deltaTime);
+
+	if (help)
+		Text::getInstance()->help();
+	else if(!render)
+		Text::getInstance()->pause();
+}
+
 // Calculates the delta time, e.g. the time between frames
 void RenderLoop::calculateDeltaTime()
 {
 	timeNow = glfwGetTime();
 	deltaTime = timeNow - timePast;
 	timePast = timeNow;
-}
-
-void RenderLoop::renderFPS() {
-	if(fps)
-	{
-		Text* text = Text::getInstance();
-		char buffer[11];
-		snprintf(buffer, 11, "%4.2f %s", (1.0 / deltaTime), "FPS");
-		text->write(buffer, 0.5f, 0.9f, 0.6f, 0.0f);
-		//cout << buffer << endl;
-	}
 }
 
 void RenderLoop::draw(Node* current)
@@ -339,23 +311,6 @@ void RenderLoop::draw(Node* current)
 		for (Node* child : current->children)
 			draw(child);
 	}
-}
-
-// Draws all lights
-void RenderLoop::drawLights(ModelLoader* ml)
-{
-	// TODO: Performance optimization, only set one specific light if its position or light properties have changed, otherwise set all only once!
-	// Bind buffer and fill all light node data in there
-	vector<LightNode::Light> lights;
-
-	for (LightNode* ln : ml->lights){
-		lights.push_back(ln->light);
-	}
-
-	glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
-	glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
- 	glBufferSubData(GL_UNIFORM_BUFFER, 0, lights.size() * sizeof(lights[0]), &lights[0]);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 // Displays the ETU loading screen with music, source https://open.gl/textures
@@ -421,6 +376,12 @@ void RenderLoop::displayLoadingScreen(ModelLoader* ml){
 	glfwGetWindowSize(window, &width, &height);
 	// Draw a rectangle from the 2 triangles using 6 indices
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+	//Write text
+	Text* t = Text::getInstance();
+	t->init();
+	t->loadingScreenInfo();
+	//Text writing end
 	glfwSwapBuffers(window);
 	// Loop end
 

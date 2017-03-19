@@ -71,7 +71,7 @@ void SoundManager::playSound()
 
 void SoundManager::playSound(string soundFile)
 {
-	setFileName(SOUND_DIR + soundFile);
+	setFileName(soundFile);
 
 	currentSound = soundEngine->play2D(fileName.c_str(), false, false, true);
 
