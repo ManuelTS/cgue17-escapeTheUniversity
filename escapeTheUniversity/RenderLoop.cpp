@@ -243,6 +243,9 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
+	else {
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
+	}
 
 	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->handle); // Must be first!
