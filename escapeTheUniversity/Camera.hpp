@@ -22,10 +22,10 @@ class Camera{
 		};
 
 		// Camera Attributes
-		vec3 Position = vec3(0.0f, 0.0f, 0.0f);
-		vec3 Front;
-		vec3 up;
-		vec3 Right;
+		vec3 Position = vec3(0.0f, 0.0f, 0.0f); // Camera position
+		vec3 Front; // vector pointing towards the camera's positive z-axis.
+		vec3 up; // y axis, cross product of front and right
+		vec3 Right; // represents the positive x-axis of the camera space
 		vec3 WorldUp;
 		// Eular Angles
 		double Yaw = 0.0;

@@ -1,118 +1,96 @@
 #include "Frustum.hpp"
 
-
-Frustum::Frustum()
-{
-}
-
-
 Frustum::~Frustum()
 {
 }
 
-int Frustum::pointInFrustum(glm::vec3 &p) {
-
-	float pcz, pcx, pcy, aux;
-
-	// compute vector from camera position to p
-	glm::vec3 v = p - camPos;
-
-	// compute and test the Z coordinate
-	pcz = glm::dot(v,-Z);
-	if (pcz > farD || pcz < nearD)
-
-		return(OUTSIDE);
-
-	// compute and test the Y coordinate
-	pcy = glm::dot(v,Y);
-	aux = pcz * tang;
-	if (pcy > aux || pcy < -aux)
-		return(OUTSIDE);
-
-	// compute and test the X coordinate
-	pcx = glm::dot(v,X);
-	aux = aux * ratio;
-	if (pcx > aux || pcx < -aux)
-		return(OUTSIDE);
-
-	return(INSIDE);
-}
-
 /*This function takes exactly the same parameters as the function gluPerspective.Each time the perspective definitions change, for instance when 
 a window is resized, this function should be called as well.*/
-void Frustum::setCamInternals(float angle, float ratio, float nearD, float farD) {
-
-	// half of the the horizontal field of view
-	float angleX;
-	// store the information
-	this->ratio = ratio;
-	this->nearD = nearD;
-	this->farD = farD;
-
-	angle *= HALF_ANG2RAD;
+void Frustum::setCamInternals(float angle, int width, int height)
+{
+	this->ratio = ((float)width) * 1.0 / ((float)height); // Calculate the ratio
 	// compute width and height of the near and far plane sections
-	tang = tan(angle);
-	sphereFactorY = 1.0 / cos(angle);
+	tang = tan(angle * HALF_ANG2RAD / 2);
+	height = nearD * tang;
+	width = height * ratio;
 
+	sphereFactorY = 1.0 / cos(angle);
 	// compute half of the the horizontal field of view and sphereFactorX
 	float anglex = atan(tang*ratio);
 	sphereFactorX = 1.0 / cos(anglex);
 }
 
-/*This function takes three vectors that contain the information for the gluLookAt function: the position of the camera, 
-a point to where the camera is pointing and the up vector. Each time the camera position or orientation changes, this function should be called as well. 
-Notice how the following function is much simpler than for the other methods of view frustum culling. There is no need to compute the planes anymore.*/
-void Frustum::setCamDef(glm::vec3 &p, glm::vec3 &l, glm::vec3 &u) {
-	camPos = p;
-
-	// compute the Z axis of the camera referential
-	// this axis points in the same direction from
-	// the looking direction
-	Z = l - p;
-	Z=glm::normalize(Z);
-
-	// X axis of camera is the cross product of Z axis and given "up" vector 
-	X = Z * u;
-	X = glm::normalize(X);
-
-	// the real "up" vector is the cross product of X and Z
-	Y = X * Z;
+/*This function takes three vectors that contain the information about the current camera, see Camera.cpp for more information.*/
+void Frustum::setCamDef(glm::vec3 camPos, glm::vec3 front, glm::vec3 right, glm::vec3 up) {
+	this->camPos = camPos;
+	this->front = front;
+	this->right = right;
+	this->right = up;
 }
 
-int Frustum::sphereInFrustum(glm::vec3 &p, float radius) {
+int Frustum::pointInFrustum(glm::vec3 p)
+{
+	float pcz, pcx, pcy, aux;
+	// compute vector from camera position to p
+	glm::vec3 v = p - camPos;
+	// compute and test the front coordinate
+	pcz = glm::dot(v, this->front);
 
-	float d;
-	float az, ax, ay;
-	int result = INSIDE;
+	if (pcz > farD || pcz < nearD)
+		return-1;
 
+	// compute and test the up coordinate
+	pcy = glm::dot(v, this->right);
+	aux = pcz * tang;
+
+	if (pcy > aux || pcy < -aux)
+		return-1;
+
+	// compute and test the right coordinate
+	pcx = glm::dot(v, this->right);
+	aux = aux * ratio;
+
+	if (pcx > aux || pcx < -aux)
+		return-1;
+
+	return 1;
+}
+
+int Frustum::sphereInFrustum(glm::vec3 p, float radius) {
+
+	float d, az, ax, ay;
+	int result = 1;
 	glm::vec3 v = p - camPos;
 
-	az = glm::dot(v,-Z);
+	az = glm::dot(v, this->front);
+
 	if (az > farD + radius || az < nearD - radius)
-		return(OUTSIDE);
+		return-1;
 
 	if (az > farD - radius || az < nearD + radius)
-		result = INTERSECT;
+		result = 0;
 
-	ay = glm::dot(v,Y);
+	ay = glm::dot(v, this->up);
 	d = sphereFactorY * radius;
 	az *= tang;
+
 	if (ay > az + d || ay < -az - d)
-		return(OUTSIDE);
+		return-1;
 
 	if (ay > az - d || ay < -az + d)
-		result = INTERSECT;
+		result = 0;
 
-	ax = glm::dot(v,X);
+	ax = glm::dot(v, this->right);
 	az *= ratio;
 	d = sphereFactorX * radius;
+
 	if (ax > az + d || ax < -az - d)
-		return(OUTSIDE);
+		return-1;
 
 	if (ax > az - d || ax < -az + d)
-		result = INTERSECT;
+		result = 0;
 
-	return(result);
+	return result;
 }
 
 // TODO Adapt this to radar frustum culling when the bounding boxes from collision detection are available:
@@ -120,16 +98,16 @@ int Frustum::sphereInFrustum(glm::vec3 &p, float radius) {
 // signature is the bounding bos class
 int Frustum::boxInFrustum() {
 
-	int result = INSIDE;
+	int result = 1;
 	//for each plane do ...
 	for (int i = 0; i < 6; i++) {
 
 		// is the positive vertex outside?
 		/*if (pl[i].distance(b.getVertexP(pl[i].normal)) < 0)
-			return OUTSIDE;
+			return -1;
 		// is the negative vertex outside?
 		else if (pl[i].distance(b.getVertexN(pl[i].normal)) < 0)
-			result = INTERSECT;*/
+			result = 0;*/
 	}
 	return(result);
 }

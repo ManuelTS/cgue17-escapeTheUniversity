@@ -12,6 +12,7 @@
 #include <windows.h>
 #include "SoundManager.hpp"
 #include "Model/ModelLoader.hpp"
+#include "Model/Frustum.hpp"
 #include "Model/Node/Node.hpp"
 #include "Model/Node/ModelNode.hpp"
 #include "Model/Node/LightNode.hpp"
@@ -86,6 +87,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 void resizeCallback(GLFWwindow *wd, int width, int height) {
 	// Set the viewport to be the entire window
 	glViewport(0, 0, width, height);
+
+	const float angle = 45;
+
+	Frustum::getInstance()->setCamInternals(angle, width, height);
 
 	//if (width > height) // OR THIS METHOD, todo
 	//	glViewport((width - height) / 2, 0, min(width, height), min(width, height));
@@ -180,6 +185,9 @@ void RenderLoop::initGLFWandGLEW(){
 
 	if (!glewIsSupported("GL_VERSION_4_3"))
 		Debugger::getInstance()->pauseExit("OpenGL 4.3 is needed for this game, you cannot continue but there is no guarantee that it will work properly."); // TODO Display on screen
+
+	const float angle = 45;
+	Frustum::getInstance()->setCamInternals(angle, width, height);
 }
 
 void RenderLoop::start()
@@ -260,9 +268,6 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glDepthMask(GL_FALSE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	if(wireFrameMode)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 	// Deferred Shading: Light Pass
 	deferredShader->useProgram();
 	gBuffer->bindTextures();
@@ -278,6 +283,9 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, lights.size() * sizeof(lights[0]), &lights[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->Position[0]);
+
+	if (wireFrameMode)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
 	// Render 2D quad
 	gBuffer->renderQuad();

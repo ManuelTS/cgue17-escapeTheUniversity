@@ -2,6 +2,7 @@
 #include "Mesh.hpp"
 #include "../Shader.hpp"
 #include "../Debug/MemoryLeakTracker.h"
+#include "Frustum.hpp"
 
 using namespace std;
 
@@ -43,34 +44,40 @@ Mesh::Mesh(vector<GLuint> _indices, vector<Vertex> _data, vector<Texture> _textu
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-	data.clear(); // Data already copied, not needed anymore
 }
 
 /*Draws this mesh*/
 void Mesh::draw()
 {
-	for (unsigned int i = 0; i < textures.size() && i < maxTextureUnits; i++)// Bind textures
-	{
-		if (textures[i].name == "textureDiffuse") //Spectrail in frag shader anyways
+	int label = 1;
+
+	//for (unsigned int i = 0; label != -1 && i < data.size(); i++)
+		//label = Frustum::getInstance()->pointInFrustum(data.at(i).position); // is this really correct?
+		
+	if(label != -1){
+		for (unsigned int i = 0; i < textures.size() && i < maxTextureUnits; i++)// Bind textures
 		{
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, textures[i].id);
-		}
-		/*else if (textures[i].name == "textureSpecular") // Spectral texture not used in frag shader anyways
+			if (textures[i].name == "textureDiffuse") //Spectrail in frag shader anyways
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, textures[i].id);
+			}
+			/*else if (textures[i].name == "textureSpecular") // Spectral texture not used in frag shader anyways
+			{
+				glActiveTexture(GL_TEXTURE0 + i);
+				glUniform1i(textureSpecularLocation, i);
+				glBindTexture(GL_TEXTURE_2D, textures[i].id);
+			}*/
+		}	
+
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); // Draw
+		glBindVertexArray(0);
+
+		for (unsigned int i = 0; i < textures.size(); i++)// Unbind textures
 		{
 			glActiveTexture(GL_TEXTURE0 + i);
-			glUniform1i(textureSpecularLocation, i);
-			glBindTexture(GL_TEXTURE_2D, textures[i].id);
-		}*/
-	}	
-
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); // Draw
-	glBindVertexArray(0);
-
-	for (unsigned int i = 0; i < textures.size(); i++)// Unbind textures
-	{
-		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, 0);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
 	}
 }

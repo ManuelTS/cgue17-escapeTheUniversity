@@ -26,7 +26,6 @@ public:
 		std::string path;
 	};
 
-	Mesh();
 	Mesh(std::vector<GLuint>_indices, std::vector<Vertex> _data, std::vector<Texture> _textures, std::vector<glm::vec4> _materials);
 	~Mesh();
 	
