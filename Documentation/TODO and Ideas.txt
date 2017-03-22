@@ -2,21 +2,18 @@ All ordered by priority!
 
 Programming (Manuel):
 
-view frutsum culling radar approach:
-http://www.lighthouse3d.com/tutorials/view-frustum-culling/radar-approach-testing-points/
-http://www.lighthouse3d.com/tutorials/view-frustum-culling/radar-approach-implementation-ii/
-Transform feedback: https://open.gl/feedback
-
 Count the rendered triangles with:
 https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBeginQuery.xhtml
 and associated methods
 
+Collision detection, https://www.informatik-forum.at/showthread.php?112790-Bullet-Collisionshape-Convx-Decomposition-tool
+with PhysiX
+
+Transform feedback: https://open.gl/feedback
+
 Rim lighting openGL super Bibile page 634
 
 Skymap, with a beautiful night sky full of stars in OGLSB as cube map on page 640.
-
-Collision detection, https://www.informatik-forum.at/showthread.php?112790-Bullet-Collisionshape-Convx-Decomposition-tool
-with PhysiX
 
 Game over screen, If the player fails, show a game over screen with text, sound, or music, and restart.
 

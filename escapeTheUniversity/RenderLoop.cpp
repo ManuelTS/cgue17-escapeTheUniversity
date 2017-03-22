@@ -208,8 +208,8 @@ void RenderLoop::start()
 
 	displayLoadingScreen(ml);
 
-	Shader* gBufferShader = new Shader("gBuffer.vert", "gBuffer.frag");
-	Shader* deferredShader = new Shader("deferredShading.vert", "deferredShading.frag");
+	Shader* gBufferShader = new Shader("gBuffer");
+	Shader* deferredShader = new Shader("deferredShading");
 
 	ml->load("Playground.dae");
 
@@ -354,7 +354,7 @@ void RenderLoop::displayLoadingScreen(ModelLoader* ml){
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
-	Shader* shader = new Shader("image.vert", "image.frag");
+	Shader* shader = new Shader("image");
 	const unsigned int positionLocation = 0;      // Used in image.vert
 	const unsigned int colorLocation = 1;         // Used in image.vert
 	const unsigned int texCoordsLocation = 2;     // Used in image.vert

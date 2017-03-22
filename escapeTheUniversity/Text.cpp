@@ -19,7 +19,7 @@ Text::~Text(){
 
 void Text::init(){
 	ModelLoader* ml = ModelLoader::getInstance();
-	textShader = new Shader("text.vert", "text.frag");
+	textShader = new Shader("text");
 	textShader->useProgram();
 
 	/// Quad set-up
