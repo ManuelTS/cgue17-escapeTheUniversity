@@ -1,7 +1,7 @@
-#include "ModelNode.hpp"
 #include <GLM\gtc\type_ptr.hpp>
 #include <GLM/gtc/matrix_transform.hpp>
 #include <GLM/gtc/matrix_inverse.hpp>
+#include "ModelNode.hpp"
 
 ModelNode::ModelNode()
 {

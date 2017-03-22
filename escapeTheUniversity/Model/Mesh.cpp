@@ -2,7 +2,6 @@
 #include "Mesh.hpp"
 #include "../Shader.hpp"
 #include "../Debug/MemoryLeakTracker.h"
-#include "Frustum.hpp"
 
 using namespace std;
 
@@ -48,13 +47,7 @@ Mesh::Mesh(vector<GLuint> _indices, vector<Vertex> _data, vector<Texture> _textu
 
 /*Draws this mesh*/
 void Mesh::draw()
-{
-	int label = 1;
-
-	//for (unsigned int i = 0; label != -1 && i < data.size(); i++)
-		//label = Frustum::getInstance()->pointInFrustum(data.at(i).position); // is this really correct?
-		
-	if(label != -1){
+{		
 		for (unsigned int i = 0; i < textures.size() && i < maxTextureUnits; i++)// Bind textures
 		{
 			if (textures[i].name == "textureDiffuse") //Spectrail in frag shader anyways
@@ -79,5 +72,4 @@ void Mesh::draw()
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
-	}
 }

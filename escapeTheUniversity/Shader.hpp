@@ -15,6 +15,7 @@ public:
 	unsigned int programHandle; // Shader handle
 
 	Shader(const std::string& vertexShader, const std::string& fragementShader);
+	Shader(const char* shader);
 	~Shader();
 
 	void useProgram() const;
