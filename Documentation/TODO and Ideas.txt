@@ -90,6 +90,8 @@ After "text on screen" is finished I can take a look how complex In-Game-Calcula
 
 Ideas (both):
 
+Display the TUWEL form screenshot on a screen, info desk, desktop, laptop, canvas, projector etc... as easter egg
+
 Austiran tradition, insert a basement, optional a parkinglot too, maybe combine it with "fatal decisions".
 
 Fatal decisions During sneaking dark secrets of the university can be discovered, e.g. the player puts the hand in a hole (safe or vault) after entering a code, but it gets chopped of if entered wrong. Best in the cellar in combination with "austrian tradition".
