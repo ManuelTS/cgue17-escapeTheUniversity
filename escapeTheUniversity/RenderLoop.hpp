@@ -18,7 +18,7 @@ class RenderLoop{
 		// Time
 		double timePast; // Last, past time
 		double timeNow; // New, current time
-
+	
 		RenderLoop(void){}; // Private constructor to allow only one instance
 		RenderLoop(RenderLoop const&); // Private constructor to prevent copies
 		void operator=(RenderLoop const&); // Private constructor to prevent assignments
@@ -37,6 +37,7 @@ class RenderLoop{
 		double yScroll = 0.0; // The last y value scrolled
 		double lastX = 400;
 		double lastY = 300;
+		unsigned int drawnTriangles = 0;// Contains all the drawn triangles if the fps mode is activated
 		bool firstMouse = true; // True if the mouse is used for the first time, false if not
 		bool render = true; // Stop or start rendering with a key
 		bool wireFrameMode = false; // True if the wireframe mode is activated, false if not

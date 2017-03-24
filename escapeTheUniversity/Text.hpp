@@ -27,7 +27,7 @@ private:
 	// Last time since draw
 	double timeThreashold = 0.0;
 	// Buffers
-	char fpsBuffer[9]; // FPS
+	char fpsBuffer[30]; // FPS
 
 	Shader* textShader;
 	unsigned int characterTextureHandle = 0;
@@ -60,7 +60,7 @@ public:
 		scale of the text
 		angle of the text, zero is horizontal*/
 	void write(const char* text, float x, float y, const float scale, const float angle);
-	void fps(const double pastTime, const double deltaTime); // Shows the FPS on screen and updates them each second
+	void fps(const double pastTime, const double deltaTime, const unsigned int drawnTriangles); // Shows the FPS on screen and updates them each second
 	void loadingScreenInfo(); // Displays the loading text computer info on screen
 	void pause(); // Displays the pause or resume text on screen, the latter for one second more
 	void help(); // Displays the help on screen

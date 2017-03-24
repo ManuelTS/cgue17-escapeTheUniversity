@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <assimp/scene.h>
+#include "../RenderLoop.hpp"
 
 /*Contains all single data sets for a meshes in a system of array style.*/
 class Mesh{
@@ -26,7 +27,6 @@ public:
 		std::string path;
 	};
 
-	Mesh();
 	Mesh(std::vector<GLuint>_indices, std::vector<Vertex> _data, std::vector<Texture> _textures, std::vector<glm::vec4> _materials);
 	~Mesh();
 	
@@ -36,6 +36,7 @@ private:
 	unsigned int EBO;
 	unsigned int VBO;
 	unsigned int materialVBO;
+	RenderLoop* rl = RenderLoop::getInstance();
 
 	std::vector<GLuint> indices;
 	std::vector<Texture> textures; // Textures

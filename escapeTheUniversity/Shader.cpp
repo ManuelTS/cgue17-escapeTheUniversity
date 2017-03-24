@@ -1,20 +1,38 @@
 #include "Shader.hpp"
-#include <iostream>
-#include <fstream>
 #include "Debug\Debugger.hpp"
 #include "Debug\MemoryLeakTracker.h"
 
 using namespace std;
 
 /*Creates a program of the vertex and fragement shader.*/
-Shader::Shader(const string& vertexShader, const string& fragmentShader)
+Shader::Shader(const char* shader)
 {
 	programHandle = glCreateProgram();
-
 	check(programHandle, "program");
 
-	loadShader(SHADER_DIR + vertexShader, GL_VERTEX_SHADER, vertexHandle);
-	loadShader(SHADER_DIR + fragmentShader, GL_FRAGMENT_SHADER, fragmentHandle);
+	if (strcmp(shader, "text") == 0)
+	{
+		loadShader(TEXT_VERT, GL_VERTEX_SHADER, vertexHandle);
+		loadShader(TEXT_FRAG, GL_FRAGMENT_SHADER, fragmentHandle);
+	}
+	else if (strcmp(shader, "gBuffer") == 0)
+	{
+		loadShader(GBUFFER_VERT, GL_VERTEX_SHADER, vertexHandle);
+		loadShader(GBUFFER_FRAG, GL_FRAGMENT_SHADER, fragmentHandle);
+	}
+	else if (strcmp(shader, "deferredShading") == 0)
+	{
+		loadShader(DEFERRED_SHADING_VERT, GL_VERTEX_SHADER, vertexHandle);
+		loadShader(DEFERRED_SHADING_FRAG, GL_FRAGMENT_SHADER, fragmentHandle);
+	}
+	else if (strcmp(shader, "image") == 0)
+	{
+		loadShader(IMAGE_VERT, GL_VERTEX_SHADER, vertexHandle);
+		loadShader(IMAGE_FRAG, GL_FRAGMENT_SHADER, fragmentHandle);
+	}
+	else
+		Debugger::getInstance()->pauseExit("Unknown shader type");
+	
 	link();
 }
 
@@ -37,21 +55,12 @@ void Shader::useProgram() const
 }
 
 /*Loads the shader, sets its source, compiles it and logs errors. Handle receives the internal openGL number.*/
-void Shader::loadShader(const string& shader, GLenum shaderType, GLuint& handle)
+void Shader::loadShader(const char* shader, GLenum shaderType, GLuint& handle)
 {
-	ifstream shaderFile(shader);
-
-	if (shaderFile.good())
-	{
-		string code = string(istreambuf_iterator<char>(shaderFile), istreambuf_iterator<char>());
-
-		shaderFile.close();
 		handle = glCreateShader(shaderType);
-
 		check(handle, "shader");
 
-		const char* codePtr = code.c_str();
-		glShaderSource(handle, 1, &codePtr, nullptr);
+		glShaderSource(handle, 1, &shader, nullptr);
 		glCompileShader(handle);
 
 		//Test if compilation was successfull
@@ -66,10 +75,7 @@ void Shader::loadShader(const string& shader, GLenum shaderType, GLuint& handle)
 			glGetShaderInfoLog(handle, logSize, nullptr, message);
 			Debugger::getInstance()->pauseExit(message);
 			delete[] message;
-		}
 	}
-	else
-		Debugger::getInstance()->pauseExit("Failed to open file" + shader); //Fehlermeldung wenn shaderFile nicht geöffnet werden konnte
 }
 
 /*Links the fragement and vertex shader with the program and logs errors.*/

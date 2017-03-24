@@ -12,6 +12,7 @@
 #include <windows.h>
 #include "SoundManager.hpp"
 #include "Model/ModelLoader.hpp"
+#include "Model/Frustum.hpp"
 #include "Model/Node/Node.hpp"
 #include "Model/Node/ModelNode.hpp"
 #include "Model/Node/LightNode.hpp"
@@ -86,6 +87,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 void resizeCallback(GLFWwindow *wd, int width, int height) {
 	// Set the viewport to be the entire window
 	glViewport(0, 0, width, height);
+
+	const float angle = 45;
+
+	Frustum::getInstance()->setCamInternals(angle, width, height);
 
 	//if (width > height) // OR THIS METHOD, todo
 	//	glViewport((width - height) / 2, 0, min(width, height), min(width, height));
@@ -180,6 +185,9 @@ void RenderLoop::initGLFWandGLEW(){
 
 	if (!glewIsSupported("GL_VERSION_4_3"))
 		Debugger::getInstance()->pauseExit("OpenGL 4.3 is needed for this game, you cannot continue but there is no guarantee that it will work properly."); // TODO Display on screen
+
+	const float angle = 45;
+	Frustum::getInstance()->setCamInternals(angle, width, height);
 }
 
 void RenderLoop::start()
@@ -200,8 +208,8 @@ void RenderLoop::start()
 
 	displayLoadingScreen(ml);
 
-	Shader* gBufferShader = new Shader("gBuffer.vert", "gBuffer.frag");
-	Shader* deferredShader = new Shader("deferredShading.vert", "deferredShading.frag");
+	Shader* gBufferShader = new Shader("gBuffer");
+	Shader* deferredShader = new Shader("deferredShading");
 
 	ml->load("Playground.dae");
 
@@ -243,9 +251,9 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
-	else {
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
-	}
+
+	if (fps)
+		drawnTriangles = 0;
 
 	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->handle); // Must be first!
@@ -253,6 +261,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glDepthMask(GL_TRUE); // Must be before glClear()!
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glm::mat4 projectionMatrix = glm::perspective((float)camera->zoom, (float)width / (float)height, 0.1f, 100.0f);
 	gBufferShader->useProgram();
@@ -263,9 +272,6 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glDepthMask(GL_FALSE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	if(wireFrameMode)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 	// Deferred Shading: Light Pass
 	deferredShader->useProgram();
 	gBuffer->bindTextures();
@@ -273,14 +279,17 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	// Bind buffer and fill all light node data in there
 	vector<LightNode::Light> lights;
 
-	for (LightNode* ln : ml->lights) {
+	for (LightNode* ln : ml->lights)
 		lights.push_back(ln->light);
-	}
+	
 	glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
 	glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, lights.size() * sizeof(lights[0]), &lights[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->Position[0]);
+
+	if (wireFrameMode)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
 	// Render 2D quad
 	gBuffer->renderQuad();
@@ -289,7 +298,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 void RenderLoop::renderText() 
 { // It is important to leave the if else structure here as it is
 	if(fps)
-		Text::getInstance()->fps(timeNow, deltaTime);
+		Text::getInstance()->fps(timeNow, deltaTime, drawnTriangles);
 
 	if (help)
 		Text::getInstance()->help();
@@ -346,7 +355,7 @@ void RenderLoop::displayLoadingScreen(ModelLoader* ml){
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
-	Shader* shader = new Shader("image.vert", "image.frag");
+	Shader* shader = new Shader("image");
 	const unsigned int positionLocation = 0;      // Used in image.vert
 	const unsigned int colorLocation = 1;         // Used in image.vert
 	const unsigned int texCoordsLocation = 2;     // Used in image.vert

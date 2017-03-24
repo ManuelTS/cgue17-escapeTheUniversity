@@ -19,7 +19,7 @@ Text::~Text(){
 
 void Text::init(){
 	ModelLoader* ml = ModelLoader::getInstance();
-	textShader = new Shader("text.vert", "text.frag");
+	textShader = new Shader("text");
 	textShader->useProgram();
 
 	/// Quad set-up
@@ -104,7 +104,7 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	vector<float> vertices;
-	float cursor = 0.0f;
+	float cursor = 0.0f, row = 0.0f;
 	const float advance = scale * charSize / (float) RenderLoop::getInstance()->width;
 	x /= scale;
 	y /= scale;
@@ -113,7 +113,7 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 	{
 		if (*p == '\n') // TODO test!
 		{
-			y -= advance;
+			row -= advance;
 			cursor = -advance;
 			continue;
 		}
@@ -121,19 +121,19 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 		const glm::mat4x2 uv = charLocations[(unsigned char)*p];
 		//Position.x(lr)y(tb),Texture coordinates uv.xy
 		vertices.push_back(x + cursor);//left-top, 0 x
-		vertices.push_back(y + advance); // y
+		vertices.push_back(y + row + advance); // y
 		vertices.push_back(uv[0].x); //uv.x
 		vertices.push_back(uv[0].y); //uv.y
 		vertices.push_back(x + cursor); //left-bottom, 1 x
-		vertices.push_back(y); // ...
+		vertices.push_back(y + row); // ...
 		vertices.push_back(uv[1].x);
 		vertices.push_back(uv[1].y); 
 		vertices.push_back(x + advance + cursor); //right-top, 2 x
-		vertices.push_back(y + advance);
+		vertices.push_back(y + row + advance);
 		vertices.push_back(uv[2].x);
 		vertices.push_back(uv[2].y); 
 		vertices.push_back(x + advance + cursor); //right-bottom, 3 x
-		vertices.push_back(y);
+		vertices.push_back(y + row);
 		vertices.push_back(uv[3].x);
 		vertices.push_back(uv[3].y);
 	}
@@ -157,12 +157,12 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 }   
 
 
-void Text::fps(const double pastTime, const double deltaTime)
+void Text::fps(const double pastTime, const double deltaTime, const unsigned int drawnTriangles)
 {
 	if (timeThreashold < pastTime)
 	{
 		timeThreashold = pastTime + 1; // Only print all seconds not MS (it is frames per second not seconds per frame)
-		snprintf(fpsBuffer, 9, "FPS:%.0f", (1.0 / deltaTime));
+		snprintf(fpsBuffer, 30, "FPS:%.0f\nTriangles:%u", (1.0 / deltaTime), drawnTriangles);
 	}
 	
 	write(fpsBuffer, -0.9f, 0.9f, 0.5f, 0.0f);
