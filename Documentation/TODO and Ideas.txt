@@ -2,12 +2,7 @@ All ordered by priority!
 
 Programming (Manuel):
 
-Count the rendered triangles with:
-https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBeginQuery.xhtml
-and associated methods
-
-Collision detection, https://www.informatik-forum.at/showthread.php?112790-Bullet-Collisionshape-Convx-Decomposition-tool
-with PhysiX
+Collision detection and then with the AABBs finishing already started view frustum culling
 
 Transform feedback: https://open.gl/feedback
 

@@ -1,7 +1,7 @@
-#include <iostream>
 #include "Mesh.hpp"
 #include "../Shader.hpp"
 #include "../Debug/MemoryLeakTracker.h"
+#include <iostream>
 
 using namespace std;
 
@@ -64,6 +64,10 @@ void Mesh::draw()
 		}	
 
 		glBindVertexArray(VAO);
+
+		if (rl->fps)
+			rl->drawnTriangles += data.size() / 3;
+
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); // Draw
 		glBindVertexArray(0);
 

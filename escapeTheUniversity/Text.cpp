@@ -157,12 +157,12 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 }   
 
 
-void Text::fps(const double pastTime, const double deltaTime)
+void Text::fps(const double pastTime, const double deltaTime, const unsigned int drawnTriangles)
 {
 	if (timeThreashold < pastTime)
 	{
 		timeThreashold = pastTime + 1; // Only print all seconds not MS (it is frames per second not seconds per frame)
-		snprintf(fpsBuffer, 9, "FPS:%.0f", (1.0 / deltaTime));
+		snprintf(fpsBuffer, 30, "FPS:%.0f\nTriangles:%u", (1.0 / deltaTime), drawnTriangles);
 	}
 	
 	write(fpsBuffer, -0.9f, 0.9f, 0.5f, 0.0f);

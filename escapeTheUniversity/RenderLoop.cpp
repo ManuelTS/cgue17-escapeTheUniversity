@@ -251,9 +251,9 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
-	else {
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
-	}
+
+	if (fps)
+		drawnTriangles = 0;
 
 	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->handle); // Must be first!
@@ -261,6 +261,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glDepthMask(GL_TRUE); // Must be before glClear()!
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glm::mat4 projectionMatrix = glm::perspective((float)camera->zoom, (float)width / (float)height, 0.1f, 100.0f);
 	gBufferShader->useProgram();
@@ -278,9 +279,9 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	// Bind buffer and fill all light node data in there
 	vector<LightNode::Light> lights;
 
-	for (LightNode* ln : ml->lights) {
+	for (LightNode* ln : ml->lights)
 		lights.push_back(ln->light);
-	}
+	
 	glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
 	glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, lights.size() * sizeof(lights[0]), &lights[0]);
@@ -297,7 +298,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 void RenderLoop::renderText() 
 { // It is important to leave the if else structure here as it is
 	if(fps)
-		Text::getInstance()->fps(timeNow, deltaTime);
+		Text::getInstance()->fps(timeNow, deltaTime, drawnTriangles);
 
 	if (help)
 		Text::getInstance()->help();
