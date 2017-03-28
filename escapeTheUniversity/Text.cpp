@@ -1,11 +1,11 @@
-#include <algorithm>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include "Text.hpp"
 #include "Model/ModelLoader.hpp"
 #include "Shader.hpp"
 #include "RenderLoop.hpp"
 #include "Debug\Debugger.hpp"
+#include <algorithm>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 using namespace std;
@@ -77,7 +77,6 @@ void Text::init(){
 			float(x + charSize) / imageSize, float(y - charSize) / imageSize  //right-bottom, 3
 		};
 
-		//for_each(coords.begin(), coords.end(), [imageSize](float& f){f /= imageSize;});
 		charLocations[(unsigned char)i] = glm::make_mat4x2(&coords[0]);
 		
 		if (column == maxColumn - 1)

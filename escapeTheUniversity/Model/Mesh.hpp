@@ -1,11 +1,11 @@
 #pragma once
 
+#include "../RenderLoop.hpp"
 #include <GL\glew.h>
 #include <GLM\glm.hpp>
 #include <vector>
 #include <string>
 #include <assimp/scene.h>
-#include "../RenderLoop.hpp"
 
 /*Contains all single data sets for a meshes in a system of array style.*/
 class Mesh{

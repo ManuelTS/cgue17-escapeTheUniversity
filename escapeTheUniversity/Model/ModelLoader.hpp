@@ -15,9 +15,10 @@ class DoorNode;
 class ModelLoader
 {
 private:
-	// General 
 	const std::string ANGLE_SUFFIX = "_Angle";
 	const std::string DOOR_PREFIX = "Door_";
+	const std::string LIGHT_SUFFIX = "_Licht";
+	const unsigned int MAX_LIGHTS = 10; // Correlates with deferredShading.frag#MAX_LIGHTS
 
 	bool loadModels = true; // Set this variable only once!
 	std::string directory;// Relative path to all models
@@ -27,20 +28,16 @@ private:
 	ModelLoader(void){}; // Private constructor to allow only one instance
 	ModelLoader(ModelLoader const&); // Private constructor to prevent copies
 	void operator=(ModelLoader const&); // Private constructor to prevent assignments
+
 	Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene); // Processes a node
+	LightNode* processLightNode(string* name, Node* parent, aiNode* node, const aiScene* scene); // Processes a light node
+	void processMeshesAndChildren(Node* current, aiNode* node, const aiScene* scene);
+	glm::vec3 getTransformationVec(aiMatrix4x4* transformation); // Transforms the blender 4x4 matrix into a xyz vec3
+	
 	Mesh* processMesh(aiMesh* mesh, const aiScene* scene); // Processes the mesh
 	std::vector<Mesh::Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::vector<glm::vec4>* materials);// Loads all materials and the textures
-	glm::vec3 getTransformationVec(aiMatrix4x4* transformation); // Transforms the blender 4x4 matrix into a xyz vec3
-	void processMeshesAndChildren(Node* current, aiNode* node, const aiScene* scene);
-
-	// Light
-	const std::string LIGHT_SUFFIX = "_Licht";
-	const unsigned int MAX_LIGHTS = 10; // Correlates with mesh.frag#MAX_LIGHTS
-
-	LightNode* processLightNode(aiLight* lightNode, aiNode* node, const aiScene* scene, unsigned int arrayIndex); // Processes a light node
 	void linkLightUBO(); // Generates the Light UBO handle
 public:
-	// General
 	Node* root;
 
 	// Resource top folder directories
@@ -59,8 +56,8 @@ public:
 	std::vector<Node*> getAllNodes(); // Traverses the scenegraph and puts all nodes in the vector
 
 	// Light
-	const unsigned int lightBinding = 2; // In the Mesh.frag
-	unsigned int lightUBO = 0; // Handle for the Light UBO in mesh.frag
+	const unsigned int lightBinding = 2; // In the deferredShading.frag
+	unsigned int lightUBO = 0; // Handle for the Light UBO in deferredShading.frag
 	std::vector<LightNode*>lights;
 };
 

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Model\Bullet.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Debug\Debugger.cpp" />
     <ClCompile Include="Debug\MemoryLeakTracker.cpp" />
@@ -38,6 +39,7 @@
     <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Model\Bullet.hpp" />
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Debug\Debugger.hpp" />
     <ClInclude Include="Debug\MemoryLeakTracker.h" />

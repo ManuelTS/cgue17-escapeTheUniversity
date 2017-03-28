@@ -1,15 +1,3 @@
-#include <GL/glew.h>
-#include <GL/wglew.h>
-#include <GLM\gtc\type_ptr.hpp>
-#include <GLM/gtc/matrix_transform.hpp>
-#include <GLM/gtc/matrix_inverse.hpp>
-#include <stdlib.h>
-#include <stdio.h>
-#include <iostream>
-#include <algorithm>
-#include <vector>
-#include <GLFW/glfw3.h>
-#include <windows.h>
 #include "SoundManager.hpp"
 #include "Model/ModelLoader.hpp"
 #include "Model/Frustum.hpp"
@@ -24,6 +12,18 @@
 #include "Text.hpp"
 #include "Debug/Debugger.hpp"
 #include "Debug/MemoryLeakTracker.h"
+#include <GL/glew.h>
+#include <GL/wglew.h>
+#include <GLM\gtc\type_ptr.hpp>
+#include <GLM/gtc/matrix_transform.hpp>
+#include <GLM/gtc/matrix_inverse.hpp>
+#include <stdlib.h>
+#include <stdio.h>
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#include <GLFW/glfw3.h>
+#include <windows.h>
 
 using namespace std;
 
@@ -213,6 +213,8 @@ void RenderLoop::start()
 
 	ml->load("Playground.dae");
 
+	initBullet();
+
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
 	GBuffer* gBuffer = new GBuffer(initVar->maxWidth, initVar->maxHeight);
@@ -245,7 +247,8 @@ void RenderLoop::start()
 	glfwTerminate();
 }
 
-void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, ModelLoader* ml) {
+void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, ModelLoader* ml) 
+{
 	if (wireFrameMode)
 	{
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
@@ -295,6 +298,23 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	gBuffer->renderQuad();
 }
 
+void RenderLoop::draw(Node* current)
+{
+	if (dynamic_cast<LightNode*>(current) == nullptr) // No light node, draw
+	{
+		ModelNode* mn = dynamic_cast<ModelNode*>(current);
+
+		//TODO AABBs frustum culling, the used point one is inefficient but works
+		if (dynamic_cast<TransformationNode*>(current) != nullptr || mn != nullptr && Frustum::getInstance()->pointInFrustum(mn->position))
+		{ // TODO frustum not working, too much triangles drawn
+			current->draw();
+
+			for (Node* child : current->children)
+				draw(child);
+		}
+	}
+}
+
 void RenderLoop::renderText() 
 { // It is important to leave the if else structure here as it is
 	if(fps)
@@ -314,15 +334,18 @@ void RenderLoop::calculateDeltaTime()
 	timePast = timeNow;
 }
 
-void RenderLoop::draw(Node* current)
+/*Listens for user input.*/
+void RenderLoop::doMovement(double timeDelta)
 {
-	if (dynamic_cast<LightNode*>(current) == nullptr) // No light node, draw
-	{
-		current->draw();
-
-		for (Node* child : current->children)
-			draw(child);
-	}
+	// Camera controls
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		camera->processKeyboard(camera->FORWARD, timeDelta);
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera->processKeyboard(camera->BACKWARD, timeDelta);
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera->processKeyboard(camera->LEFT, timeDelta);
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		camera->processKeyboard(camera->RIGHT, timeDelta);
 }
 
 // Displays the ETU loading screen with music, source https://open.gl/textures
@@ -402,18 +425,4 @@ void RenderLoop::displayLoadingScreen(ModelLoader* ml){
 	glDeleteBuffers(1, &ebo);
 	glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);
-}
-
-/*Listens for user input.*/
-void RenderLoop::doMovement(double timeDelta)
-{
-	// Camera controls
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera->processKeyboard(camera->FORWARD, timeDelta);
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera->processKeyboard(camera->BACKWARD, timeDelta);
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera->processKeyboard(camera->LEFT, timeDelta);
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera->processKeyboard(camera->RIGHT, timeDelta);
 }

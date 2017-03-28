@@ -55,29 +55,7 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 	string name = node->mName.C_Str();
 
 	if (string::npos != name.find(LIGHT_SUFFIX)) //Light node
-	{
-		LightNode * ln = nullptr;
-
-		for (unsigned int i = 0; i < scene->mNumLights; i++)
-		{
-			aiLight* lightNode = scene->mLights[i]; // Go through all lights
-
-			if (lightNode->mName.C_Str() == name) // Node found
-			{
-				ln = processLightNode(lightNode, node, scene, i);
-				ln->name = name;
-				ln->parent = parent;
-				break;
-			}
-		}
-
-		if (ln == nullptr)
-			Debugger::getInstance()->pauseExit("Malfunction: Light node " + name + " not found.");
-
-		processMeshesAndChildren(ln, node, scene);
-		lights.push_back(ln);
-		return ln;
-	}
+		return processLightNode(&name, parent, node, scene);
 	else // Normal node and transformation processing
 	{
 		ModelNode* current = new ModelNode();
@@ -139,23 +117,43 @@ glm::vec3 ModelLoader::getTransformationVec(aiMatrix4x4* transformation)
 }
 
 /*Performs the special light node coordinates readout.*/
-LightNode* ModelLoader::processLightNode(aiLight* lightNode, aiNode* node, const aiScene* scene, const unsigned int arrayIndex)
+LightNode* ModelLoader::processLightNode(string* name, Node* parent, aiNode* node, const aiScene* scene)
 {
-	LightNode* ln = new LightNode(lightUBO, arrayIndex); // vec4 in method signature causes __declspec(align('16')) won't be aligned
+	LightNode * ln = nullptr;
 
-	if (arrayIndex >= MAX_LIGHTS)
-		Debugger::getInstance()->pauseExit("Malformed shader: More lights, " + to_string(arrayIndex) + ", found in the model than specifed in shader.");
+	for (unsigned int i = 0; i < scene->mNumLights; i++)
+	{
+		aiLight* lightNode = scene->mLights[i]; // Go through all lights
 
-	ln->light.position = glm::vec4(lightNode->mPosition.x, lightNode->mPosition.y, lightNode->mPosition.z, 1.0f); // 1.0f = Point light
+		if (lightNode->mName.C_Str() == *name) // Node found
+		{
+			ln = new LightNode(lightUBO, i); // vec4 in method signature causes __declspec(align('16')) won't be aligned
 
-	if (ln->light.position.x == 0.0f && ln->light.position.y == 0.0f && ln->light.position.z == 0.0f) // Position in light node often not set, but in the normal node representation it is...
-		ln->light.position = glm::vec4(getTransformationVec(&node->mTransformation), ln->light.position.w);
+			if (i >= MAX_LIGHTS)
+				Debugger::getInstance()->pauseExit("Malformed shader: More lights, " + to_string(i) + ", found in the model than specifed in shader.");
+			// Get light node information
+			ln->light.position = glm::vec4(lightNode->mPosition.x, lightNode->mPosition.y, lightNode->mPosition.z, 1.0f); // 1.0f = Point light
 
-	ln->light.ambient = glm::vec4(lightNode->mColorAmbient.r, lightNode->mColorAmbient.g, lightNode->mColorAmbient.b, 1.0f); // W unused
-	ln->light.diffuse = glm::vec4(lightNode->mColorDiffuse.r, lightNode->mColorDiffuse.g, lightNode->mColorDiffuse.b, 1.0f); // W unused
-	ln->light.specular = glm::vec4(lightNode->mColorSpecular.r, lightNode->mColorSpecular.g, lightNode->mColorSpecular.b, 1.0f); // w unused
-	ln->light.shiConLinQua = glm::vec4(64.0f, lightNode->mAttenuationConstant, lightNode->mAttenuationLinear, lightNode->mAttenuationQuadratic);
-	// Shin,Lin, Qua values with distance: http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Point+Light+Attenuation
+			if (ln->light.position.x == 0.0f && ln->light.position.y == 0.0f && ln->light.position.z == 0.0f) // Position in light node often not set, but in the normal node representation it is...
+				ln->light.position = glm::vec4(getTransformationVec(&node->mTransformation), ln->light.position.w);
+
+			ln->light.ambient = glm::vec4(lightNode->mColorAmbient.r, lightNode->mColorAmbient.g, lightNode->mColorAmbient.b, 1.0f); // W unused
+			ln->light.diffuse = glm::vec4(lightNode->mColorDiffuse.r, lightNode->mColorDiffuse.g, lightNode->mColorDiffuse.b, 1.0f); // W unused
+			ln->light.specular = glm::vec4(lightNode->mColorSpecular.r, lightNode->mColorSpecular.g, lightNode->mColorSpecular.b, 1.0f); // w unused
+			ln->light.shiConLinQua = glm::vec4(64.0f, lightNode->mAttenuationConstant, lightNode->mAttenuationLinear, lightNode->mAttenuationQuadratic);
+			// Shin,Lin, Qua values with distance: http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Point+Light+Attenuation
+
+			ln->name = *name;
+			ln->parent = parent;
+			break;
+		}
+	}
+
+	if (ln == nullptr)
+		Debugger::getInstance()->pauseExit("Malfunction: Light node " + *name + " not found.");
+
+	processMeshesAndChildren(ln, node, scene);
+	lights.push_back(ln);
 	return ln;
 }
 
