@@ -382,7 +382,7 @@ void RenderLoop::displayLoadingScreen(ModelLoader* ml){
 
 	// Loop activities
 	glfwPollEvents(); // Check and call events
-	glClearColor(0.0f, 0.0f, .0f, 1.0f); // Set clean color to black
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// Clear color buffer
 
 	glfwGetWindowSize(window, &width, &height);
