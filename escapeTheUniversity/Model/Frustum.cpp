@@ -10,7 +10,7 @@ void Frustum::setCamInternals(float angle, int width, int height)
 {
 	this->ratio = ((float)width) * 1.0 / ((float)height); // Calculate the ratio
 	// compute width and height of the near and far plane sections
-	tang = tan(angle * HALF_ANG2RAD / 2);
+	tang = tan(angle * HALF_ANG2RAD * 0.5);
 	height = nearD * tang;
 	width = height * ratio;
 
@@ -25,7 +25,7 @@ void Frustum::setCamDef(glm::vec3 camPos, glm::vec3 front, glm::vec3 right, glm:
 	this->camPos = camPos;
 	this->front = front;
 	this->right = right;
-	this->right = up;
+	this->up = up;
 }
 
 int Frustum::pointInFrustum(glm::vec3 p)
@@ -40,7 +40,7 @@ int Frustum::pointInFrustum(glm::vec3 p)
 		return-1;
 
 	// compute and test the up coordinate
-	pcy = glm::dot(v, this->right);
+	pcy = glm::dot(v, this->up);
 	aux = pcz * tang;
 
 	if (pcy > aux || pcy < -aux)

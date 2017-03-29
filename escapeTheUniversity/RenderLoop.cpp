@@ -88,8 +88,7 @@ void resizeCallback(GLFWwindow *wd, int width, int height) {
 	// Set the viewport to be the entire window
 	glViewport(0, 0, width, height);
 
-	const float angle = 45;
-
+	const float angle = 70;
 	Frustum::getInstance()->setCamInternals(angle, width, height);
 
 	//if (width > height) // OR THIS METHOD, todo
@@ -186,7 +185,7 @@ void RenderLoop::initGLFWandGLEW(){
 	if (!glewIsSupported("GL_VERSION_4_3"))
 		Debugger::getInstance()->pauseExit("OpenGL 4.3 is needed for this game, you cannot continue but there is no guarantee that it will work properly."); // TODO Display on screen
 
-	const float angle = 45;
+	const float angle = 70;
 	Frustum::getInstance()->setCamInternals(angle, width, height);
 }
 
