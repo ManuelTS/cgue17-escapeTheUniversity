@@ -17,37 +17,40 @@ Bullet::Bullet()
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
 }
 
-btCollisionObject* Bullet::createBox(float sx, float px, float py, float pz, float mass)
+/*
+*/
+btCollisionObject* Bullet::createBox(float mass)
 {
-	btCollisionShape* colShape = new btBoxShape(btScalar(sx));
-	shapes.push_back(colShape);
+	//btCollisionShape* colShape = new btBoxShape(btScalar(sx));
+	//shapes.push_back(colShape);
 
-	btTransform startTransform;
-	startTransform.setIdentity();
+	//btTransform startTransform;
+	//startTransform.setIdentity();
 
-	btScalar    tMass(mass);
+	//btScalar    tMass(mass);
 
-	//rigidbody is dynamic if and only if mass is non zero, otherwise static
-	bool isDynamic = (tMass != 0.f);
+	////rigidbody is dynamic if and only if mass is non zero, otherwise static
+	//bool isDynamic = (tMass != 0.f);
 
-	btVector3 localInertia(0, 0, 0);
-	if (isDynamic)
-		colShape->calculateLocalInertia(tMass, localInertia);
+	//btVector3 localInertia(0, 0, 0);
+	//if (isDynamic)
+	//	colShape->calculateLocalInertia(tMass, localInertia);
 
-	startTransform.setOrigin(btVector3(px, py, pz));
+	//startTransform.setOrigin(btVector3(px, py, pz));
 
-	//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
-	btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
-	btRigidBody::btRigidBodyConstructionInfo rbInfo(tMass, myMotionState, colShape, localInertia);
-	btRigidBody* body = new btRigidBody(rbInfo);
-	dynamicsWorld->addRigidBody(body);
-	return body;
+	////using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
+	//btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
+	//btRigidBody::btRigidBodyConstructionInfo rbInfo(tMass, myMotionState, colShape, localInertia);
+	//btRigidBody* body = new btRigidBody(rbInfo);
+	//dynamicsWorld->addRigidBody(body);
+	//return body;
+	return nullptr;
 }
 
 void Bullet::step() {
 
 
-	for (i = 0; i<100; i++)
+	for (int i = 0; i<100; i++)
 		{
 		dynamicsWorld->stepSimulation(1.f / 60.f, 10);
 		
@@ -71,7 +74,7 @@ void Bullet::step() {
 Bullet::~Bullet()
 {
 	//remove the rigidbodies from the dynamics world and delete them
-	for (i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
+	for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
 	{
 		btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
 		btRigidBody* body = btRigidBody::upcast(obj);
@@ -84,10 +87,10 @@ Bullet::~Bullet()
 	}
 
 	//delete collision shapes
-	for (int j = 0; j<collisionShapes.size(); j++)
+	for (int j = 0; j<shapes.size(); j++)
 	{
-		btCollisionShape* shape = collisionShapes[j];
-		collisionShapes[j] = 0;
+		btCollisionShape* shape = shapes[j];
+		shapes[j] = 0;
 		delete shape;
 	}
 	//delete dynamics world
@@ -100,5 +103,5 @@ Bullet::~Bullet()
 	delete dispatcher;
 	delete collisionConfiguration;
 	//next line is optional: it will be cleared by the destructor when the array goes out of scope
-	collisionShapes.clear();
+	shapes.clear();
 }

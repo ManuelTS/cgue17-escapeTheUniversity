@@ -20,6 +20,6 @@ public:
 	~Bullet();
 
 	void step();
-	btCollisionObject* createBox(); // Creates a bounding box
+	btCollisionObject* createBox(float mass); // Creates a bounding box
 };
 

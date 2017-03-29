@@ -213,8 +213,6 @@ void RenderLoop::start()
 
 	ml->load("Playground.dae");
 
-	initBullet();
-
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
 	GBuffer* gBuffer = new GBuffer(initVar->maxWidth, initVar->maxHeight);
@@ -305,7 +303,7 @@ void RenderLoop::draw(Node* current)
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
 		//TODO AABBs frustum culling, the used point one is inefficient but works
-		if (dynamic_cast<TransformationNode*>(current) != nullptr || mn != nullptr && Frustum::getInstance()->pointInFrustum(mn->position))
+		if (dynamic_cast<TransformationNode*>(current) != nullptr || mn != nullptr && Frustum::getInstance()->pointInFrustum(mn->position) != -1)
 		{ // TODO frustum not working, too much triangles drawn
 			current->draw();
 

@@ -2,7 +2,9 @@ All ordered by priority!
 
 Programming (Manuel):
 
-Collision detection and then with the AABBs finishing already started view frustum culling
+debug VFC
+
+integrate v-hacd AS PROJECT!
 
 Transform feedback: https://open.gl/feedback
 
