@@ -1,12 +1,11 @@
-#include <algorithm>
-#include <vector>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include "Text.hpp"
 #include "Model/ModelLoader.hpp"
 #include "Shader.hpp"
 #include "RenderLoop.hpp"
 #include "Debug\Debugger.hpp"
+#include <algorithm>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 using namespace std;
@@ -78,7 +77,6 @@ void Text::init(){
 			float(x + charSize) / imageSize, float(y - charSize) / imageSize  //right-bottom, 3
 		};
 
-		//for_each(coords.begin(), coords.end(), [imageSize](float& f){f /= imageSize;});
 		charLocations[(unsigned char)i] = glm::make_mat4x2(&coords[0]);
 		
 		if (column == maxColumn - 1)
@@ -97,64 +95,72 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 	glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 	glUniform4f(colorScaleLocation, color.x, color.y, color.z, scale);
 
+	vector<float>* vertices = new vector<float>;
+	float cursor = 0.0f, row = 0.0f;
+	const float advance = scale * charSize / (float) RenderLoop::getInstance()->width;
+	x /= scale;
+	y /= scale;
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, characterTextureHandle);
 	glBindVertexArray(VAO);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	vector<float> vertices;
-	float cursor = 0.0f, row = 0.0f;
-	const float advance = scale * charSize / (float) RenderLoop::getInstance()->width;
-	x /= scale;
-	y /= scale;
-
 	for (const char* p = text; *p; p++, cursor += advance)
 	{
-		if (*p == '\n') // TODO test!
+		if (*p == '\n')
 		{
 			row -= advance;
 			cursor = -advance;
+			writeVertices(vertices);
+			vertices->clear();
 			continue;
 		}
 
 		const glm::mat4x2 uv = charLocations[(unsigned char)*p];
 		//Position.x(lr)y(tb),Texture coordinates uv.xy
-		vertices.push_back(x + cursor);//left-top, 0 x
-		vertices.push_back(y + row + advance); // y
-		vertices.push_back(uv[0].x); //uv.x
-		vertices.push_back(uv[0].y); //uv.y
-		vertices.push_back(x + cursor); //left-bottom, 1 x
-		vertices.push_back(y + row); // ...
-		vertices.push_back(uv[1].x);
-		vertices.push_back(uv[1].y); 
-		vertices.push_back(x + advance + cursor); //right-top, 2 x
-		vertices.push_back(y + row + advance);
-		vertices.push_back(uv[2].x);
-		vertices.push_back(uv[2].y); 
-		vertices.push_back(x + advance + cursor); //right-bottom, 3 x
-		vertices.push_back(y + row);
-		vertices.push_back(uv[3].x);
-		vertices.push_back(uv[3].y);
+		vertices->push_back(x + cursor);//left-top, 0 x
+		vertices->push_back(y + row + advance); // y
+		vertices->push_back(uv[0].x); //uv.x
+		vertices->push_back(uv[0].y); //uv.y
+		vertices->push_back(x + cursor); //left-bottom, 1 x
+		vertices->push_back(y + row); // ...
+		vertices->push_back(uv[1].x);
+		vertices->push_back(uv[1].y);
+		vertices->push_back(x + advance + cursor); //right-top, 2 x
+		vertices->push_back(y + row + advance);
+		vertices->push_back(uv[2].x);
+		vertices->push_back(uv[2].y);
+		vertices->push_back(x + advance + cursor); //right-bottom, 3 x
+		vertices->push_back(y + row);
+		vertices->push_back(uv[3].x);
+		vertices->push_back(uv[3].y);
+
 	}
+	writeVertices(vertices);
+	delete vertices;
 
-	// TODO skalierung in die position mit einbauen
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	unsigned int currentBufferSize = vertices.size() * sizeof(float);
-
-	if (currentBufferSize > previousMaxBufferSize) // Buffer size too small, allocate more space
-		glBufferData(GL_ARRAY_BUFFER, previousMaxBufferSize = currentBufferSize, &vertices[0], GL_DYNAMIC_DRAW);
-	else
-		glBufferSubData(GL_ARRAY_BUFFER, 0, currentBufferSize, &vertices[0]);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, vertices.size()/4); //Each vertex has two xy and two uv entries, ergo divide by four for correct vertex amount
 	glDisable(GL_BLEND);
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }   
+
+void Text::writeVertices(vector<float>*vertices) 
+{
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	const unsigned int size = vertices->size();
+	unsigned int currentBufferSize = size * sizeof(float);
+
+	if (currentBufferSize > previousMaxBufferSize) // Buffer size too small, allocate more space
+		glBufferData(GL_ARRAY_BUFFER, previousMaxBufferSize = currentBufferSize, vertices->data(), GL_DYNAMIC_DRAW);
+	else
+		glBufferSubData(GL_ARRAY_BUFFER, 0, currentBufferSize, vertices->data());
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, size/4); //Each vertex has two xy and two uv entries, ergo divide by four for correct vertex amount	
+}
 
 
 void Text::fps(const double pastTime, const double deltaTime, const unsigned int drawnTriangles)
@@ -177,8 +183,8 @@ void Text::loadingScreenInfo(){
 	i = copyInBuffer(infoText, i, glGetString(GL_VERSION));
 	i = copyInBuffer(infoText, i, glGetString(GL_RENDERER));
 
-	string temp = "\nOpenGL Version: "; // TODO debug linebreak
-	temp.append((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+	string temp = "\nOpenGL Version: ";
+	temp.append((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)); // TODO buggy linebreak
 
 	int param = 0;
 	glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &param);
@@ -201,7 +207,6 @@ void Text::loadingScreenInfo(){
 	temp.append("\nMaximal framebuffer samples: " + param);
 	glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS, &param);
 	temp.append("\nMaximal framebuffer layers: " + param);
-	temp.append("\n\nSupported extended ASCII characters from to are:\n");
 
 	i = copyInBuffer(infoText, i, (const unsigned char*)temp.c_str());
 	write(infoText, -1.0f, 1.0f, 0.45f, 0.0f);

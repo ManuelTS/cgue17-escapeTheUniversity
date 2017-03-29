@@ -1,7 +1,7 @@
+#include "SoundManager.hpp"
 #include <cstdlib>
 #include <iostream>
 #include <Windows.h>
-#include "SoundManager.hpp"
 
 using namespace std;
 

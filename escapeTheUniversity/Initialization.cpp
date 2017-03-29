@@ -1,7 +1,7 @@
-#include <fstream>
-#include <sstream>
 #include "Initialization.hpp"
 #include "Debug/Debugger.hpp"
+#include <sstream>
+#include <fstream>
 
 Initialization::Initialization(){
 	readIni();

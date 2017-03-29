@@ -7,7 +7,7 @@ Camera::~Camera()
 }
 
 // Constructor with vectors
-Camera::Camera(glm::vec3 position, double _zoom, double _movementSpeed, double _mouseSensitivity) : Position(position), zoom(_zoom), movementSpeed(_movementSpeed), mouseSensitivity(_mouseSensitivity), WorldUp(glm::vec3(0.0f, 1.0f, 0.0f)), Front(glm::vec3(0.0f, 0.0f, -1.0f))
+Camera::Camera(glm::vec3 position, double _zoom, double _movementSpeed, double _mouseSensitivity) : Position(position), zoom(_zoom), movementSpeed(_movementSpeed), mouseSensitivity(_mouseSensitivity), WorldUp(glm::vec3(0.0f, 1.0f, 0.0f)), Front(glm::vec3(0.0f, 0.0f, 1.0f))
 {
 	this->updateCameraVectors();
 }
@@ -31,6 +31,8 @@ void Camera::processKeyboard(Camera_Movement direction, double deltaTime)
 		this->Position -= glm::normalize(glm::cross(this->Front, this->up)) * velocity;
 	if (direction == RIGHT)
 		this->Position += glm::normalize(glm::cross(this->Front, this->up)) * velocity;
+
+	Frustum::getInstance()->setCamDef(this->Position, this->Front, this->Right, this->up);
 }
 
 // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -59,6 +61,8 @@ void Camera::processMouseScroll(double yoffset)
 
 	if (this->zoom > MAX_ZOOM)
 		this->zoom = MAX_ZOOM;
+
+	Frustum::getInstance()->setCamDef(this->Position, this->Front, this->Right, this->up);
 }
 
 // Calculates the front vector from the Camera's (updated) Eular Angles

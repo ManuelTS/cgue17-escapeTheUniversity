@@ -1,7 +1,7 @@
 #pragma once
+#include "Initialization.hpp"
 #include <GLM\glm.hpp>
 #include <vector>
-#include "Initialization.hpp"
 
 class Initialization;
 class Shader;
