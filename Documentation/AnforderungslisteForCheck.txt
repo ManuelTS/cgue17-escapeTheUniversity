@@ -24,7 +24,7 @@
 			 Upload the zip archive to this TUWEL course with the name "source1-[groupname]"
 			 Download ZIP from github
 		[ ] Executeable
-		
+
 			Don't include any source files or any unnecessary intermediate files such as Visual Studio databases, solutions, etc. Just think of this submission as if you were actually distributing your game.
 			The maximum file size for a submission is 256MB. Make sure that all your content fits to this.
 			Make sure that you have compiled your submitted binary in Release mode.
@@ -32,7 +32,7 @@
 			Make sure that your binary actually runs on Cylon/Hal at our institute.
 			Make sure that the executable in your submission is directly startable (content and dlls are already in the right places)
 			Make sure that you pushed your last changes to your repository, since this get tagged when you upload your submission
-			
+
 			When you have gathered all necessary files, compress them all in one ZIP archive together with the documentation pdf (see below) and name it "executable1-[groupname]" where [groupname] has to be replaced by your games title. Your submission has to contain at least the following files and folders. If files are not included in the folders they should be, the submission will not be graded.
 
 			bin/
@@ -46,9 +46,9 @@
 		---------- Documentation ----------
 
 		[ ] Brief description of the implementation, in particular a short description of how the different aspects of the requirements (see above) were implemented.
-		[ ] “Features” of the game.
+		[ ] ï¿½Featuresï¿½ of the game.
 		[ ] How and which objects were illuminated (description of light sources) or textured.
-		[ ] What additional libraries (eg for collision, object-loader, sound, …) were used, including references (URL) (see restrictions)?
+		[ ] What additional libraries (eg for collision, object-loader, sound, ï¿½) were used, including references (URL) (see restrictions)?
 		-----------------------------------
 	-----------------------------------
 -----------------------------------
@@ -60,21 +60,21 @@
 ---------- 2nd Submission ----------
 	---------- Grading Schema ----------
 		[ ] Gameplay
-		[ ] Effects –> Effect-List
+		[ ] Effects ï¿½> Effect-List
 		[ ] Animated Objects
 			 Your game should also contain non-convex objects, objects with a curved surface (surfaces where Gouraud Shading simulates the curving)
-			 In contrast to the 1st submission, where the objects only had to move, the objects in your game have to be animated in this submission. You have to implement at least hierarchical animations. For example: a spinning head on a moving body, where the head and the body are separate meshes. You can of course can use any other technique (Skeletal Animation etc).			 
+			 In contrast to the 1st submission, where the objects only had to move, the objects in your game have to be animated in this submission. You have to implement at least hierarchical animations. For example: a spinning head on a moving body, where the head and the body are separate meshes. You can of course can use any other technique (Skeletal Animation etc).
 		[ ] Frustum Culling
 			It is necessary for this submission to implement some kind of View-Frustum-Culling (Object-Boundingboxes, Bounding-Spheres,..). The reason for this is to increase the performance, which should be displayed in the debug-outputs (see below for more info).
 		[ ] Controls
-				[ ] F1 - Help (if available)
-				[ ] F2 - Frame Time on/off
-				[ ] F3 - Wire Frame on/off
+				[x] F1 - Help (if available)
+				[x] F2 - Frame Time on/off
+				[x] F3 - Wire Frame on/off
 				[ ] F4 - Textur-Sampling-Quality: Nearest Neighbor/Bilinear
 				[ ] F5 - Mip Mapping-Quality: Off/Nearest Neighbor/Linear
 				[ ] F6 - Enable/Disable effect (if necessary, see Effects)
 				[ ] F7 - Enable/Disable effect (if necessary, see Effects)
-				[ ] F8 - Viewfrustum-Culling on/off
+				[x] F8 - Viewfrustum-Culling on/off
 				[ ] F9 - Blending on/off
 		[ ] Experimenting with OpenGL (Blending, Texture Sampling, MipMapping Quality)
 				This means, that advanced functionality of OpenGL should be implement and tested. Those functionalities are:
@@ -90,7 +90,7 @@
 			 Upload the zip archive to this TUWEL course with the name "source1-[groupname]"
 			 Download ZIP from github
 		[ ] Executeable
-		
+
 			Don't include any source files or any unnecessary intermediate files such as Visual Studio databases, solutions, etc. Just think of this submission as if you were actually distributing your game.
 			The maximum file size for a submission is 256MB. Make sure that all your content fits to this.
 			Make sure that you have compiled your submitted binary in Release mode.
@@ -98,7 +98,7 @@
 			Make sure that your binary actually runs on Cylon/Hal at our institute.
 			Make sure that the executable in your submission is directly startable (content and dlls are already in the right places)
 			Make sure that you pushed your last changes to your repository, since this get tagged when you upload your submission
-			
+
 			When you have gathered all necessary files, compress them all in one ZIP archive together with the documentation pdf (see below) and name it "executable1-[groupname]" where [groupname] has to be replaced by your games title. Your submission has to contain at least the following files and folders. If files are not included in the folders they should be, the submission will not be graded.
 
 			bin/
@@ -111,21 +111,21 @@
 		-----------------------------------
 		---------- Documentation ----------
 			[ ] Brief description of the implementation, in particular a short description of how the different aspects of the requirements (see above) were implemented.
-			[ ] “Features” of the game.
+			[ ] ï¿½Featuresï¿½ of the game.
 			[ ] How and which objects were illuminated (description of light sources) or textured.
-			[ ] What additional libraries (e.g. for collision, object-loader, sound, …) were used, including references (URL) (see restrictions)?
+			[ ] What additional libraries (e.g. for collision, object-loader, sound, ï¿½) were used, including references (URL) (see restrictions)?
 			[ ] Which Effects are implemented
 			[ ] How you've implemented those Effects (Links/References to papers, books or other resources where the effect is described and a description of your extensions to it)
 			[ ] Other special Features in your Game
-			[ ] What Tools have you used to create the Models (Maya, 3DS MAX, …).
+			[ ] What Tools have you used to create the Models (Maya, 3DS MAX, ï¿½).
 			[ ] For complex interaction sequences (which could already be something like opening a door in the game for example) please also include a step-by-step instruction on how to 	get through the game.
 		-----------------------------------
 		---------- Video & Screenshot ----------
 	26.6
 		For this submission (and the Hall of Fame), we also need
 
-			[ ]a screenshot of your game in .png-format with a resolution of at least 1024×768 (filename: "screenshot-[groupname]")
-			[ ]a video with h264-compression and a resolution of at least 640×480 (upload as zip file named "video-[groupname]")
+			[ ]a screenshot of your game in .png-format with a resolution of at least 1024ï¿½768 (filename: "screenshot-[groupname]")
+			[ ]a video with h264-compression and a resolution of at least 640ï¿½480 (upload as zip file named "video-[groupname]")
 				The video and the screenshot can be submitted until the game event. Please don't forget to upload them.
 		-----------------------------------
 	-----------------------------------
