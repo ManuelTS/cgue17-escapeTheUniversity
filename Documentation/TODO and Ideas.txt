@@ -5,6 +5,17 @@ Programming (Manuel):
 debug VFC
 
 integrate v-hacd AS PROJECT!
+make bounding volumes with threads
+for(boundingBoxIndex)
+{
+  threat1.free
+    do boundingBoxIndex
+    continue
+  thread2.free
+   do boundingBoxIndex
+   continue
+  ...
+}
 
 Transform feedback: https://open.gl/feedback
 
@@ -85,6 +96,8 @@ After "text on screen" is finished I can take a look how complex In-Game-Calcula
 Ideas (both):
 
 Display the TUWEL form screenshot on a screen, info desk, desktop, laptop, canvas, projector etc... as easter egg
+
+Link the sound to the view frustum culling, if outside the cull it is decreased
 
 Austiran tradition, insert a basement, optional a parkinglot too, maybe combine it with "fatal decisions".
 

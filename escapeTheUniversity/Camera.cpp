@@ -7,7 +7,7 @@ Camera::~Camera()
 }
 
 // Constructor with vectors
-Camera::Camera(glm::vec3 position, double _zoom, double _movementSpeed, double _mouseSensitivity) : Position(position), zoom(_zoom), movementSpeed(_movementSpeed), mouseSensitivity(_mouseSensitivity), WorldUp(glm::vec3(0.0f, 1.0f, 0.0f)), Front(glm::vec3(0.0f, 0.0f, 1.0f))
+Camera::Camera(glm::vec3 position, double _zoom, double _movementSpeed, double _mouseSensitivity) : Position(position), zoom(_zoom), movementSpeed(_movementSpeed), mouseSensitivity(_mouseSensitivity), WorldUp(glm::vec3(0.0f, 1.0f, 0.0f)), Front(glm::vec3(0.0f, 0.0f, -1.0f))
 {
 	this->updateCameraVectors();
 }

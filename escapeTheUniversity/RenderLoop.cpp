@@ -38,17 +38,17 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	if (action == GLFW_PRESS)
 	{
 		RenderLoop* rl = RenderLoop::getInstance();
-
-		if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_END))
+		
+		if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_END)) // See Text.cpp#help for keybindings
 			glfwSetWindowShouldClose(window, GL_TRUE);
-		else if (key == GLFW_KEY_F1) // Help
+		else if (key == GLFW_KEY_F1)
 		{
 			rl->render = !rl->render;
 			rl->help = !rl->help;
 		}
 		else if (key == GLFW_KEY_F2)
 			rl->fps = !rl->fps;
-		else if (key == GLFW_KEY_F3) // Wireframe on/off
+		else if (key == GLFW_KEY_F3)
 			rl->wireFrameMode = !rl->wireFrameMode;
 		else if (key == GLFW_KEY_F4)
 			cout << "TODO: Texture-Sampling-Quality: Nearest Neighbor/Bilinear" << endl; // TODO
@@ -56,12 +56,16 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			cout << "TODO: Mip Maping-Quality: Off/Nearest Neighbour/Linear" << endl; // TODO
 		else if (key == GLFW_KEY_F6)
 			cout << "TODO: Visualizing the depth buffer." << endl; // TODO Visualizing the depth buffer http://learnopengl.com/#!Advanced-OpenGL/Depth-testing, swith shaders to depth ones
-		else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE) // Pause game
+		else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE)
 			rl->render = !rl->render;
 		else if (key == GLFW_KEY_F8)
-			cout << "TODO: Viewfrustum-Culling on/off" << endl; // TODO
+			rl->frustum = !rl->frustum;
 		else if (key == GLFW_KEY_F9)
-			cout << "TODO: Transparency on/off" << endl; // TODO
+			cout << "TODO: Blending on/off" << endl; // TODO
+		else if (key == GLFW_KEY_F10)
+			cout << "TODO:" << endl; // TODO
+		else if (key == GLFW_KEY_F11)
+			rl->toggleFullscreen();
 		else if (key == GLFW_KEY_E)
 		{
 			for (Node* n : ModelLoader::getInstance()->getAllNodes())
@@ -74,6 +78,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 		else if (key == GLFW_KEY_Q)
 		{
+		 // TODO
 		}
 		else if (key == GLFW_KEY_PRINT_SCREEN)
 		{
@@ -86,16 +91,11 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 * todo Adjust projection matrix and Perspective*/
 void resizeCallback(GLFWwindow *wd, int width, int height) {
 	// Set the viewport to be the entire window
-	glViewport(0, 0, width, height);
+	RenderLoop* rl = RenderLoop::getInstance();
+	glViewport(0, 0, rl->width = width, rl->height = height);
 
 	const float angle = 70;
 	Frustum::getInstance()->setCamInternals(angle, width, height);
-
-	//if (width > height) // OR THIS METHOD, todo
-	//	glViewport((width - height) / 2, 0, min(width, height), min(width, height));
-
-	//else
-	//	glViewport(0, (height - width) / 2, min(width, height), min(width, height));
 }
 
 void scrollCallback(GLFWwindow* window, double xpos, double ypos) // this method is specified as glfw callback
@@ -111,7 +111,7 @@ void scrollCallback(GLFWwindow* window, double xpos, double ypos) // this method
 	if (instance->yScroll < 0)
 		instance->yScroll = 0;
 
-	//instance->camera->processMouseScroll(instance->yScroll);
+	//instance->camera->processMouseScroll(instance->yScroll); // TODO ?
 }
 
 void mouseCallback(GLFWwindow* window, double xpos, double ypos)
@@ -144,13 +144,13 @@ void RenderLoop::initGLFWandGLEW(){
 	if (!glfwInit())
 		Debugger::getInstance()->pauseExit("Could not init GLFW.");
 
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_FALSE);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // Using OpenGL version 4.3, 4.4 could be used if necessary
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_REFRESH_RATE, initVar->fps);
 
-	window = glfwCreateWindow(initVar->width, initVar->height, initVar->windowTitle, initVar->fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+	window = glfwCreateWindow(initVar->width, initVar->height, initVar->windowTitle, (fullscreen = initVar->fullscreen) ? glfwGetPrimaryMonitor() : nullptr, nullptr);
 
 	if (!window)
 		Debugger::getInstance()->pauseExit("Window initialization failed.");
@@ -164,6 +164,7 @@ void RenderLoop::initGLFWandGLEW(){
 	glGetError(); // Error 1280 after glewInit() internet says this one call can be ignored
 
 	#if _DEBUG
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 		InitMemoryTracker();
 		Debugger* d = Debugger::getInstance();
 		d->setDebugContext();
@@ -302,7 +303,7 @@ void RenderLoop::draw(Node* current)
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
 		//TODO AABBs frustum culling, the used point one is inefficient but works
-		if (dynamic_cast<TransformationNode*>(current) != nullptr || mn != nullptr && Frustum::getInstance()->pointInFrustum(mn->position) != -1)
+		if (frustum || dynamic_cast<TransformationNode*>(current) != nullptr || mn != nullptr && Frustum::getInstance()->pointInFrustum(mn->position) != -1)
 		{ // TODO frustum not working, too much triangles drawn
 			current->draw();
 
@@ -422,4 +423,18 @@ void RenderLoop::displayLoadingScreen(ModelLoader* ml){
 	glDeleteBuffers(1, &ebo);
 	glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);
+}
+
+void RenderLoop::toggleFullscreen()
+{
+	fullscreen = !fullscreen;
+
+	if (fullscreen)
+	{
+		GLFWmonitor* monitor = glfwGetPrimaryMonitor(); // TODO buggy
+		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+		glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+	}
+	else
+		glfwSetWindowMonitor(window, NULL, 0, 0, width, height, 0);
 }

@@ -37,7 +37,7 @@ private:
 	Text(Text const&); // Private constructor to prevent copies
 	void operator=(Text const&); // Private constructor to prevent assignments
 
-	unsigned int copyInBuffer(char buffer[], unsigned int i, const unsigned char* toCopy);// Copies a char* into an char []
+	unsigned int copyInBuffer(char buffer[], unsigned int i, const unsigned char* toCopy, const bool linebreak);// Copies a char* into an char []
 	void writeVertices(std::vector<float>* vertices); // Writes the actual caracters denoted by the vector onto the screen
 public:
 	~Text();

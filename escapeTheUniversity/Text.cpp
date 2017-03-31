@@ -179,44 +179,48 @@ void Text::loadingScreenInfo(){
 	unsigned int i;
 	for (i = 0; infoText[i] != '\0'; i++);
 
-	i = copyInBuffer(infoText, i, glGetString(GL_VENDOR));
-	i = copyInBuffer(infoText, i, glGetString(GL_VERSION));
-	i = copyInBuffer(infoText, i, glGetString(GL_RENDERER));
-
-	string temp = "\nOpenGL Version: ";
-	temp.append((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)); // TODO buggy linebreak
+	i = copyInBuffer(infoText, i, glGetString(GL_VENDOR), true);
+	i = copyInBuffer(infoText, i, glGetString(GL_VERSION), true);
+	i = copyInBuffer(infoText, i, glGetString(GL_RENDERER), true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "OpenGL Version:", false);
+	i = copyInBuffer(infoText, i, glGetString(GL_SHADING_LANGUAGE_VERSION), true);
 
 	int param = 0;
 	glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &param);
-	temp.append("\nMaximal 3D Texture Size: " + param);
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &param);
-	temp.append("\nMaximal texture size: " + param);
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &param);
-	temp.append("\nMaximal texture image units: " + param);
-	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &param);
-	temp.append("\nMaximal uniform buffer binding points: " + param);
-	////glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &param); // Prodcues error
-	////temp.append("\nMaximal uniform block size: " + param);
-	glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &param);
-	temp.append("\nMaximal color attachments: " + param);
-	glGetIntegerv(GL_MAX_FRAMEBUFFER_HEIGHT, &param);
-	temp.append("\nMaximal framebuffer height: " + param);
-	glGetIntegerv(GL_MAX_FRAMEBUFFER_WIDTH, &param);
-	temp.append("\nMaximal framebuffer width: " + param);
-	glGetIntegerv(GL_MAX_FRAMEBUFFER_SAMPLES, &param);
-	temp.append("\nMaximal framebuffer samples: " + param);
-	glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS, &param);
-	temp.append("\nMaximal framebuffer layers: " + param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal 3D Texture Size: ", false);
+	//TODO int to unsinged char*
+	//glGetIntegerv(GL_MAX_TEXTURE_SIZE, &param);
+	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal texture size: ", false);
+	//glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &param);
+	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal texture image units: ", false);
+	//glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &param);
+	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal uniform buffer binding points: ", false);
+	//////glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &param); // Prodcues error
+	//////i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal uniform block size: ", false);
+	//glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &param);
+	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal color attachments: ", false);
+	//glGetIntegerv(GL_MAX_FRAMEBUFFER_HEIGHT, &param);
+	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer height: ", false);
+	//glGetIntegerv(GL_MAX_FRAMEBUFFER_WIDTH, &param);
+	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer width: ", false);
+	//glGetIntegerv(GL_MAX_FRAMEBUFFER_SAMPLES, &param);
+	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer samples: ", false);
+	//glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS, &param);
+	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer layers: ", false);
+	//int m_viewport[4]; // 0=x, 1=y, 2=w, 3=h
+	//glGetIntegerv(GL_VIEWPORT, m_viewport);
 
-	i = copyInBuffer(infoText, i, (const unsigned char*)temp.c_str());
 	write(infoText, -1.0f, 1.0f, 0.45f, 0.0f);
 }
 
-unsigned int Text::copyInBuffer(char buffer[], unsigned int i, const unsigned char* toCopy)
+unsigned int Text::copyInBuffer(char buffer[], unsigned int i, const unsigned char* toCopy, const bool linebreak)
 {
 	while (*toCopy)
 		buffer[i++] = *toCopy++;
-	buffer[i++] = '\n';
+
+	if(linebreak)
+		buffer[i++] = '\n';
+
 	return i;
 }
 
@@ -226,8 +230,28 @@ void Text::pause(){
 
 void Text::help()
 {
-	char* help = "Keybindings";
+	char help[1024] = "Keybindings";
 	write(help, -1.0, 0.9, 0.7, 0.0f);
-	help = "F1 = Help\nF2 = Toggle FPS\n..."; // TODO complete the list
+
+	unsigned int i = copyInBuffer(help, 0, (const unsigned char*) " F1= Help", true);
+	i = copyInBuffer(help, i, (const unsigned char*) " F2= Toggle FPS and triangle count", true);
+	i = copyInBuffer(help, i, (const unsigned char*) " F3= Toggle wireframe", true);
+	i = copyInBuffer(help, i, (const unsigned char*) " F4= Texture-Sampling-Quality: Off/Nearest Neighbor/Bilinear", true);
+	i = copyInBuffer(help, i, (const unsigned char*) " F5= Mip Maping-Quality: Off/Nearest Neighbour/Linear", true);
+	i = copyInBuffer(help, i, (const unsigned char*) " F6= Depth buffer visualization", true);
+	i = copyInBuffer(help, i, (const unsigned char*) " F7= Toggle pause game", true);
+	i = copyInBuffer(help, i, (const unsigned char*) " F8= Toggle view frustum culling", true);
+	i = copyInBuffer(help, i, (const unsigned char*) " F9= Toggle blending", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "F10= ?", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "F11= Fullscreen", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Escape/End = Close game", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "W/Upper arrow = Move forwards", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "S/Lower arrow = Move backwards", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "A/Left arrow = Move left", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "D/Right arrow = Move right", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Left click = interaction", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Right click = ?", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Print = Screenshot", true);
+
 	write(help, -1.0, 0.8, 0.5, 0.0f);
 }
