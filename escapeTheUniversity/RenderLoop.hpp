@@ -14,7 +14,6 @@ class GBuffer;
 class RenderLoop{
 	private:
 		GLFWwindow* window;
-		Initialization* initVar;
 		// Time
 		double timePast; // Last, past time
 		double timeNow; // New, current time
@@ -30,15 +29,13 @@ class RenderLoop{
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
 	public:
 		Camera* camera;
+		Initialization* initVar;
 
 		int width; // Current window width
 		int height; // Current window height
 		double xScroll = 0.0; // The last x value scrolled
 		double yScroll = 0.0; // The last y value scrolled
-		double lastX = 400; // Last x position of the mouse
-		double lastY = 300; // Last y position of the mouse
 		unsigned int drawnTriangles = 0;// Contains all the drawn triangles if the fps mode is activated
-		bool firstMouse = true; // True if the mouse is used for the first time, false if not
 		bool help = false; // Display help on screen or not, standard false
 		bool fps = false; // Display FPS on screen or, standard false
 		bool wireFrameMode = false; // True if the wireframe mode is activated, false if not, standard false

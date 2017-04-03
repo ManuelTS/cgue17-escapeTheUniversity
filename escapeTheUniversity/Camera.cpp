@@ -36,10 +36,20 @@ void Camera::processKeyboard(Camera_Movement direction, double deltaTime)
 }
 
 // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-void Camera::processMouseMovement(double xoffset, double yoffset)
+void Camera::processMouseMovement(double x, double y)
 {
-	xoffset *= this->mouseSensitivity;
-	yoffset *= this->mouseSensitivity;
+	if (firstMouse)
+	{
+		lastX = x;
+		lastY = y;
+		firstMouse = false;
+	}
+
+	double xoffset = (x - lastX) * this->mouseSensitivity;
+	double yoffset = (lastY - y) * this->mouseSensitivity;
+
+	lastX = x;
+	lastY = y;
 
 	this->Yaw += xoffset;
 	this->Pitch += yoffset;
@@ -61,8 +71,6 @@ void Camera::processMouseScroll(double yoffset)
 
 	if (this->zoom > MAX_ZOOM)
 		this->zoom = MAX_ZOOM;
-
-	Frustum::getInstance()->setCamDef(this->Position, this->Front, this->Right, this->up);
 }
 
 // Calculates the front vector from the Camera's (updated) Eular Angles
@@ -76,9 +84,9 @@ void Camera::updateCameraVectors()
 
 	// Calculate the new Front vector
 	glm::vec3 front;
-	front.x = cos(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch));
+	front.x = cos(glm::radians(this->Pitch)) * cos(glm::radians(this->Yaw));
 	front.y = sin(glm::radians(this->Pitch));
-	front.z = sin(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch));
+	front.z = cos(glm::radians(this->Pitch)) * sin(glm::radians(this->Yaw));
 	this->Front = glm::normalize(front);
 	// Also re-calculate the Right and Up vector
 	this->Right = glm::normalize(glm::cross(this->Front, this->WorldUp));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.

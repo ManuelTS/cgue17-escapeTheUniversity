@@ -94,8 +94,7 @@ void resizeCallback(GLFWwindow *wd, int width, int height) {
 	RenderLoop* rl = RenderLoop::getInstance();
 	glViewport(0, 0, rl->width = width, rl->height = height);
 
-	const float angle = 70;
-	Frustum::getInstance()->setCamInternals(angle, width, height);
+	Frustum::getInstance()->setCamInternals(rl->initVar->zoom, width, height);
 }
 
 void scrollCallback(GLFWwindow* window, double xpos, double ypos) // this method is specified as glfw callback
@@ -114,24 +113,9 @@ void scrollCallback(GLFWwindow* window, double xpos, double ypos) // this method
 	//instance->camera->processMouseScroll(instance->yScroll); // TODO ?
 }
 
-void mouseCallback(GLFWwindow* window, double xpos, double ypos)
+void mouseCallback(GLFWwindow* window, double x, double y)
 {
-	RenderLoop* instance = RenderLoop::getInstance();
-
-	if (instance->firstMouse)
-	{
-		instance->lastX = xpos;
-		instance->lastY = ypos;
-		instance->firstMouse = false;
-	}
-
-	double xoffset = xpos - instance->lastX;
-	double yoffset = instance->lastY - ypos;
-
-	instance->lastX = xpos;
-	instance->lastY = ypos;
-
-	instance->camera->processMouseMovement(xoffset, yoffset);
+	RenderLoop::getInstance()->camera->processMouseMovement(x,y);
 }
 
 void errorCallback(int error, const char* description)
@@ -186,8 +170,7 @@ void RenderLoop::initGLFWandGLEW(){
 	if (!glewIsSupported("GL_VERSION_4_3"))
 		Debugger::getInstance()->pauseExit("OpenGL 4.3 is needed for this game, you cannot continue but there is no guarantee that it will work properly."); // TODO Display on screen
 
-	const float angle = 70;
-	Frustum::getInstance()->setCamInternals(angle, width, height);
+	Frustum::getInstance()->setCamInternals(initVar->zoom, width, height);
 }
 
 void RenderLoop::start()
@@ -303,13 +286,13 @@ void RenderLoop::draw(Node* current)
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
 		//TODO AABBs frustum culling, the used point one is inefficient but works
-		if (frustum || dynamic_cast<TransformationNode*>(current) != nullptr || mn != nullptr && Frustum::getInstance()->pointInFrustum(mn->position) != -1)
-		{ // TODO frustum not working, too much triangles drawn
+		//if (frustum || dynamic_cast<TransformationNode*>(current) != nullptr || mn != nullptr && Frustum::getInstance()->pointInFrustum(mn->position) != -1)
+		//{ // TODO frustum not working, too much triangles drawn
 			current->draw();
 
 			for (Node* child : current->children)
 				draw(child);
-		}
+		//}
 	}
 }
 

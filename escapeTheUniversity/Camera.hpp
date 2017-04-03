@@ -28,8 +28,11 @@ class Camera{
 		vec3 Right; // represents the positive x-axis of the camera space
 		vec3 WorldUp;
 		// Eular Angles
-		double Yaw = 0.0;
+		double Yaw = -90.0; //The yaw and pitch values are obtained from mouse (or controller/joystick) movement where horizontal mouse-movement affects the yaw and vertical mouse-movement affects the pitch.
 		double Pitch = 0.0;
+		double lastX = 400; // Last x position of the mouse
+		double lastY = 300; // Last y position of the mouse
+		bool firstMouse = true; // True if the mouse is used for the first time, false if not
 		// Camera options
 		double movementSpeed;
 		double mouseSensitivity;
@@ -41,5 +44,5 @@ class Camera{
 		mat4 getViewMatrix();
 		void processKeyboard(Camera_Movement direction, double deltaTime);
 		void processMouseScroll(double yoffset);
-		void processMouseMovement(double xoffset, double yoffset);
+		void processMouseMovement(double x, double y);
 };

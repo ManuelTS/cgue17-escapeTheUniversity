@@ -37,21 +37,21 @@ int Frustum::pointInFrustum(glm::vec3 p)
 	pcz = glm::dot(v, this->front);
 
 	if (pcz > farD || pcz < nearD)
-		return-1;
+		return -1;
 
 	// compute and test the up coordinate
 	pcy = glm::dot(v, this->up);
 	aux = pcz * tang;
 
 	if (pcy > aux || pcy < -aux)
-		return-1;
+		return -1;
 
 	// compute and test the right coordinate
 	pcx = glm::dot(v, this->right);
 	aux = aux * ratio;
 
 	if (pcx > aux || pcx < -aux)
-		return-1;
+		return -1;
 
 	return 1;
 }

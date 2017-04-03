@@ -5,20 +5,18 @@
 class Frustum
 {
 private:
-	const float nearD = 0.1f; // Distance from the camera to the near plane
+	const float nearD = 1.0f; // Distance from the camera to the near plane
 	const float farD = 50.0f; // Distance from the camera to the far plane
 	const float HALF_ANG2RAD = 3.14159265358979323846f / 180.0f;
 	glm::vec3 camPos; // camera position
 	glm::vec3 front, right, up; // the camera referential, see camera.cpp
-	float width, height, ratio;
+	float width, height, ratio, sphereFactorX, sphereFactorY;;
 	double tang;
-	float sphereFactorX, sphereFactorY;
 
 	Frustum(void) {}; // Private constructor to allow only one instance
 	Frustum(Frustum const&); // Private constructor to prevent copies
 	void operator=(Frustum const&); // Private constructor to prevent assignments
 public:
-
 	~Frustum();
    /*Returns the pointer to the unique instance of the render loop class.*/
 	static Frustum* Frustum::getInstance()
