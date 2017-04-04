@@ -2,8 +2,6 @@ All ordered by priority!
 
 Programming (Manuel):
 
-debug VFC
-
 integrate v-hacd AS PROJECT!
 make bounding volumes with threads
 for(boundingBoxIndex)

@@ -39,9 +39,6 @@
     <ClCompile Include="Model\ModelLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -63,10 +60,13 @@
     <ClCompile Include="Text.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Model\Frustum.cpp">
+    <ClCompile Include="Model\Bullet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Model\Bullet.cpp">
+    <ClCompile Include="Camera\Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera\Frustum.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,9 +95,6 @@
     <ClInclude Include="Model\ModelLoader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GBuffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -119,10 +116,13 @@
     <ClInclude Include="Text.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Model\Frustum.hpp">
+    <ClInclude Include="Model\Bullet.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Model\Bullet.hpp">
+    <ClInclude Include="Camera\Camera.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera\Frustum.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

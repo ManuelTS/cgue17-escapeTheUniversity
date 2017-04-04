@@ -1,12 +1,12 @@
 #include "SoundManager.hpp"
 #include "Model/ModelLoader.hpp"
-#include "Model/Frustum.hpp"
+#include "Camera/Frustum.hpp"
 #include "Model/Node/Node.hpp"
 #include "Model/Node/ModelNode.hpp"
 #include "Model/Node/LightNode.hpp"
 #include "Model/Node/TransformationNode.hpp"
 #include "RenderLoop.hpp"
-#include "Camera.hpp"
+#include "Camera/Camera.hpp"
 #include "GBuffer.hpp"
 #include "Shader.hpp"
 #include "Text.hpp"
@@ -270,7 +270,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, lights.size() * sizeof(lights[0]), &lights[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->Position[0]);
+	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
 
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -286,13 +286,13 @@ void RenderLoop::draw(Node* current)
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
 		//TODO AABBs frustum culling, the used point one is inefficient but works
-		//if (frustum || dynamic_cast<TransformationNode*>(current) != nullptr || mn != nullptr && Frustum::getInstance()->pointInFrustum(mn->position) != -1)
-		//{ // TODO frustum not working, too much triangles drawn
+		if (frustum || dynamic_cast<TransformationNode*>(current) != nullptr || mn != nullptr && Frustum::getInstance()->pointInFrustum(mn->position) != -1)
+		{ // TODO frustum not working, too much triangles drawn
 			current->draw();
 
 			for (Node* child : current->children)
 				draw(child);
-		//}
+		}
 	}
 }
 
