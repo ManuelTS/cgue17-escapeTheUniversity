@@ -15,6 +15,14 @@ Bullet::Bullet()
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
+
+
+	// 
+	// On position update of object do http://www.bulletphysics.org/mediawiki-1.5.8/index.php?title=Collision_Detection&action=edit
+	// Collision triggers: http://www.bulletphysics.org/mediawiki-1.5.8/index.php?title=Collision_Callbacks_and_Triggers&action=edit
+	// Collision filtering, what object can collide with another one: http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Collision_Filtering
+	// Broadphase: Use Sweep and prune due to fixed world size: http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Broadphase
+	// Little about rigit bodies: http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Rigid_Bodies
 }
 
 /*
