@@ -1,6 +1,7 @@
 #pragma once
 #include "v-hacd\public\VHACD.h"
 #include <string>
+#include <fstream>
 
 using namespace VHACD;
 
@@ -30,5 +31,5 @@ public:
 	void Log(const char * const msg);
 	void OpenFile(const std::string & fileName);
 private:
-	ofstream m_file;
+	std::ofstream m_file;
 };

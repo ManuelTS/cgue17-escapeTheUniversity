@@ -138,7 +138,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\External\Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;irrKlang.lib;glfw3.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp-vc140-mt.lib;BulletCollision_vs2010_debug.lib;BulletDynamics_vs2010_debug.lib;LinearMath_vs2010_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;irrKlang.lib;glfw3.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp-vc140-mt.lib;BulletCollision_vs2010_debug.lib;BulletDynamics_vs2010_debug.lib;LinearMath_vs2010_debug.lib;vhacd_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMTD</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
@@ -183,7 +183,7 @@ xcopy /q /s /e /y "$(SolutionDir)Model"  "$(SolutionDir)$(Configuration)\Model\"
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\External\Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;irrKlang.lib;glfw3.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp-vc140-mt.lib;BulletCollision_vs2010.lib;BulletDynamics_vs2010.lib;LinearMath_vs2010.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;irrKlang.lib;glfw3.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp-vc140-mt.lib;BulletCollision_vs2010.lib;BulletDynamics_vs2010.lib;LinearMath_vs2010.lib;vhacd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /q /s /e /y "$(SolutionDir)External\DLLs"  "$(SolutionDir)$(Configuration)" 

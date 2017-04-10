@@ -66,4 +66,5 @@ public:
 	void loadingScreenInfo(); // Displays the loading text computer info on screen
 	void pause(); // Displays the pause or resume text on screen, the latter for one second more
 	void help(); // Displays the help on screen
+	void gameOver(); // Displays the game over text on screen
 };

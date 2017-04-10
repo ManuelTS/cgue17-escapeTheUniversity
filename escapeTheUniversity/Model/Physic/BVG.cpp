@@ -19,6 +19,8 @@ void BVG::calculateVHACD()
 		params.m_logger = &logger;
 		params.m_callback = &callback;
 	#endif
+	
+		int nPoints = 0, nTriangles = 0; // TODO just values to overcome errors
 
 	bool res = interfaceVHACD->Compute(points, 3, nPoints, triangles, 3, nTriangles, params); // compute approximate convex decomposition
 
