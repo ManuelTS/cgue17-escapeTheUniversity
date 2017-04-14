@@ -2,8 +2,9 @@ All ordered by priority!
 
 Programming (Manuel):
 
-integrate v-hacd AS PROJECT!
-make bounding volumes with threads
+
+
+make bounding volumes with threads (with vhacd)
 for(boundingBoxIndex)
 {
   threat1.free
@@ -92,6 +93,12 @@ After "text on screen" is finished I can take a look how complex In-Game-Calcula
 
 
 Ideas (both):
+
+If a charater is camping giv an NPC the position and let him walk to that position to detect him
+
+Add if time Omnischadows to the shadow maps
+
+SSAO as alternative to vertex skinning
 
 Display the TUWEL form screenshot on a screen, info desk, desktop, laptop, canvas, projector etc... as easter egg
 

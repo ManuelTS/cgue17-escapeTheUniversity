@@ -162,6 +162,9 @@ void Text::writeVertices(vector<float>*vertices)
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, size/4); //Each vertex has two xy and two uv entries, ergo divide by four for correct vertex amount	
 }
 
+void Text::gameOver() {
+	write("Exmatriculated", -0.9f, 0.9f, 0.5f, 0.0f);
+}
 
 void Text::fps(const double pastTime, const double deltaTime, const unsigned int drawnTriangles)
 {

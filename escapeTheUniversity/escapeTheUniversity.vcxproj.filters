@@ -60,13 +60,16 @@
     <ClCompile Include="Text.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Model\Bullet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Camera\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Camera\Frustum.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Physic\Bullet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\Physic\BVG.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -116,13 +119,16 @@
     <ClInclude Include="Text.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Model\Bullet.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Camera\Camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Camera\Frustum.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Physic\Bullet.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Physic\BVG.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
