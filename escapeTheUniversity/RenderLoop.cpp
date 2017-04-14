@@ -193,6 +193,7 @@ void RenderLoop::start()
 
 	Shader* gBufferShader = new Shader("gBuffer");
 	Shader* deferredShader = new Shader("deferredShading");
+	Shader* deferredShaderStencil = new Shader("deferredShadingStencil");
 
 	ml->load("Playground.dae");
 
@@ -209,7 +210,7 @@ void RenderLoop::start()
 		if (render)
 		{
 			doMovement(deltaTime);
-			doDeferredShading(gBuffer, gBufferShader, deferredShader, ml);
+			doDeferredShading(gBuffer, gBufferShader, deferredShader, deferredShaderStencil, ml);
 		}
 		else
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -228,7 +229,7 @@ void RenderLoop::start()
 	glfwTerminate();
 }
 
-void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, ModelLoader* ml) 
+void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, Shader*  deferredShaderStencil, ModelLoader* ml) 
 {
 	if (wireFrameMode)
 	{
@@ -240,7 +241,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		drawnTriangles = 0;
 
 	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->handle); // Must be first!
+	gBuffer->startFrame();
+	gBuffer->bindForGeometryPass();
 	glViewport(0, 0, width, height);
 	glDepthMask(GL_TRUE); // Must be before glClear()!
 	glEnable(GL_DEPTH_TEST);
@@ -252,30 +254,72 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
 	draw(ml->root); // Draw all nodes except light ones
-	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	// Deferred Shading: Light Pass
-	deferredShader->useProgram();
-	gBuffer->bindTextures();
-	// TODO: Performance optimization, only set one specific light if its position or light properties have changed, otherwise set all only once!
-	// Bind buffer and fill all light node data in there
-	vector<LightNode::Light> lights;
+	// Deferred Shading: Stencil and light pass for point lights the gBuffer must be bound, reading from depth buffer is allowed, writing to it not, only stencil buffer is updated
+	glEnable(GL_STENCIL_TEST);
 
 	for (LightNode* ln : ml->lights)
-		lights.push_back(ln->light);
+	{
+		// Stencil pass
+		deferredShaderStencil->useProgram();
+		gBuffer->bindForStencilPass();
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		glClear(GL_STENCIL_BUFFER_BIT);
+		glStencilFunc(GL_ALWAYS, 0, 0);
+		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+
+		/*After that we clear the stencil buffer and setup the stencil test to always pass and the stencil operation according to the description in the background section.
+		Everything after that is as usual - we render the bounding sphere based on the light params. When we are done the stencil buffer contains positive values only in the
+		pixels of objects inside the light volume. We can now do lighting calculations.*/
+		mat4 m = glm::translate(mat4(), vec3(ln->light.position)); // Create model matrix
+		glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ln))); // Scale it with the sphere radius
+
+		glUniformMatrix4fv(gBuffer->modelLocation, 1, GL_FALSE, glm::value_ptr(m));
+		glUniformMatrix4fv(gBuffer->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
+		m_bsphere.Render(); // TODO position of light volumne point location = 0 in shader
+
+
+		// Light pass
+		gBuffer->bindForLightPass();
+		glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_ONE, GL_ONE);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+
+		deferredShader->useProgram();
+		// TODO: Performance optimization, only set one specific light if its position or light properties have changed, otherwise set all only once!
+		// Bind buffer and fill all light node data in there
+		vector<LightNode::Light> lights;
+
+		for (LightNode* ln : ml->lights)
+			lights.push_back(ln->light);
 	
-	glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
-	glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, lights.size() * sizeof(lights[0]), &lights[0]);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
+		glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
+		glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, lights.size() * sizeof(lights[0]), &lights[0]);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
+
+		glCullFace(GL_BACK);
+		glDisable(GL_BLEND);
+	}
+
+	glDisable(GL_STENCIL_TEST);
 
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	// Final pass, blit fbo to screen
+	gBuffer->bindForFinalPass();
+	glBlitFramebuffer(0, 0, initVar->maxWidth, initVar->maxHeight, 0, 0, initVar->maxWidth, initVar->maxHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	
-	// Render 2D quad
+	// Render 2D quad, TODO do we still need this?
 	gBuffer->renderQuad();
 }
 

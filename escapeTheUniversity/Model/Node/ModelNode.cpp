@@ -15,9 +15,20 @@ ModelNode::~ModelNode(){}
 /*Draws all the involved meshes by looping over them and call their draw functions.*/
 void ModelNode::draw()
 {
-	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-	glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseModelMatrix));
+	unsigned int size = meshes.size();
 
-	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i]->draw();
+	if (size > 0)
+	{
+		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseModelMatrix));
+
+		for (unsigned int i = 0; i < size; i++)
+			meshes[i]->draw();
+	}
+}
+
+bool ModelNode::isEmpty() {
+	if (position.x == 0.0f && position.y == 0.0f && position.z == 0.0f && pivot.x == 0.0f && pivot.y == 0.0f && pivot.z == 0.0f && isLeaf())
+		return true;
+	return false;
 }

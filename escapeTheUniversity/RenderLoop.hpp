@@ -23,7 +23,7 @@ class RenderLoop{
 		void operator=(RenderLoop const&); // Private constructor to prevent assignments
 		void initGLFWandGLEW(); // Initializes GLFW and GLEW
 		void doMovement(double timeDelta);
-		void doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, ModelLoader* ml); // Does the deferred shading gemetry and lighning pass and draws the screen quad afterwards
+		void doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, Shader* deferredShaderStencil, ModelLoader* ml); // Does the deferred shading gemetry and lighning pass and draws the screen quad afterwards
 		void calculateDeltaTime(); // Calculates the delta time, e.g. the time between frames
 		void draw(Node* current); // Draws all lights except light nodes
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen

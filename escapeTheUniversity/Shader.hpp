@@ -110,10 +110,10 @@ private:
 		vec4 worldPosition = vec4(model * vec4(position, 1.0));
 		fragmentPosition = worldPosition.xyz;
 		gl_Position = projection * view * worldPosition;
-		texCoords.x = tc.x; // Forward uv texel coordinates to the fragment shader
-		texCoords.y = 1 - tc.y; // Forward uv texel coordinates to the fragment shader, TODO finde cause and solution to this flipped y coords wordaround
+		texCoords.x = tc.x;                         // Forward uv texel coordinates to the fragment shader
+		texCoords.y = 1 - tc.y;                     // Forward uv texel coordinates to the fragment shader, TODO finde cause and solution to this flipped y coords wordaround
 		normalVector = mat3(inverseModel) * normal; // Forward normals to fragment shader
-		materialDiffuseShininess = material; // rgb unused
+		materialDiffuseShininess = material;        // rgb unused
 	})";
 
 	const char* GBUFFER_FRAG = R"(
@@ -140,7 +140,7 @@ private:
 		//gColorNormal.w = uint(0.0); // Unused
 
 		gPositionAndShininess.xyz = fragmentPosition;
-		gPositionAndShininess.w = materialDiffuseShininess.a; //texture(textureSpecular, texCoords).r; // Specular texture NOT IMPLEMENTED, // materialDiffuseShininess.rgb is unused!
+		gPositionAndShininess.w = materialDiffuseShininess.a; // Specular texture NOT IMPLEMENTED, // materialDiffuseShininess.rgb is unused!
 	})";
 	const char* DEFERRED_SHADING_VERT = R"(
 	#version 430 core
@@ -158,9 +158,7 @@ private:
 
 	layout (location = 0) uniform vec3 viewPosition; // from RenderLoop.cpp#renderloop
 	layout (binding = 0) uniform usampler2D colorAndNormalTex;      // From gBuffer.frag, attachment0
-	layout (binding = 1) uniform sampler2D positionAndShininessTex; // From gBuffer.frag, attachment1#
-
-	// Deeply understand location, binding, and index of sampler2D
+	layout (binding = 1) uniform sampler2D positionAndShininessTex; // From gBuffer.frag, attachment1
 
 	struct Light
 	{ // Same as LightNode.hpp#Light
@@ -236,6 +234,22 @@ private:
 
 		gl_FragColor = vec4(color, 1.0);
 	})";
+	const char* DEFERRED_SHADING_STENCIL_VERT = R"(
+	#version 430 core
+
+	layout (location = 0) in vec4 position;   // Of a point of the light sphere, used in .cpp, w is unused and must be one
+
+	layout (location = 0) uniform mat4 view;  // of the camera, used in RenderLoop.cpp#doDeferredShading 
+	layout (location = 4) uniform mat4 model; // translated, scaled sphere model of a light, used in RenderLoop.cpp#doDeferredShading
+
+	void main()
+	{          
+		gl_Position = view * model * position;
+	})";
+	const char* DEFERRED_SHADING_STENCIL_FRAG = R"(
+	#version 430 core
+
+	void main()	{})";
 	const char* DEPTH_VERT = R"(
 	#version 430 core
 

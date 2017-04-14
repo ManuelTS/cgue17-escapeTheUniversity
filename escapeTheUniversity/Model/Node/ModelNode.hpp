@@ -21,6 +21,7 @@ public:
 	~ModelNode();
 
 	void draw() override;
+	bool isEmpty(); // Returns true if empty, false if not
 
 protected:
 	const GLint modelLocation = 0; // gBuffer.vert
