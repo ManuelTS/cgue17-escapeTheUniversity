@@ -58,8 +58,15 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			cout << "TODO: Visualizing the depth buffer." << endl; // TODO Visualizing the depth buffer http://learnopengl.com/#!Advanced-OpenGL/Depth-testing, swith shaders to depth ones
 		else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE)
 			rl->render = !rl->render;
-		else if (key == GLFW_KEY_F8)
+		else if (key == GLFW_KEY_F8){
 			rl->frustum = !rl->frustum;
+			cout << "Switching Frustum Culling to " ;
+			if (rl->frustum == 1)
+				cout << "disabled." << endl;
+			else
+				cout << "enabled." << endl;
+			
+		}
 		else if (key == GLFW_KEY_F9)
 			cout << "TODO: Blending on/off" << endl; // TODO
 		else if (key == GLFW_KEY_F10)
