@@ -175,6 +175,7 @@ private:
 		Light light[MAX_LIGHTS];
 	}lights;
 
+	// Blinn Phong light
 	vec3 calculateLight(Light currentLight, vec3 diffuse, float specular, vec3 norm, vec3 fragmentPosition, vec3 viewDirection)
 	{
 		//  Calculate ambientColor
@@ -191,17 +192,12 @@ private:
 		float spec = pow(max(dot(norm, halfwayDir), 0.0), currentLight.shiConLinQua.x);
 		vec3 specularColor = currentLight.specular.rgb * (spec * specular);
 
-		if(currentLight.position.w == 0.0) // Point light
-		{  //Nothing in here, it is okay
-		}
-		else if(currentLight.position.w == 1.0) // Directional light
-		{   //Calculate attenuation
-			float lightFragDist = length(lightPosition - fragmentPosition);
-			float attenuation = 1.0 / (currentLight.shiConLinQua.y + currentLight.shiConLinQua.z * lightFragDist + currentLight.shiConLinQua.w * (lightFragDist * lightFragDist));
+		//Calculate attenuation
+		float lightFragDist = length(lightPosition - fragmentPosition);
+		float attenuation = 1.0 / (currentLight.shiConLinQua.y + currentLight.shiConLinQua.z * lightFragDist + currentLight.shiConLinQua.w * (lightFragDist * lightFragDist));
 
-			diffuseColor *= attenuation;
-			specularColor *= attenuation;
-		}
+		diffuseColor *= attenuation;
+		specularColor *= attenuation;
 
 		// Calculate Final color	
 		return ambientColor + diffuseColor + specularColor;
@@ -223,12 +219,11 @@ private:
 		// Calculate lights
 		vec3 color = vec3(0.0, 0.0, 0.0);
 
-		// Point Light
-		// ... maybe will come
-		// Directional Light
+		// Point Lights
 		for(int i = 0; i < lights.light.length(); i++)
 			if(lights.light[i].diffuse.x > 0.0 || lights.light[i].diffuse.y > 0.0 || lights.light[i].diffuse.z > 0.0) // Draw only non-empty lights
 				color += calculateLight(lights.light[i], diffuse, specular, norm, fragmentPosition, viewDirection);
+		// Directional Light
 		// Spot Light
 		// ... maybe will come
 
@@ -239,8 +234,8 @@ private:
 
 	layout (location = 0) in vec4 position;   // Of a point of the light sphere, used in .cpp, w is unused and must be one
 
-	layout (location = 0) uniform mat4 view;  // of the camera, used in RenderLoop.cpp#doDeferredShading 
-	layout (location = 4) uniform mat4 model; // translated, scaled sphere model of a light, used in RenderLoop.cpp#doDeferredShading
+	layout (location = 0) uniform mat4 model; // translated, scaled sphere model of a light, used in RenderLoop.cpp#doDeferredShading
+	layout (location = 4) uniform mat4 view;  // of the camera, used in RenderLoop.cpp#doDeferredShading 
 
 	void main()
 	{          

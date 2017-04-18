@@ -19,8 +19,8 @@ private:
 	const unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 }; // See init method for the attachment usage
 public:
 	unsigned int handle;
-	const int viewLocation = 0; // Used in deferredShadingStencil.vert
-	const int modelLocation = 4; // Used in deferredShadingStencil.vert
+	const int modelLocation = 0; // Used in deferredShadingStencil.vert
+	const int viewLocation = 4; // Used in deferredShadingStencil.vert
 
 	GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT);
 	~GBuffer();

@@ -18,6 +18,7 @@ private:
 	const std::string ANGLE_SUFFIX = "_Angle";
 	const std::string DOOR_PREFIX = "Door_";
 	const std::string LIGHT_SUFFIX = "_Licht";
+	const std::string LIGHT_VOLUME_SPHERE_NAME = "Number1_Sphere";
 	const unsigned int MAX_LIGHTS = 10; // Correlates with deferredShading.frag#MAX_LIGHTS
 
 	bool loadModels = true; // Set this variable only once!
@@ -33,12 +34,14 @@ private:
 	LightNode* processLightNode(string* name, Node* parent, aiNode* node, const aiScene* scene); // Processes a light node
 	void processMeshesAndChildren(Node* current, aiNode* node, const aiScene* scene);
 	glm::vec3 getTransformationVec(aiMatrix4x4* transformation); // Transforms the blender 4x4 matrix into a xyz vec3
+	std::string lightSourceTypeToString(aiLightSourceType type); // Transforms the enum type into a string
 	
 	Mesh* processMesh(aiMesh* mesh, const aiScene* scene); // Processes the mesh
 	std::vector<Mesh::Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::vector<glm::vec4>* materials);// Loads all materials and the textures
 	void linkLightUBO(); // Generates the Light UBO handle
 public:
-	Node* root;
+	Node* root; // Root node of the scene graph
+	ModelNode* lightSphere; // Pointer to node witch is used to calculate light volumes
 
 	// Resource top folder directories
 	const std::string MODEL_DIR = ".\\Model\\";

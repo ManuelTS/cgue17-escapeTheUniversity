@@ -26,7 +26,7 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 
 	// Final, the one rendered first and blitted last
 	glBindTexture(GL_TEXTURE_2D, positionNormalColorHandles[2]);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, MAX_WIDTH, MAX_HEIGHT);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA, MAX_WIDTH, MAX_HEIGHT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture(GL_FRAMEBUFFER, attachments[2], positionNormalColorHandles[2], 0);
@@ -69,9 +69,10 @@ void GBuffer::bindForStencilPass()
 /*Binds the textures for usage in the shader to render into the frame buffer.*/
 void GBuffer::bindForLightPass()
 {
-	glDrawBuffer(attachments[deferredShadingColorTextureCount-1]);
+	glDrawBuffer(attachments[deferredShadingColorTextureCount - 1]);
 
-	for (int i = 0; i < deferredShadingColorTextureCount-1; i++){
+	for (int i = 0; i < deferredShadingColorTextureCount - 1; i++)
+	{
 		glActiveTexture(GL_TEXTURE0+i);
 		// TODO glUniform1i(locationOfTextureinDeferredShader.frag, i);
 		glBindTexture(GL_TEXTURE_2D, positionNormalColorHandles[i]);

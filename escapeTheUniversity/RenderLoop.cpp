@@ -263,11 +263,13 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	draw(ml->root); // Draw all nodes except light ones
 	glDepthMask(GL_FALSE);
 
-	// Deferred Shading: Stencil and light pass for point lights the gBuffer must be bound, reading from depth buffer is allowed, writing to it not, only stencil buffer is updated
+	// Deferred Shading: Stencil and point light pass for point lights the gBuffer must be bound, reading from depth buffer is allowed, writing to it not, only stencil buffer is updated
 	glEnable(GL_STENCIL_TEST);
 
-	for (LightNode* ln : ml->lights)
+	
+	for (unsigned int i = 0; i < ml->lights.size();i++)
 	{
+		LightNode* ln = ml->lights.at(i);
 		// Stencil pass
 		deferredShaderStencil->useProgram();
 		gBuffer->bindForStencilPass();
@@ -286,10 +288,9 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 
 		glUniformMatrix4fv(gBuffer->modelLocation, 1, GL_FALSE, glm::value_ptr(m));
 		glUniformMatrix4fv(gBuffer->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
-		m_bsphere.Render(); // TODO position of light volumne point location = 0 in shader
+		draw(ml->lightSphere);
 
-
-		// Light pass
+		// Point light pass
 		gBuffer->bindForLightPass();
 		glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
 		glDisable(GL_DEPTH_TEST);
@@ -302,14 +303,9 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		deferredShader->useProgram();
 		// TODO: Performance optimization, only set one specific light if its position or light properties have changed, otherwise set all only once!
 		// Bind buffer and fill all light node data in there
-		vector<LightNode::Light> lights;
-
-		for (LightNode* ln : ml->lights)
-			lights.push_back(ln->light);
-	
 		glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
 		glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
-		glBufferSubData(GL_UNIFORM_BUFFER, 0, lights.size() * sizeof(lights[0]), &lights[0]);
+		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(ml->lights[0]), sizeof(ml->lights[0]), &ml->lights[0]);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
 
@@ -319,15 +315,22 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 
 	glDisable(GL_STENCIL_TEST);
 
+	// Now would come the directional light pass without sphere
+	gBuffer->bindForLightPass();
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_ONE, GL_ONE);
+
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	// Final pass, blit fbo to screen
+	gBuffer->renderQuad(); // Render 2D quad to buffer
+	glDisable(GL_BLEND);
+
+	// Final pass, blit fbo from buffer to screen
 	gBuffer->bindForFinalPass();
 	glBlitFramebuffer(0, 0, initVar->maxWidth, initVar->maxHeight, 0, 0, initVar->maxWidth, initVar->maxHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	
-	// Render 2D quad, TODO do we still need this?
-	gBuffer->renderQuad();
 }
 
 void RenderLoop::draw(Node* current)

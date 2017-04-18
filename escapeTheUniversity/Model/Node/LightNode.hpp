@@ -11,7 +11,7 @@ public:
 	/*Defines the light used in the shader, the position vector has a swith in the fourth position, vec4.w = 0.0 direction vector for directional light, = 1.0 position vector for a point light. If in the shader 
 	are only vec3 this is okay due to unit memory allocation.*/
 	struct Light{ // Due to openGL byte ordering only vec4 usage
-		glm::vec4 position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); // w=0 point light, w=1 directional light in mesh.frag
+		glm::vec4 position = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f); // w=0 point light, w=1 directional light in mesh.frag
 		glm::vec4 ambient = glm::vec4(0.1f, 0.1f, 0.1f, 0.0f); // w unused
 		glm::vec4 diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f); // w unused
 		glm::vec4 specular = glm::vec4(0.3f, 0.3f, 0.3f, 0.0f); // w unused, TODO: optimization, use all w's for shiConLinQua
