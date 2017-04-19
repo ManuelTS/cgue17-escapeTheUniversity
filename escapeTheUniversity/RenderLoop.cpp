@@ -203,6 +203,7 @@ void RenderLoop::start()
 	Shader* deferredShaderStencil = new Shader("deferredShadingStencil");
 
 	ml->load("Playground.dae");
+	camera->position = glm::vec3(ml->lights[0]->light.position); // Set position of camera to the first light
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
@@ -266,7 +267,6 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	// Deferred Shading: Stencil and point light pass for point lights the gBuffer must be bound, reading from depth buffer is allowed, writing to it not, only stencil buffer is updated
 	glEnable(GL_STENCIL_TEST);
 
-	
 	for (unsigned int i = 0; i < ml->lights.size();i++)
 	{
 		LightNode* ln = ml->lights.at(i);
@@ -301,8 +301,6 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glCullFace(GL_FRONT);
 
 		deferredShader->useProgram();
-		// TODO: Performance optimization, only set one specific light if its position or light properties have changed, otherwise set all only once!
-		// Bind buffer and fill all light node data in there
 		glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
 		glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
 		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(ml->lights[0]), sizeof(ml->lights[0]), &ml->lights[0]);

@@ -217,15 +217,12 @@ private:
 		vec3 viewDirection = normalize(viewPosition - fragmentPosition);
 
 		// Calculate lights
-		vec3 color = vec3(0.0, 0.0, 0.0);
+		vec3 color = vec3(0.0, 0.0, 0.0); // final color
 
-		// Point Lights
+		// Point Lights, no others are used for now
 		for(int i = 0; i < lights.light.length(); i++)
 			if(lights.light[i].diffuse.x > 0.0 || lights.light[i].diffuse.y > 0.0 || lights.light[i].diffuse.z > 0.0) // Draw only non-empty lights
 				color += calculateLight(lights.light[i], diffuse, specular, norm, fragmentPosition, viewDirection);
-		// Directional Light
-		// Spot Light
-		// ... maybe will come
 
 		gl_FragColor = vec4(color, 1.0);
 	})";
