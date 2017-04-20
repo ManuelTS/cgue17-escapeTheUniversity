@@ -191,25 +191,34 @@ void Text::loadingScreenInfo(){
 	int param = 0;
 	glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &param);
 	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal 3D Texture Size: ", false);
-	//TODO int to unsinged char*
-	//glGetIntegerv(GL_MAX_TEXTURE_SIZE, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal texture size: ", false);
-	//glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal texture image units: ", false);
-	//glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal uniform buffer binding points: ", false);
-	//////glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &param); // Prodcues error
-	//////i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal uniform block size: ", false);
-	//glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal color attachments: ", false);
-	//glGetIntegerv(GL_MAX_FRAMEBUFFER_HEIGHT, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer height: ", false);
-	//glGetIntegerv(GL_MAX_FRAMEBUFFER_WIDTH, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer width: ", false);
-	//glGetIntegerv(GL_MAX_FRAMEBUFFER_SAMPLES, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer samples: ", false);
-	//glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer layers: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal texture size: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal texture image units: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*) std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal uniform buffer binding points: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	//glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &param); // Prodcues error
+	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal uniform block size: ", false);
+	//i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal color attachments: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_FRAMEBUFFER_HEIGHT, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer height: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_FRAMEBUFFER_WIDTH, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer width: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_FRAMEBUFFER_SAMPLES, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer samples: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer layers: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
 	//int m_viewport[4]; // 0=x, 1=y, 2=w, 3=h
 	//glGetIntegerv(GL_VIEWPORT, m_viewport);
 

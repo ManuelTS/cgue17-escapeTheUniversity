@@ -231,12 +231,13 @@ private:
 
 	layout (location = 0) in vec4 position;   // Of a point of the light sphere, used in .cpp, w is unused and must be one
 
-	layout (location = 0) uniform mat4 model; // translated, scaled sphere model of a light, used in RenderLoop.cpp#doDeferredShading
-	layout (location = 4) uniform mat4 view;  // of the camera, used in RenderLoop.cpp#doDeferredShading 
+	layout (location = 0) uniform mat4 model;      // translated, scaled sphere model of a light, used in gBuffer.hpp
+	layout (location = 4) uniform mat4 view;       // of the camera, used in gBuffer.hpp
+	layout (location = 8) uniform mat4 projection; // to see what is on the screen, used in gBuffer.hpp
 
 	void main()
 	{          
-		gl_Position = view * model * position;
+		gl_Position = projection * view * model * position; // model * position = worldPosition
 	})";
 	const char* DEFERRED_SHADING_STENCIL_FRAG = R"(
 	#version 430 core

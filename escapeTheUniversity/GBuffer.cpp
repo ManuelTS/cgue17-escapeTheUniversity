@@ -26,7 +26,7 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 
 	// Final, the one rendered first and blitted
 	glBindTexture(GL_TEXTURE_2D, positionNormalColorHandles[2]);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16, MAX_WIDTH, MAX_HEIGHT);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, MAX_WIDTH, MAX_HEIGHT);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, attachments[2], GL_TEXTURE_2D, positionNormalColorHandles[2], 0);
 
 	// Depth and stencil buffer
@@ -97,18 +97,13 @@ void GBuffer::renderQuad(){
 	}
 }
 
-// The calculation solves a quadratic equation (see http://en.wikipedia.org/wiki/Quadratic_equation)
+// The calculation solves a quadratic equation (see http://en.wikipedia.org/wiki/Quadratic_equation). It returns the effecting max light distance.
 float GBuffer::calcPointLightBSphere(LightNode* ln)
 {
 	float maxChannel = fmax(fmax(ln->light.diffuse.x, ln->light.diffuse.y), ln->light.diffuse.z);
 
-	// TODO check if the last 1 is correct as the last number
-
-	//float ret = (-Light.Attenuation.Linear + sqrtf(Light.Attenuation.Linear * Light.Attenuation.Linear - 4 * Light.Attenuation.Exp * (Light.Attenuation.Exp - 256 * MaxChannel * Light.DiffuseIntensity))) 
-	// /
-	//(2 * Light.Attenuation.Exp);
-
-	return (-ln->light.shiConLinQua.z + sqrtf(ln->light.shiConLinQua.z * ln->light.shiConLinQua.z - 4 * ln->light.shiConLinQua.w * (ln->light.shiConLinQua.w - 256 * maxChannel * 1.0f)))
+	// Calculation on: http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html
+	return (-ln->light.shiConLinQua.z + sqrtf(ln->light.shiConLinQua.z * ln->light.shiConLinQua.z - 4 * ln->light.shiConLinQua.w * (ln->light.shiConLinQua.y - 256 * maxChannel * ln->light.shiConLinQua.x)))
 		/
 		(2 * ln->light.shiConLinQua.w);
 }

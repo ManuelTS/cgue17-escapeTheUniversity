@@ -78,11 +78,6 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 
 			return dynamic_cast<Node*>(interpolation);
 		}
-		else if (string::npos != name.find(LIGHT_VOLUME_SPHERE_NAME)) // Sphere used in light volume calculation
-		{
-			lightSphere = current;
-			return new Node(); // Empty node
-		}
 		else
 		{
 			current->parent = parent;

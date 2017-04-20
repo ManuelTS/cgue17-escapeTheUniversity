@@ -41,7 +41,6 @@ private:
 	void linkLightUBO(); // Generates the Light UBO handle
 public:
 	Node* root; // Root node of the scene graph
-	ModelNode* lightSphere; // Pointer to node witch is used to calculate light volumes
 
 	// Resource top folder directories
 	const std::string MODEL_DIR = ".\\Model\\";

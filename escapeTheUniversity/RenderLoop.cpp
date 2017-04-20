@@ -203,7 +203,7 @@ void RenderLoop::start()
 	Shader* deferredShaderStencil = new Shader("deferredShadingStencil");
 
 	ml->load("Playground.dae");
-	camera->position = glm::vec3(ml->lights[0]->light.position); // Set position of camera to the first light
+	camera->position = glm::vec3(ml->lights[7]->light.position); // Set position of camera to the first light
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
@@ -252,7 +252,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	gBuffer->startFrame();
 	gBuffer->bindForGeometryPass();
 	glViewport(0, 0, width, height);
-	glDepthMask(GL_TRUE); // Must be before glClear()!
+	glDepthMask(GL_TRUE); // Must be before glClearColor, otherwise it remains untouched
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
@@ -288,7 +288,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 
 		glUniformMatrix4fv(gBuffer->modelLocation, 1, GL_FALSE, glm::value_ptr(m));
 		glUniformMatrix4fv(gBuffer->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
-		draw(ml->lightSphere);
+		glUniformMatrix4fv(gBuffer->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
 		// Point light pass
 		gBuffer->bindForLightPass();
@@ -303,7 +303,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		deferredShader->useProgram();
 		glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
 		glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
-		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(ml->lights[0]), sizeof(ml->lights[0]), &ml->lights[0]);
+		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(ml->lights[0]), sizeof(ml->lights[0]), &ml->lights[i]);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
 

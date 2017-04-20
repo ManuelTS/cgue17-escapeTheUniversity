@@ -21,6 +21,7 @@ public:
 	unsigned int handle;
 	const int modelLocation = 0; // Used in deferredShadingStencil.vert
 	const int viewLocation = 4; // Used in deferredShadingStencil.vert
+	const int projectionLocation = 8; // Used in deferredShadingStencil.vert
 
 	GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT);
 	~GBuffer();
