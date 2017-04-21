@@ -1,13 +1,14 @@
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
+#include <assimp\Importer.hpp>
+#include <assimp\postprocess.h>
 #include "ModelLoader.hpp"
-#include "Node/Node.hpp"
-#include "Node/ModelNode.hpp"
-#include "Node/LightNode.hpp"
-#include "Node/TransformationNode.hpp"
-#include "Mesh.hpp"
-#include <IL/il.h>
-#include <IL/ilu.h>  // for image creation and manipulation funcs.
+#include "Node\Node.hpp"
+#include "Node\ModelNode.hpp"
+#include "Node\LightNode.hpp"
+#include "Node\TransformationNode.hpp"
+#include "Mesh\Mesh.hpp"
+#include "Mesh\PositionMesh.hpp"
+#include <IL\il.h>
+#include <IL\ilu.h>  // for image creation and manipulation funcs.
 #include "..\Debug\Debugger.hpp"
 
 using namespace std;
@@ -78,6 +79,12 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 
 			return dynamic_cast<Node*>(interpolation);
 		}
+		else if (string::npos != name.find(LIGHT_VOLUME_SPHERE_NAME)) // Sphere used in light volume calculation
+		{
+			// TODO Use position mesh
+			lightSphere = current; 
+			return new Node(); // Empty node
+		}
 		else
 		{
 			current->parent = parent;
@@ -101,7 +108,7 @@ void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const ai
 		if (mn != 0)
 		{
 			mn->position = getTransformationVec(&node->mTransformation);
-			mn->meshes.push_back(processMesh(mesh, scene));
+			mn->meshes.push_back(processMesh(current, mesh, scene));
 		}
 	}
 
@@ -204,7 +211,7 @@ std::string ModelLoader::lightSourceTypeToString(aiLightSourceType type)
 		return "Unknown light enum type";
 }
 
-Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene)
+Mesh* ModelLoader::processMesh(Node* current, aiMesh* mesh, const aiScene* scene)
 {
 	// Data to fill, Vertex data
 	vector<Mesh::Vertex> data;
@@ -264,7 +271,17 @@ Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene)
 	}
 
 	// Return a mesh object created from the extracted mesh data
-	return new Mesh(indices, data, textures, materials);
+	if (string::npos != current->name.find(LIGHT_VOLUME_SPHERE_NAME)) // Sphere used in light volume calculation only needs positionMeshs
+	{
+		vector<glm::vec4> vs; // Vertices
+		
+		for (Mesh::Vertex v : data) // Read only the positions
+			vs.push_back(glm::vec4(v.position, 1.0f));
+
+		return new PositionMesh(indices, vs);
+	}
+	else
+		return new Mesh(indices, data, textures, materials);
 }
 
 // Checks all material textures of a given type and loads the textures if they're not loaded yet.

@@ -1,6 +1,6 @@
 #include "Mesh.hpp"
-#include "../Shader.hpp"
-#include "../Debug/MemoryLeakTracker.h"
+#include "..\..\Shader.hpp"
+#include "..\..\Debug\MemoryLeakTracker.h"
 #include <iostream>
 
 using namespace std;
@@ -12,7 +12,7 @@ Mesh::~Mesh(){
 }
 
 /*Links the VBOs, indices, positions, normals, textCoords (UVs), textureIds, -names and -paths together in one VAO.*/
-Mesh::Mesh(vector<GLuint> _indices, vector<Vertex> _data, vector<Texture> _textures, vector<glm::vec4> _materials) : indices(_indices), data(_data), textures(_textures), materials(_materials)
+Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _data, vector<Texture> _textures, vector<glm::vec4> _materials) : indices(_indices), data(_data), textures(_textures), materials(_materials)
 {
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
 	//Link

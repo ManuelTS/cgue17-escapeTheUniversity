@@ -3,7 +3,7 @@
 #include "Node.hpp"
 #include "..\..\Shader.hpp"
 #include "..\..\RenderLoop.hpp"
-#include "..\Mesh.hpp"
+#include "..\Mesh\Mesh.hpp"
 
 /**This is the default node containing information about a model.*/
 class ModelNode : public Node

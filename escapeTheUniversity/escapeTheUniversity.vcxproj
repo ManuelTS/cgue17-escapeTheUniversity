@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Model\Mesh\PositionMesh.cpp" />
     <ClCompile Include="Model\Physic\Bullet.cpp" />
     <ClCompile Include="Camera\Camera.cpp" />
     <ClCompile Include="Debug\Debugger.cpp" />
@@ -26,7 +27,7 @@
     <ClCompile Include="Camera\Frustum.cpp" />
     <ClCompile Include="GBuffer.cpp" />
     <ClCompile Include="Initialization.cpp" />
-    <ClCompile Include="Model\Mesh.cpp" />
+    <ClCompile Include="Model\Mesh\Mesh.cpp" />
     <ClCompile Include="Model\ModelLoader.cpp" />
     <ClCompile Include="Model\Node\LightNode.cpp" />
     <ClCompile Include="Model\Node\ModelNode.cpp" />
@@ -40,6 +41,7 @@
     <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Model\Mesh\PositionMesh.hpp" />
     <ClInclude Include="Model\Physic\Bullet.hpp" />
     <ClInclude Include="Camera\Camera.hpp" />
     <ClInclude Include="Debug\Debugger.hpp" />
@@ -47,7 +49,7 @@
     <ClInclude Include="Camera\Frustum.hpp" />
     <ClInclude Include="GBuffer.hpp" />
     <ClInclude Include="Initialization.hpp" />
-    <ClInclude Include="Model\Mesh.hpp" />
+    <ClInclude Include="Model\Mesh\Mesh.hpp" />
     <ClInclude Include="Model\ModelLoader.hpp" />
     <ClInclude Include="Model\Node\LightNode.hpp" />
     <ClInclude Include="Model\Node\ModelNode.hpp" />

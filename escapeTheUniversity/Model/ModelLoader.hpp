@@ -4,7 +4,7 @@
 #include <GL\glew.h>
 #include <string>
 #include <vector>
-#include "Mesh.hpp"
+#include "Mesh/Mesh.hpp"
 
 class Node;
 class ModelNode;
@@ -36,11 +36,12 @@ private:
 	glm::vec3 getTransformationVec(aiMatrix4x4* transformation); // Transforms the blender 4x4 matrix into a xyz vec3
 	std::string lightSourceTypeToString(aiLightSourceType type); // Transforms the enum type into a string
 	
-	Mesh* processMesh(aiMesh* mesh, const aiScene* scene); // Processes the mesh
+	Mesh* processMesh(Node* current, aiMesh* mesh, const aiScene* scene); // Processes the mesh
 	std::vector<Mesh::Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::vector<glm::vec4>* materials);// Loads all materials and the textures
 	void linkLightUBO(); // Generates the Light UBO handle
 public:
 	Node* root; // Root node of the scene graph
+	ModelNode* lightSphere; // Pointer to node witch is used to calculate light volumes
 
 	// Resource top folder directories
 	const std::string MODEL_DIR = ".\\Model\\";
