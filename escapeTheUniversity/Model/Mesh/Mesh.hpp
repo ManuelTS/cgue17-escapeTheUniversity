@@ -30,7 +30,7 @@ public:
 	Mesh(std::vector<unsigned int>_indices, std::vector<Vertex> _data, std::vector<Texture> _textures, std::vector<glm::vec4> _materials);
 	~Mesh();
 	
-	virtual void draw();
+	void draw();
 protected:
 	unsigned int VAO;
 	unsigned int EBO;

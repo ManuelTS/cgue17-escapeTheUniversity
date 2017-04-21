@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Model\Mesh\PositionMesh.cpp" />
     <ClCompile Include="Model\Physic\Bullet.cpp" />
     <ClCompile Include="Camera\Camera.cpp" />
     <ClCompile Include="Debug\Debugger.cpp" />
@@ -41,7 +40,6 @@
     <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Model\Mesh\PositionMesh.hpp" />
     <ClInclude Include="Model\Physic\Bullet.hpp" />
     <ClInclude Include="Camera\Camera.hpp" />
     <ClInclude Include="Debug\Debugger.hpp" />

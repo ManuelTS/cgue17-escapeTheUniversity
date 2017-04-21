@@ -6,7 +6,6 @@
 #include "Node\LightNode.hpp"
 #include "Node\TransformationNode.hpp"
 #include "Mesh\Mesh.hpp"
-#include "Mesh\PositionMesh.hpp"
 #include <IL\il.h>
 #include <IL\ilu.h>  // for image creation and manipulation funcs.
 #include "..\Debug\Debugger.hpp"
@@ -45,7 +44,7 @@ void ModelLoader::load(string path)
 void ModelLoader::linkLightUBO(){
 		glGenBuffers(1, &lightUBO);
 		glBindBuffer(GL_UNIFORM_BUFFER, lightUBO);
-		glBufferData(GL_UNIFORM_BUFFER, MAX_LIGHTS * sizeof(LightNode::Light), NULL, GL_DYNAMIC_DRAW); // Play with last param 4 performance
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(LightNode::Light), NULL, GL_DYNAMIC_DRAW); // Play with last param 4 performance
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		//glUniformBlockBinding(shader->programHandle, xxx,xxx); // done by index attribute in shader
 }
@@ -108,7 +107,7 @@ void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const ai
 		if (mn != 0)
 		{
 			mn->position = getTransformationVec(&node->mTransformation);
-			mn->meshes.push_back(processMesh(current, mesh, scene));
+			mn->meshes.push_back(processMesh(mesh, scene));
 		}
 	}
 
@@ -136,9 +135,6 @@ LightNode* ModelLoader::processLightNode(string* name, Node* parent, aiNode* nod
 		{
 			ln = new LightNode(lightUBO, i); // vec4 in method signature causes __declspec(align('16')) won't be aligned
 
-			if (i >= MAX_LIGHTS)
-				Debugger::getInstance()->pauseExit("Malformed shader: More lights, " + to_string(i) + ", found in the model than specifed in shader.");
-			
 			// Get light node information
 			float lightType = 0.0f;// w=0 point light, w=1 directional light in mesh.frag
 
@@ -211,7 +207,7 @@ std::string ModelLoader::lightSourceTypeToString(aiLightSourceType type)
 		return "Unknown light enum type";
 }
 
-Mesh* ModelLoader::processMesh(Node* current, aiMesh* mesh, const aiScene* scene)
+Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene)
 {
 	// Data to fill, Vertex data
 	vector<Mesh::Vertex> data;
@@ -269,19 +265,8 @@ Mesh* ModelLoader::processMesh(Node* current, aiMesh* mesh, const aiScene* scene
 		textures.insert(textures.end(), text.begin(), text.end());
 		text.clear();
 	}
-
-	// Return a mesh object created from the extracted mesh data
-	if (string::npos != current->name.find(LIGHT_VOLUME_SPHERE_NAME)) // Sphere used in light volume calculation only needs positionMeshs
-	{
-		vector<glm::vec4> vs; // Vertices
-		
-		for (Mesh::Vertex v : data) // Read only the positions
-			vs.push_back(glm::vec4(v.position, 1.0f));
-
-		return new PositionMesh(indices, vs);
-	}
-	else
-		return new Mesh(indices, data, textures, materials);
+	
+	return new Mesh(indices, data, textures, materials);
 }
 
 // Checks all material textures of a given type and loads the textures if they're not loaded yet.

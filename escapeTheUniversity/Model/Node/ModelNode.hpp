@@ -10,7 +10,7 @@ class ModelNode : public Node
 {
 public:
 	std::vector<Mesh*> meshes; // Contains all meshes of this node.
-	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f); // Position of this node, standard value if unset is a zero vector.
+	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f); // Position of this node, is any vertex of the node, standard value if unset is a zero vector.
 	glm::vec3 pivot = glm::vec3(0.0f, 0.0f, 0.0f); // Pivot of this node, standard value if unset is a zero vector.
 	
 	glm::mat4 modelMatrix; // MM of this node

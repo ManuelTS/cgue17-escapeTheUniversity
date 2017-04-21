@@ -19,7 +19,6 @@ private:
 	const std::string DOOR_PREFIX = "Door_";
 	const std::string LIGHT_SUFFIX = "_Licht";
 	const std::string LIGHT_VOLUME_SPHERE_NAME = "Number1_Sphere";
-	const unsigned int MAX_LIGHTS = 10; // Correlates with deferredShading.frag#MAX_LIGHTS
 
 	bool loadModels = true; // Set this variable only once!
 	std::string directory;// Relative path to all models
@@ -36,7 +35,7 @@ private:
 	glm::vec3 getTransformationVec(aiMatrix4x4* transformation); // Transforms the blender 4x4 matrix into a xyz vec3
 	std::string lightSourceTypeToString(aiLightSourceType type); // Transforms the enum type into a string
 	
-	Mesh* processMesh(Node* current, aiMesh* mesh, const aiScene* scene); // Processes the mesh
+	Mesh* processMesh(aiMesh* mesh, const aiScene* scene); // Processes the mesh
 	std::vector<Mesh::Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::vector<glm::vec4>* materials);// Loads all materials and the textures
 	void linkLightUBO(); // Generates the Light UBO handle
 public:

@@ -95,6 +95,7 @@ private:
 	layout (location = 8)  uniform mat4 view;	      // Usage in: RenderLoop.cpp init(); before loop
 	layout (location = 12) uniform mat4 projection;   // Usage in: RenderLoop.cpp init(); before loop
 
+	// This four must be the same as DEFERRED_SHADING_STENCIL_VERT
 	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link();
 	layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
 	layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
@@ -157,44 +158,44 @@ private:
 	#version 430 core
 
 	layout (location = 0) uniform vec3 viewPosition; // from RenderLoop.cpp#renderloop
+
 	layout (binding = 0) uniform usampler2D colorAndNormalTex;      // From gBuffer.frag, attachment0
 	layout (binding = 1) uniform sampler2D positionAndShininessTex; // From gBuffer.frag, attachment1
 
-	struct Light
+	struct LightStruct 
 	{ // Same as LightNode.hpp#Light
-		vec4 position; 
+		vec4 position; //w = 0 pointLight, 1 directional
 		vec4 ambient; 
 		vec4 diffuse; 
 		vec4 specular;
 		vec4 shiConLinQua; // x = shininess, y = constant attentuation, z = linear attentuation, w = quadratic attentuation value
 	};
 
-	const int MAX_LIGHTS = 10; // Correlates with ModelLoader.hpp#MAX_LIGHTS
-	layout (std140, binding = 2, index = 0) uniform LightBlock  // Used in RendererLoop#drawLights
+	layout (std140, binding = 2, index = 0) uniform LightBlock 
 	{
-		Light light[MAX_LIGHTS];
-	}lights;
+		LightStruct light;
+	} l; // Workaround, direct blockbinding only in openGL 4.5
 
 	// Blinn Phong light
-	vec3 calculateLight(Light currentLight, vec3 diffuse, float specular, vec3 norm, vec3 fragmentPosition, vec3 viewDirection)
+	vec3 calculateLight(vec3 diffuse, float specular, vec3 norm, vec3 fragmentPosition, vec3 viewDirection)
 	{
 		//  Calculate ambientColor
 		vec3 ambientColor = diffuse * 0.01;
 
 		// Calculate diffuseColor 
-		vec3 lightPosition = currentLight.position.rgb;
+		vec3 lightPosition = l.light.position.xyz;
 		vec3 lightDirection= normalize(lightPosition - fragmentPosition);
 		float diffuseImpact = max(dot(norm, lightDirection), 0.0); // Max for no negative values
-		vec3 diffuseColor = currentLight.diffuse.rgb * (diffuseImpact * diffuse);
+		vec3 diffuseColor = l.light.diffuse.rgb * (diffuseImpact * diffuse);
 
 		// Calculate spectralColor
 		vec3 halfwayDir = normalize(lightDirection + viewDirection); // Blinn Phong
-		float spec = pow(max(dot(norm, halfwayDir), 0.0), currentLight.shiConLinQua.x);
-		vec3 specularColor = currentLight.specular.rgb * (spec * specular);
+		float spec = pow(max(dot(norm, halfwayDir), 0.0), l.light.shiConLinQua.x);
+		vec3 specularColor = l.light.specular.rgb * (spec * specular);
 
 		//Calculate attenuation
 		float lightFragDist = length(lightPosition - fragmentPosition);
-		float attenuation = 1.0 / (currentLight.shiConLinQua.y + currentLight.shiConLinQua.z * lightFragDist + currentLight.shiConLinQua.w * (lightFragDist * lightFragDist));
+		float attenuation = 1.0 / (l.light.shiConLinQua.y + l.light.shiConLinQua.z * lightFragDist + l.light.shiConLinQua.w * (lightFragDist * lightFragDist));
 
 		diffuseColor *= attenuation;
 		specularColor *= attenuation;
@@ -216,20 +217,18 @@ private:
 		vec3 fragmentPosition = gPositionAndShininess.xyz;
 		vec3 viewDirection = normalize(viewPosition - fragmentPosition);
 
-		// Calculate lights
-		vec3 color = vec3(0.0, 0.0, 0.0); // final color
-
-		// Point Lights, no others are used for now
-		for(int i = 0; i < lights.light.length(); i++)
-			if(lights.light[i].diffuse.x > 0.0 || lights.light[i].diffuse.y > 0.0 || lights.light[i].diffuse.z > 0.0) // Draw only non-empty lights
-				color += calculateLight(lights.light[i], diffuse, specular, norm, fragmentPosition, viewDirection);
-
+		//Calculate light
+		vec3 color = calculateLight(diffuse, specular, norm, fragmentPosition, viewDirection);
 		gl_FragColor = vec4(color, 1.0);
 	})";
 	const char* DEFERRED_SHADING_STENCIL_VERT = R"(
 	#version 430 core
 
-	layout (location = 0) in vec4 position;   // Of a point of the light sphere, used in .cpp, w is unused and must be one
+	// This four must be the same as in GBUFFER_VERT
+	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link(); // Of a point of the light sphere, used in .cpp, w is unused and must be one
+	layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
+	layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
+	layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, rgb unused
 
 	layout (location = 0) uniform mat4 model;      // translated, scaled sphere model of a light, used in gBuffer.hpp
 	layout (location = 4) uniform mat4 view;       // of the camera, used in gBuffer.hpp
@@ -237,7 +236,7 @@ private:
 
 	void main()
 	{          
-		gl_Position = projection * view * model * position; // model * position = worldPosition
+		gl_Position = projection * view * model * vec4(position, 1.0f); // model * position = worldPosition
 	})";
 	const char* DEFERRED_SHADING_STENCIL_FRAG = R"(
 	#version 430 core

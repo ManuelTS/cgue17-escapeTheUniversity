@@ -271,8 +271,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	{
 		LightNode* ln = ml->lights.at(i);
 		// Stencil pass
-		deferredShaderStencil->useProgram();
 		gBuffer->bindForStencilPass();
+		deferredShaderStencil->useProgram();
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 		glClear(GL_STENCIL_BUFFER_BIT);
@@ -292,7 +292,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		draw(ml->lightSphere);
 
 		// Point light pass
-		gBuffer->bindForLightPass();
+		gBuffer->bindForLightPass();//Setup stencil and enable blending to fuse multiple lights
 		glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
 		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
@@ -301,12 +301,16 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
 
-		deferredShader->useProgram();
+		deferredShader->useProgram(); // Set light parameters
 		glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
 		glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
-		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(ml->lights[0]), sizeof(ml->lights[0]), &ml->lights[i]);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ml->lights[0]), &ml->lights[i]);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
+		gBufferShader->useProgram(); // Prepare and then render light geometry
+		glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+		glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
+		draw(ml->lightSphere);
 
 		glCullFace(GL_BACK);
 		glDisable(GL_BLEND);
@@ -315,6 +319,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glDisable(GL_STENCIL_TEST);
 
 	// Now would come the directional light pass without sphere
+	deferredShader->useProgram();
 	gBuffer->bindForLightPass();
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
