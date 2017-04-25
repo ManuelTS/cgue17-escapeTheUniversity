@@ -26,7 +26,7 @@ private:
 	void link();
 	void check(unsigned int handle, const std::string& name);
 
-	const char* TEXT_VERT = R"(
+	const char* TEXT_VERT = R"glsl(
 	#version 430 core
 
 	layout (location = 0) in vec4 positionAndTC; // screen position.xy and texture coordinates.zw, usage in text.cpp
@@ -39,8 +39,8 @@ private:
 	{
 	  gl_Position = transform * vec4(positionAndTC.xy, 0.0, 1.0);
 	  texCoord = positionAndTC.zw;
-	})";
-	const char* TEXT_FRAG = R"(
+	})glsl";
+	const char* TEXT_FRAG = R"glsl(
 	#version 430 core
 
 	layout(location = 0) in vec2 texCoord; // Usage in text.vert
@@ -58,8 +58,8 @@ private:
 		const float distance2Outline = texture(ourTexture, texCoord).a;
 		const float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance2Outline);
 		gl_FragColor = vec4(colorScale.xyz, alpha);
-	})";
-	const char* IMAGE_VERT = R"(
+	})glsl";
+	const char* IMAGE_VERT = R"glsl(
 	#version 430 core
 
 	layout (location = 0) in vec2 position;// Usage in: RenderLoop.cpp displayLoadingScreen();
@@ -74,8 +74,8 @@ private:
 		fragmentColor = color;
 		fragmentTexCoord = texCoord;
 		gl_Position = vec4(position, 0.0, 1.0);
-	})";
-	const char* IMAGE_FRAG = R"(
+	})glsl";
+	const char* IMAGE_FRAG = R"glsl(
 	#version 430 core
 
 	layout (location = 0) in vec3 color;
@@ -86,8 +86,8 @@ private:
 	void main()
 	{
 		gl_FragColor  = texture(tex, texCoord) * vec4(color, 1.0);
-	})";
-	const char* GBUFFER_VERT = R"(
+	})glsl";
+	const char* GBUFFER_VERT = R"glsl(
 	#version 430 core
 
 	layout (location = 0)  uniform mat4 model;	      // Usage in: Node.hpp
@@ -115,9 +115,9 @@ private:
 		texCoords.y = 1 - tc.y;                     // Forward uv texel coordinates to the fragment shader, TODO finde cause and solution to this flipped y coords wordaround
 		normalVector = mat3(inverseModel) * normal; // Forward normals to fragment shader
 		materialDiffuseShininess = material;        // rgb unused
-	})";
+	})glsl";
 
-	const char* GBUFFER_FRAG = R"(
+	const char* GBUFFER_FRAG = R"glsl(
 	#version 430 core
 
 	layout (binding = 0) uniform sampler2D textureDiffuse; // Usage in: Mesh.cpp draw();
@@ -142,8 +142,8 @@ private:
 
 		gPositionAndShininess.xyz = fragmentPosition;
 		gPositionAndShininess.w = materialDiffuseShininess.a; // Specular texture NOT IMPLEMENTED, // materialDiffuseShininess.rgb is unused!
-	})";
-	const char* DEFERRED_SHADING_VERT = R"(
+	})glsl";
+	const char* DEFERRED_SHADING_VERT = R"glsl(
 	#version 430 core
 	const vec4 verts[4] = vec4[4](vec4(-1.0, -1.0, 0.5, 1.0), 
 								  vec4( 1.0, -1.0, 0.5, 1.0),
@@ -153,8 +153,8 @@ private:
 	void main(void)
 	{
 		gl_Position = verts[gl_VertexID];
-	})";
-	const char* DEFERRED_SHADING_FRAG = R"(
+	})glsl";
+	const char* DEFERRED_SHADING_FRAG = R"glsl(
 	#version 430 core
 
 	layout (location = 0) uniform vec3 viewPosition; // from RenderLoop.cpp#renderloop
@@ -174,7 +174,7 @@ private:
 	layout (std140, binding = 2, index = 0) uniform LightBlock 
 	{
 		LightStruct light;
-	} l; // Workaround, direct blockbinding only in openGL 4.5
+	} l; // Workaround, direct struct blockbinding only in openGL 4.5
 
 	// Blinn Phong light
 	vec3 calculateLight(vec3 diffuse, float specular, vec3 norm, vec3 fragmentPosition, vec3 viewDirection)
@@ -219,9 +219,12 @@ private:
 
 		//Calculate light
 		vec3 color = calculateLight(diffuse, specular, norm, fragmentPosition, viewDirection);
+	
+		color = vec(0.0f, 1.0f, 0.0f); // Without light, just get color on screen, that means depth or stencil is wrong
+
 		gl_FragColor = vec4(color, 1.0);
-	})";
-	const char* DEFERRED_SHADING_STENCIL_VERT = R"(
+	})glsl";
+	const char* DEFERRED_SHADING_STENCIL_VERT = R"glsl(
 	#version 430 core
 
 	// This four must be the same as in GBUFFER_VERT
@@ -237,12 +240,12 @@ private:
 	void main()
 	{          
 		gl_Position = projection * view * model * vec4(position, 1.0f); // model * position = worldPosition
-	})";
-	const char* DEFERRED_SHADING_STENCIL_FRAG = R"(
+	})glsl";
+	const char* DEFERRED_SHADING_STENCIL_FRAG = R"glsl(
 	#version 430 core
 
-	void main()	{})";
-	const char* DEPTH_VERT = R"(
+	void main()	{})glsl";
+	const char* DEPTH_VERT = R"glsl(
 	#version 430 core
 
 	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link();
@@ -254,8 +257,8 @@ private:
 	void main()
 	{
 		gl_Position = projection * view * model * vec4(position, 1.0f);
-	})";
-	const char* DEPTH_FRAG = R"(
+	})glsl";
+	const char* DEPTH_FRAG = R"glsl(
 	#version 430 core
 
 	const float near = 1.0; 
@@ -271,5 +274,5 @@ private:
 	{             
 		const float depth = linearizeDepth(gl_FragCoord.z) / far; // divide by far for demonstration
 		gl_FragColor = vec4(vec3(depth), 1.0f);
-	})";
+	})glsl";
 };

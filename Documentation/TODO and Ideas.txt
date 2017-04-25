@@ -2,8 +2,6 @@ All ordered by priority!
 
 Programming (Manuel):
 
-
-
 make bounding volumes with threads (with vhacd)
 for(boundingBoxIndex)
 {
@@ -25,6 +23,12 @@ Skymap, with a beautiful night sky full of stars in OGLSB as cube map on page 64
 Game over screen, If the player fails, show a game over screen with text, sound, or music, and restart.
 
 Fade for sound
+
+in stencil and gbuffer vertex shader combine this parameters with using only vec4 s
+layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link(); // Of a point of the light sphere, used in .cpp, w is unused and must be one
+layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
+layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
+layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, rgb unused
 
 Optimization:
 Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines

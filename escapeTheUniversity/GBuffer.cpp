@@ -24,7 +24,13 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, attachments[1], GL_TEXTURE_2D, positionNormalColorHandles[1], 0);
 
-	// Final, the one rendered first and blitted
+	/* Final, the one rendered first and blitted. This is a good place to discuss why we added an intermediate color buffer in 
+	the G Buffer instead of rendering directly to the screen. The thing is that our G Buffer combines as a target the buffers
+	for the attributes with the depth/stencil buffer. When we run the point light pass we setup the stencil stuff and we need
+	to use the values from the depth buffer. Here we have a problem - if we render into the default FBO we won't have access
+	to the depth buffer from the G Buffer. But the G Buffer must have its own depth buffer because when we render into its 
+	FBO we don't have access to the depth buffer from the default FBO. Therefore, the solution is to add to the G Buffer FBO 
+	a color buffer to render into and in the final pass blit it to the default FBO color buffer.*/
 	glBindTexture(GL_TEXTURE_2D, positionNormalColorHandles[2]);
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, MAX_WIDTH, MAX_HEIGHT);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, attachments[2], GL_TEXTURE_2D, positionNormalColorHandles[2], 0);
@@ -48,13 +54,7 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 /*The pure geometry pass uses all attachments except the last one.*/
 void GBuffer::bindForGeometryPass() {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
-	glDrawBuffers(deferredShadingColorTextureCount - 1, attachments);
-}
-
-/*In the stencil test we are not writing to the color buffer, only the stencil buffer. Indeed, even our FS is empty. However, in that case the default output color from the FS is black. In order to avoid garbaging the final buffer with a black image of the bounding sphere we disable the draw buffers here.*/
-void GBuffer::bindForStencilPass()
-{
-	glDrawBuffer(GL_NONE);
+	glDrawBuffers(deferredShadingColorTextureCount - 2, attachments);
 }
 
 /*Binds the textures for usage in the shader to render into the frame buffer.*/

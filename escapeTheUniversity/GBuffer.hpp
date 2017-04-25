@@ -28,7 +28,6 @@ public:
 
 	void startFrame(); /*At the start of each frame we need to clear the final texture which is attached to attachment point number 2.*/
 	void bindForGeometryPass(); /*The pure geometry pass uses all attachments except the last one.*/
-	void bindForStencilPass(); /*In the stencil test we are not writing to the color buffer, only the stencil buffer. Indeed, even our FS is empty. However, in that case the default output color from the FS is black. In order to avoid garbaging the final buffer with a black image of the bounding sphere we disable the draw buffers here.*/
 	void bindForLightPass();
 	void bindForFinalPass(); /* When we get to the final pass our final buffer is populated with the final image. Here we set things up for the blitting that takes place in the main application code. The default FBO is the target and the G Buffer FBO is the source.*/
 	float calcPointLightBSphere(LightNode* ln); /*Render the bounding sphere based on the light params.*/

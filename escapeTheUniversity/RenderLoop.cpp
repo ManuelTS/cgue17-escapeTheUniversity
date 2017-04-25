@@ -252,9 +252,10 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	gBuffer->startFrame();
 	gBuffer->bindForGeometryPass();
 	glViewport(0, 0, width, height);
-	glDepthMask(GL_TRUE); // Must be before glClearColor, otherwise it remains untouched
 	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE); // Must be before glClearColor, otherwise it remains untouched
 	glDepthFunc(GL_LEQUAL);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glm::mat4 projectionMatrix = glm::perspective((float)camera->zoom, (float)width / (float)height, 0.1f, 100.0f);
@@ -271,40 +272,39 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	{
 		LightNode* ln = ml->lights.at(i);
 		// Stencil pass
-		gBuffer->bindForStencilPass();
-		deferredShaderStencil->useProgram();
+		deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // During drawing of the stencil pass no color or depth values are written, but the depth is read
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 		glClear(GL_STENCIL_BUFFER_BIT);
 		glStencilFunc(GL_ALWAYS, 0, 0);
-		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
-		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR, GL_KEEP);
+		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR, GL_KEEP);
 
-		/*After that we clear the stencil buffer and setup the stencil test to always pass and the stencil operation according to the description in the background section.
-		Everything after that is as usual - we render the bounding sphere based on the light params. When we are done the stencil buffer contains positive values only in the
-		pixels of objects inside the light volume. We can now do lighting calculations.*/
 		mat4 m = glm::translate(mat4(), vec3(ln->light.position)); // Create model matrix
 		glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ln))); // Scale it with the sphere radius
 
 		glUniformMatrix4fv(gBuffer->modelLocation, 1, GL_FALSE, glm::value_ptr(m));
 		glUniformMatrix4fv(gBuffer->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
 		glUniformMatrix4fv(gBuffer->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-		draw(ml->lightSphere);
+		draw(ml->lightSphere); // Render into stencil
 
 		// Point light pass
-		gBuffer->bindForLightPass();//Setup stencil and enable blending to fuse multiple lights
-		glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
-		glDisable(GL_DEPTH_TEST);
+		gBuffer->bindForLightPass();//Setup stencil to determine drawn pixels and enable blending to fuse multiple lights
+		glStencilFunc(GL_NOTEQUAL, 0, 0xFF); 
+		glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glDisable(GL_DEPTH_TEST); // Color values must be blended, disable depth test
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_ONE, GL_ONE);
 		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
+		glCullFace(GL_FRONT); // The camera may be inside the light volume and if we do back face culling as we normally do we will not see the light until we exit its volume
 
 		deferredShader->useProgram(); // Set light parameters
 		glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
 		glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
-		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ml->lights[0]), &ml->lights[i]);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ml->lights[i]), &ml->lights[i]);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
 		gBufferShader->useProgram(); // Prepare and then render light geometry
