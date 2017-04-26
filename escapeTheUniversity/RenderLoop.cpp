@@ -285,8 +285,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glDisable(GL_CULL_FACE);
 		glClear(GL_STENCIL_BUFFER_BIT);
 		glStencilFunc(GL_ALWAYS, 0, 0);
-		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR, GL_KEEP);
-		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR, GL_KEEP);
+		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
 		mat4 m = glm::translate(mat4(), vec3(ln->light.position)); // Create model matrix
 		glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ln))); // Scale it with the sphere radius
@@ -329,11 +329,11 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	deferredShader->useProgram();
 	gBuffer->bindForLightPass();
 	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
+	/*glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_ONE, GL_ONE);
 	// Render direciontal light
-	glDisable(GL_BLEND);
+	glDisable(GL_BLEND);*/
 
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
