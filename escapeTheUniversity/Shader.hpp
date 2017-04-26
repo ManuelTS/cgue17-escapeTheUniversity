@@ -219,7 +219,6 @@ private:
 
 		//Calculate light
 		vec3 color = calculateLight(diffuse, specular, norm, fragmentPosition, viewDirection);
-
 		gl_FragColor = vec4(color, 1.0f);
 	})glsl";
 	const char* DEFERRED_SHADING_STENCIL_VERT = R"glsl(

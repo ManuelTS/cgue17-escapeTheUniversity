@@ -87,6 +87,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		{
 		 // TODO
 		}
+		else if (key == GLFW_KEY_O)
+		{
+			Text::getInstance()->gameOver();
+		}
 		else if (key == GLFW_KEY_PRINT_SCREEN)
 		{
 			cout << "Hope you don't do anything bad with that screeny, sweetie." << endl;
@@ -203,7 +207,10 @@ void RenderLoop::start()
 	Shader* deferredShaderStencil = new Shader("deferredShadingStencil");
 
 	ml->load("Playground.dae");
-	camera->position = glm::vec3(ml->lights[7]->light.position); // Set position of camera to the first light
+	vec4 pos = ml->lights[7]->light.position;
+	pos.y -= 2.0f;
+	pos.z += 1.0f;
+	camera->position = glm::vec3(pos); // Set position of camera to the first light
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
@@ -321,12 +328,12 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	// Now would come the directional light pass without sphere
 	deferredShader->useProgram();
 	gBuffer->bindForLightPass();
-	/*glDisable(GL_DEPTH_TEST);
+	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_ONE, GL_ONE);
 	// Render direciontal light
-	glDisable(GL_BLEND);*/
+	glDisable(GL_BLEND);
 
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
