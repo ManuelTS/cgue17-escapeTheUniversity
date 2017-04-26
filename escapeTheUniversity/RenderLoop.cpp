@@ -321,16 +321,17 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	// Now would come the directional light pass without sphere
 	deferredShader->useProgram();
 	gBuffer->bindForLightPass();
-	glDisable(GL_DEPTH_TEST);
+	/*glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_ONE, GL_ONE);
+	// Render direciontal light
+	glDisable(GL_BLEND);*/
 
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	gBuffer->renderQuad(); // Render 2D quad to buffer
-	glDisable(GL_BLEND);
 
 	// Final pass, blit fbo from buffer to screen
 	gBuffer->bindForFinalPass();

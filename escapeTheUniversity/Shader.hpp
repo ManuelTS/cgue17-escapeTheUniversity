@@ -164,7 +164,7 @@ private:
 
 	struct LightStruct 
 	{ // Same as LightNode.hpp#Light
-		vec4 position; //w = 0 pointLight, 1 directional
+		vec4 position; //w = 0 pointLight, 1 directional (unused)
 		vec4 ambient; 
 		vec4 diffuse; 
 		vec4 specular;
@@ -219,10 +219,8 @@ private:
 
 		//Calculate light
 		vec3 color = calculateLight(diffuse, specular, norm, fragmentPosition, viewDirection);
-	
-		color = vec(0.0f, 1.0f, 0.0f); // Without light, just get color on screen, that means depth or stencil is wrong
 
-		gl_FragColor = vec4(color, 1.0);
+		gl_FragColor = vec4(color, 1.0f);
 	})glsl";
 	const char* DEFERRED_SHADING_STENCIL_VERT = R"glsl(
 	#version 430 core

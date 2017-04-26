@@ -13,12 +13,11 @@ for(boundingBoxIndex)
    continue
   ...
 }
-
-Transform feedback: https://open.gl/feedback
+for_each_thread(wait until all threads terminated)
 
 Rim lighting openGL super Bibile page 634
 
-Skymap, with a beautiful night sky full of stars in OGLSB as cube map on page 640.
+Skymap, with a beautiful night sky full of stars in OGLSB as cube map on page 640. Example: Don't render full skypmap, only what is visible
 
 Game over screen, If the player fails, show a game over screen with text, sound, or music, and restart.
 
@@ -31,6 +30,7 @@ layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
 layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, rgb unused
 
 Optimization:
+Transform feedback: https://open.gl/feedback
 Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines
 
 
@@ -60,12 +60,9 @@ Critical books, use only critical literature about the following topics:
 
 Our real life pictures somewhere in an office on the wall as framed pictures.
 
-Perspective Room from https://youtu.be/xleyq2oJt_8?t=30m53s as art installation in a room with a sign beside the door which says "There is only a perspective seeing, only a perspective "knowing"". - Friedrich Nietzsche 1844 - 1900
+Display the TUWEL form screenshot on a screen, info desk, desktop, laptop, canvas, projector etc... as easter egg
 
-Roof revision:
-- roof with stairs up to it and door on top
-- handrails to not to fall down
-- roofgarden
+Perspective Room from https://youtu.be/xleyq2oJt_8?t=30m53s as art installation in a room with a sign beside the door which says "There is only a perspective seeing, only a perspective "knowing"". - Friedrich Nietzsche 1844 - 1900
 
 Uniform Texture Pre- and Suffixes:
 const std::string ANGLE_SUFFIX = "Angle";
@@ -78,20 +75,6 @@ Unification is needed.
 
 Elevator, from the basement up to to roof top, must be dirty with typical elevator music.
 
-Compress all textures to reduce loading time with: http://gpuopen.com/gaming-product/compressonator/
-
-Define all texture material and light ambient, diffuse, and specular colors in textures, logic for that is already in the model loader. If it gives points do:
-http://learnopengl.com/#!Lighting/Lighting-maps
-Light Mapping 0.5 Points
-Use an external tool to bake the static light information of your scene into the diffuse textures of your objects. All static objects combined with all static lights in your scene should use this technique. However, dynamic lights and the lighting of dynamic objects have to be calculated additionally.
-Separate Textures 0.5 Points
-Instead of baking into the diffuse texture the Light Map should be baked into a separate texture and combined at runtime.
-In-Game-Calculation 1 Points
-Instead of baking the Light Map with an external tool, precalculate it in your game engine at startup.
-Let's discuss that
-After "text on screen" is finished I can take a look how complex In-Game-Calculation is, I rather to it before Seperate Textures, texture usage is reciprocal to performance during gaming, (pre) calculation on startup would be better, maybe even with threading.
-
-
 
 
 
@@ -102,17 +85,11 @@ If a charater is camping giv an NPC the position and let him walk to that positi
 
 Add if time Omnischadows to the shadow maps
 
-SSAO as alternative to vertex skinning
-
-Display the TUWEL form screenshot on a screen, info desk, desktop, laptop, canvas, projector etc... as easter egg
-
 Link the sound to the view frustum culling, if outside the cull it is decreased
 
 Austiran tradition, insert a basement, optional a parkinglot too, maybe combine it with "fatal decisions".
 
 Fatal decisions During sneaking dark secrets of the university can be discovered, e.g. the player puts the hand in a hole (safe or vault) after entering a code, but it gets chopped of if entered wrong. Best in the cellar in combination with "austrian tradition".
-
-Normal Mapping, https://en.wikipedia.org/wiki/Normal_mapping
 
 Time doors, you have to sneak fast otherwise the door(s) will close.
 
@@ -123,5 +100,14 @@ Laser laboratorium, a room contains a laiser with a sign "do not look with the r
 Octopus, put somewhere a big fucking octopus from a professor who's experiment went wrong, or at least its arms.
 
 Cloning, a gun, box, room, crazy person, or whatsoever which allows you to clone things.
+
+SSAO as alternative to vertex skinning
+
+Roof revision:
+- roof with stairs up to it and door on top
+- handrails to not to fall down
+- roofgarden
+
+Normal Mapping, https://en.wikipedia.org/wiki/Normal_mapping
 
 Gras, done with a single, perfect culm as in the openGL SB. Use instanced drawing 294, draw many objects with a single function call gldraw***instanced(); On page 305 is good simple instanced example. Either transform feedback or compute shader usage is a must, look into the OGLSB.
