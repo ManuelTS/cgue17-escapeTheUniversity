@@ -57,7 +57,7 @@ private:
 
 		const float distance2Outline = texture(ourTexture, texCoord).a;
 		const float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance2Outline);
-		gl_FragColor = vec4(colorScale.xyz, alpha);
+		gl_FragColor = vec4(colorScale.rgb, alpha);
 	})";
 	const char* IMAGE_VERT = R"(
 	#version 430 core

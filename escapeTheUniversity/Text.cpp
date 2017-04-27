@@ -10,13 +10,13 @@
 
 using namespace std;
 
-Text::~Text(){
+Text::~Text() {
 	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteVertexArrays(1, &VAO);
 }
 
-void Text::init(){
+void Text::init() {
 	ModelLoader* ml = ModelLoader::getInstance();
 	textShader = new Shader("text");
 	textShader->useProgram();
@@ -26,8 +26,8 @@ void Text::init(){
 		//Position x(lr)y(tb)//Texture coordinates xy
 		-0.5f, 0.5f, 0.0f, 0.0f, //left-top, 0
 		-0.5f,-0.5f, 1.0f, 1.0f, //left-bottom, 1
-		 0.5f, 0.5f, 1.0f, 0.0f, //right-top, 2 
-		 0.5f,-0.5f, 0.0f, 1.0f  //right-bottom, 3
+		0.5f, 0.5f, 1.0f, 0.0f, //right-top, 2 
+		0.5f,-0.5f, 0.0f, 1.0f  //right-bottom, 3
 	};
 
 	glGenVertexArrays(1, &VAO);
@@ -52,7 +52,7 @@ void Text::init(){
 	glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind VBO
 	glBindVertexArray(0); // Unbind VAO
 
-	characterTextureHandle =ml->loadPicture(ml->MODEL_DIR + loadingImagePath); // Load and bind textures
+	characterTextureHandle = ml->loadPicture(ml->MODEL_DIR + loadingImagePath); // Load and bind textures
 
 	if (characterTextureHandle < 0)
 		Debugger::getInstance()->pauseExit("Malfunction: Character image " + ml->MODEL_DIR + loadingImagePath + " not found.");
@@ -61,13 +61,13 @@ void Text::init(){
 	const float imageSize = 2048.0f; // In pixels
 	const unsigned int maxColumn = imageSize / charSize;
 
-	for (unsigned int i = FIRST_CHARACTER, column = 0, row = 0, x = 0, y = 0; 
-		i < LAST_CHARACTER; 
+	for (unsigned int i = FIRST_CHARACTER, column = 0, row = 0, x = 0, y = 0;
+		i < LAST_CHARACTER;
 		i++, column = (i - FIRST_CHARACTER) % maxColumn)
 	{
 		x = column * charSize;
-		y = imageSize - row * charSize; 
-		std::vector<float> coords = { 
+		y = imageSize - row * charSize;
+		std::vector<float> coords = {
 			//left-top    --  right-top
 			//  |         /      |
 			//left-bottom -- right-bottom, 4 points form 2 triangles, draw as triangle strip
@@ -78,13 +78,13 @@ void Text::init(){
 		};
 
 		charLocations[(unsigned char)i] = glm::make_mat4x2(&coords[0]);
-		
+
 		if (column == maxColumn - 1)
 			row++;
 	}
 }
 
-void Text::write(const char* text, float x, float y, const float scale, const float angle){
+void Text::write(const char* text, float x, float y, const float scale, const float angle) {
 	textShader->useProgram();
 
 	glm::mat4 trans = glm::mat4(1);
@@ -92,12 +92,11 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 	trans = glm::rotate(trans, glm::radians(angle), glm::vec3(0.0, 0.0, 1.0));
 
 	glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(trans));
-	glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 	glUniform4f(colorScaleLocation, color.x, color.y, color.z, scale);
 
 	vector<float>* vertices = new vector<float>;
 	float cursor = 0.0f, row = 0.0f;
-	const float advance = scale * charSize / (float) RenderLoop::getInstance()->width;
+	const float advance = scale * charSize / (float)RenderLoop::getInstance()->width;
 	x /= scale;
 	y /= scale;
 
@@ -144,9 +143,9 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 	glDisable(GL_BLEND);
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-}   
+}
 
-void Text::writeVertices(vector<float>*vertices) 
+void Text::writeVertices(vector<float>*vertices)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
@@ -159,11 +158,23 @@ void Text::writeVertices(vector<float>*vertices)
 		glBufferSubData(GL_ARRAY_BUFFER, 0, currentBufferSize, vertices->data());
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, size/4); //Each vertex has two xy and two uv entries, ergo divide by four for correct vertex amount	
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, size / 4); //Each vertex has two xy and two uv entries, ergo divide by four for correct vertex amount	
 }
 
-void Text::gameOver() {
-	write("Exmatriculated", -0.9f, 0.9f, 0.5f, 0.0f);
+void Text::setDisplayTime(const double miliSeconds = 0) {
+	displayTime = miliSeconds;
+}
+
+bool Text::hasTimeLeft() {
+	return displayTime > 0;
+}
+
+void Text::gameOver(const double deltaTime)
+{
+	displayTime -= deltaTime*1000;
+	color = glm::vec3(1.0f, 0.0f, 0.0f);
+	write("Exmatriculated", -1.05f, -0.1f, 1.0f, -45.0f);
+	color = DEFAULT_COLOR; // Restet original color for other possible text draws
 }
 
 void Text::fps(const double pastTime, const double deltaTime, const unsigned int drawnTriangles)
@@ -173,11 +184,11 @@ void Text::fps(const double pastTime, const double deltaTime, const unsigned int
 		timeThreashold = pastTime + 1; // Only print all seconds not MS (it is frames per second not seconds per frame)
 		snprintf(fpsBuffer, 30, "FPS:%.0f\nTriangles:%u", (1.0 / deltaTime), drawnTriangles);
 	}
-	
+
 	write(fpsBuffer, -0.9f, 0.9f, 0.5f, 0.0f);
 }
 
-void Text::loadingScreenInfo(){
+void Text::loadingScreenInfo() {
 	char infoText[1024] = "Working on:\n";
 	unsigned int i;
 	for (i = 0; infoText[i] != '\0'; i++);
@@ -191,25 +202,34 @@ void Text::loadingScreenInfo(){
 	int param = 0;
 	glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &param);
 	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal 3D Texture Size: ", false);
-	//TODO int to unsinged char*
-	//glGetIntegerv(GL_MAX_TEXTURE_SIZE, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal texture size: ", false);
-	//glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal texture image units: ", false);
-	//glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal uniform buffer binding points: ", false);
-	//////glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &param); // Prodcues error
-	//////i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal uniform block size: ", false);
-	//glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal color attachments: ", false);
-	//glGetIntegerv(GL_MAX_FRAMEBUFFER_HEIGHT, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer height: ", false);
-	//glGetIntegerv(GL_MAX_FRAMEBUFFER_WIDTH, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer width: ", false);
-	//glGetIntegerv(GL_MAX_FRAMEBUFFER_SAMPLES, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer samples: ", false);
-	//glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS, &param);
-	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer layers: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal texture size: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal texture image units: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal uniform buffer binding points: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	//glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &param); // Prodcues error
+	//i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal uniform block size: ", false);
+	//i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal color attachments: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_FRAMEBUFFER_HEIGHT, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer height: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_FRAMEBUFFER_WIDTH, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer width: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_FRAMEBUFFER_SAMPLES, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer samples: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS, &param);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal framebuffer layers: ", false);
+	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
 	//int m_viewport[4]; // 0=x, 1=y, 2=w, 3=h
 	//glGetIntegerv(GL_VIEWPORT, m_viewport);
 
@@ -221,13 +241,13 @@ unsigned int Text::copyInBuffer(char buffer[], unsigned int i, const unsigned ch
 	while (*toCopy)
 		buffer[i++] = *toCopy++;
 
-	if(linebreak)
+	if (linebreak)
 		buffer[i++] = '\n';
 
 	return i;
 }
 
-void Text::pause(){
+void Text::pause() {
 	write("Game paused", -0.3f, -0.01f, 0.6f, 0.0f);
 }
 

@@ -87,6 +87,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		{
 		 // TODO
 		}
+		else if (key == GLFW_KEY_O)
+			Text::getInstance()->setDisplayTime(4000);
 		else if (key == GLFW_KEY_PRINT_SCREEN)
 		{
 			cout << "Hope you don't do anything bad with that screeny, sweetie." << endl;
@@ -202,6 +204,10 @@ void RenderLoop::start()
 	Shader* deferredShader = new Shader("deferredShading");
 
 	ml->load("Playground.dae");
+	vec4 pos = ml->lights[7]->light.position;
+	pos.y -= 2.0f;
+	pos.z += 1.0f;
+	camera->position = glm::vec3(pos); // Set position of camera to the first light
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
@@ -293,13 +299,13 @@ void RenderLoop::draw(Node* current)
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
 		//TODO AABBs frustum culling, the used point one is inefficient but works
-		if (frustum || dynamic_cast<TransformationNode*>(current) != nullptr || mn != nullptr && Frustum::getInstance()->pointInFrustum(mn->position) != -1)
-		{ // TODO frustum not working, too much triangles drawn
+		//if (frustum || dynamic_cast<TransformationNode*>(current) != nullptr || mn != nullptr && Frustum::getInstance()->pointInFrustum(mn->position) != -1)
+		//{ // TODO frustum not working, too much triangles drawn
 			current->draw();
 
 			for (Node* child : current->children)
 				draw(child);
-		}
+		//}
 	}
 }
 
@@ -312,6 +318,8 @@ void RenderLoop::renderText()
 		Text::getInstance()->help();
 	else if(!render)
 		Text::getInstance()->pause();
+	else if (Text::getInstance()->hasTimeLeft()) // Watch out, if more text becomes time dependent make an enum with the single times in it to set and render
+		Text::getInstance()->gameOver(deltaTime);
 }
 
 // Calculates the delta time, e.g. the time between frames
