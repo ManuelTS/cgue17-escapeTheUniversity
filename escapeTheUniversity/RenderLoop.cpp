@@ -35,7 +35,6 @@ RenderLoop::~RenderLoop()
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	SoundManager* sm = SoundManager::getInstance();
 	if (action == GLFW_PRESS)
 	{
 		RenderLoop* rl = RenderLoop::getInstance();
@@ -90,9 +89,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 		else if (key == GLFW_KEY_O) {
 			Text::getInstance()->setDisplayTime(4000);
-			
-			sm->initFileName("Dialog\\exmatriculated.wav"); // Init SM with music file to play
-			sm->playSound();
+			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
 		}
 		else if (key == GLFW_KEY_PRINT_SCREEN)
 		{
