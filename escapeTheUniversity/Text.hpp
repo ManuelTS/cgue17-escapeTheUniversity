@@ -25,10 +25,13 @@ private:
 	std::map<unsigned char, glm::mat4x2, std::less<unsigned char> > charLocations;
 	// Max buffer size
 	unsigned int previousMaxBufferSize = 0;
-	// Last time since draw
+	// Last time since draw, used in FPS rendering to update the FPS only each second
 	double timeThreashold = 0.0;
+	float displayTime = 0.0f; // Contains the remaining time in mili seconds to display text on the screen
 	// Buffers
-	char fpsBuffer[30]; // FPS
+	char fpsBuffer[30]; // FPS character buffer
+	const glm::vec3 DEFAULT_COLOR = glm::vec3(1.0f, 1.0f, 1.0f); // Default color of text
+	glm::vec3 color = DEFAULT_COLOR; // Color of text
 
 	Shader* textShader;
 	unsigned int characterTextureHandle = 0;
@@ -66,5 +69,7 @@ public:
 	void loadingScreenInfo(); // Displays the loading text computer info on screen
 	void pause(); // Displays the pause or resume text on screen, the latter for one second more
 	void help(); // Displays the help on screen
-	void gameOver(); // Displays the game over text on screen
+	void gameOver(const double deltaTime); // Displays the game over text on screen
+	void Text::setDisplayTime(const double miliSeconds); // Sets the display time of text on screen which is decremented over time until it becomes the first time negative
+	bool Text::hasTimeLeft(); // Returns true if there is displayTime left, otherwise false
 };

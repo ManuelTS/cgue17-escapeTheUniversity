@@ -38,7 +38,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	if (action == GLFW_PRESS)
 	{
 		RenderLoop* rl = RenderLoop::getInstance();
-		
+
 		if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_END)) // See Text.cpp#help for keybindings
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		else if (key == GLFW_KEY_F1)
@@ -58,14 +58,14 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			cout << "TODO: Visualizing the depth buffer." << endl; // TODO Visualizing the depth buffer http://learnopengl.com/#!Advanced-OpenGL/Depth-testing, swith shaders to depth ones
 		else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE)
 			rl->render = !rl->render;
-		else if (key == GLFW_KEY_F8){
+		else if (key == GLFW_KEY_F8) {
 			rl->frustum = !rl->frustum;
-			cout << "Switching Frustum Culling to " ;
+			cout << "Switching Frustum Culling to ";
 			if (rl->frustum == 1)
 				cout << "disabled." << endl;
 			else
 				cout << "enabled." << endl;
-			
+
 		}
 		else if (key == GLFW_KEY_F9)
 			cout << "TODO: Blending on/off" << endl; // TODO
@@ -85,11 +85,11 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 		else if (key == GLFW_KEY_Q)
 		{
-		 // TODO
+			// TODO
 		}
-		else if (key == GLFW_KEY_O)
-		{
-			Text::getInstance()->gameOver();
+		else if (key == GLFW_KEY_O) {
+			Text::getInstance()->setDisplayTime(4000);
+			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
 		}
 		else if (key == GLFW_KEY_PRINT_SCREEN)
 		{
@@ -372,6 +372,8 @@ void RenderLoop::renderText()
 		Text::getInstance()->help();
 	else if(!render)
 		Text::getInstance()->pause();
+	else if (Text::getInstance()->hasTimeLeft()) // Watch out, if more text becomes time dependent make an enum with the single times in it to set and render
+		Text::getInstance()->gameOver(deltaTime);
 }
 
 // Calculates the delta time, e.g. the time between frames

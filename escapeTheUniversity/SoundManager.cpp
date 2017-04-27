@@ -135,49 +135,43 @@ string SoundManager::getFileName()
 /***************************
 VOLUME CONTROL
 ***************************/
-void SoundManager::setVolume(ik_f32 newVolume)
+void SoundManager::checkVolume(const float newVolume)
 {
-	if (newVolume < 0.0f|| newVolume > 100.0f)
-		volume = 50.0f;
+	if (newVolume < 0.0f)
+		volume = 0.0f;
+	else if (newVolume > 100.0f)
+		volume = 100.0f;
 	else
 		volume = newVolume;
+}
 
+void SoundManager::setVolume(ik_f32 newVolume)
+{
+	checkVolume(newVolume);
 	currentSound->setVolume(volume / 100.0f);
 }
 
 void SoundManager::increaseVolume()
 {
-	volume += 10.0f;
-
-	if (volume > 100.0)
-		volume = 100.0f;
+	checkVolume(volume += 10.0f);
 	currentSound->setVolume(volume / 100.0f);
 }
 
 void SoundManager::increaseVolume(ik_f32 increment)
 {
-	volume += increment;
-
-	if (volume > 100.0f)
-		volume = 100.0f;
+	checkVolume(volume += increment);
 	currentSound->setVolume(volume / 100.0f);
 }
 
 void SoundManager::decreaseVolume()
 {
-	volume -= 10.0f;
-
-	if (volume < 0.0f)
-		volume = 0.0f;
+	checkVolume(volume -= 10.0f);
 	currentSound->setVolume(volume / 100.0f);
 }
 
-void SoundManager::decreaseVolume(ik_f32 increment)
+void SoundManager::decreaseVolume(ik_f32 decrement)
 {
-	volume -= increment;
-
-	if (volume < 0.0f)
-		volume = 0.0f;
+	checkVolume(volume -= decrement);
 	currentSound->setVolume(volume / 100.0f);
 }
 

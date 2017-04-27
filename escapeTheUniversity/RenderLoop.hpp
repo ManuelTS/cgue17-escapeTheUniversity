@@ -15,8 +15,8 @@ class RenderLoop{
 	private:
 		GLFWwindow* window;
 		// Time
-		double timePast; // Last, past time
-		double timeNow; // New, current time
+		double timePast; // Last, past time  in nano seconds
+		double timeNow; // New, current time in nano seconds
 	
 		RenderLoop(void){}; // Private constructor to allow only one instance
 		RenderLoop(RenderLoop const&); // Private constructor to prevent copies
@@ -43,7 +43,7 @@ class RenderLoop{
 		bool frustum = false; // Toggle frustum culling, standard false
 		bool fullscreen = false; // Toogle fullscreen mode
 		
-		double deltaTime; // Difference of variable timeNew and timeOld
+		double deltaTime; // Difference of variable timeNew and timeOld in nano seconds
 
 		~RenderLoop();
 		void start(); // Initializes and starts the actual renderloop
