@@ -54,13 +54,13 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 /*The pure geometry pass uses all attachments except the last one.*/
 void GBuffer::bindForGeometryPass() {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
-	glDrawBuffers(deferredShadingColorTextureCount - 2, attachments);
+	glDrawBuffers(2, attachments);
 }
 
 /*Binds the textures for usage in the shader to render into the frame buffer.*/
 void GBuffer::bindForLightPass()
 {
-	glDrawBuffer(attachments[deferredShadingColorTextureCount - 1]);
+	glDrawBuffer(attachments[2]);
 
 	for (int i = 0; i < deferredShadingColorTextureCount - 1; i++)
 	{
@@ -73,7 +73,7 @@ void GBuffer::bindForLightPass()
 /*At the start of each frame we need to clear the final texture which is attached to attachment point number 2.*/
 void GBuffer::startFrame() {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
-	glDrawBuffer(attachments[deferredShadingColorTextureCount - 1]);
+	glDrawBuffer(attachments[2]);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -82,7 +82,7 @@ void GBuffer::bindForFinalPass()
 {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, handle);
-	glReadBuffer(attachments[deferredShadingColorTextureCount - 1]);
+	glReadBuffer(attachments[2]);
 }
 
 // RenderQuad() Renders a 1x1 quad in NDC, best used for framebuffer color targets and post-processing effects.
@@ -103,7 +103,7 @@ float GBuffer::calcPointLightBSphere(LightNode* ln)
 	float maxChannel = fmax(fmax(ln->light.diffuse.x, ln->light.diffuse.y), ln->light.diffuse.z);
 
 	// Calculation on: http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html
-	return (-ln->light.shiConLinQua.z + sqrtf(ln->light.shiConLinQua.z * ln->light.shiConLinQua.z - 4 * ln->light.shiConLinQua.w * (ln->light.shiConLinQua.y - 256 * maxChannel * ln->light.shiConLinQua.x)))
+	return (float) (-ln->light.shiConLinQua.z + sqrtf(ln->light.shiConLinQua.z * ln->light.shiConLinQua.z - 4 * ln->light.shiConLinQua.w * (ln->light.shiConLinQua.y - 256 * maxChannel * ln->light.shiConLinQua.x)))
 		/
 		(2 * ln->light.shiConLinQua.w);
 }

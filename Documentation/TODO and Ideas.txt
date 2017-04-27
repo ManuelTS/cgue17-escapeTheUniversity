@@ -2,6 +2,8 @@ All ordered by priority!
 
 Programming (Manuel):
 
+Display game over text for x seconds on screen
+
 make bounding volumes with threads (with vhacd)
 for(boundingBoxIndex)
 {

@@ -23,6 +23,9 @@ public:
 
 	LightNode(const unsigned int _UBO, const unsigned int _arrayIndex);
 	~LightNode();
+
+	// For debugging, set ambient, diffuse, and specular to the argument
+	void setAllLightComponents(glm::vec3 ads);
 private:
 };
 

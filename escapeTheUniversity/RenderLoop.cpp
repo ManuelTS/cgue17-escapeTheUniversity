@@ -338,6 +338,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+
 	gBuffer->renderQuad(); // Render 2D quad to buffer
 
 	// Final pass, blit fbo from buffer to screen
