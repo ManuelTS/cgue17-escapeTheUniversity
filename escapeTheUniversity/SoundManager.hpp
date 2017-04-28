@@ -23,6 +23,7 @@ private:
 	SoundManager(void){};// Private constructor to allow only one instance
 	SoundManager(SoundManager const&);// Private constructor to prevent copies
 	void operator=(SoundManager const&);// Private constructor to prevent assignments
+	void checkVolume(const float newVolume); // Checks and keeps the volume in its boundaries 0 <= v <= 100
 public:
 	/*Returns the pointer to the unique instance of this class.*/
 	static SoundManager* SoundManager::getInstance()
@@ -35,9 +36,7 @@ public:
 	void init();
 	void initFileName(string soundFile); // Doesn't play sound, only initializes fileName
 	void playSound(); // Plays entire sound file
-	void playSound(int milliseconds); // Plays for X number of milliseconds
 	void playSound(string soundFile); // Play entire specified sound file
-	void playSound(string soundFile, int milliseconds);
 	void playSoundThreaded(); // Starts playing sound but program continues
 
 	// Pause/Resume/Stop, works like any other media player
@@ -54,7 +53,7 @@ public:
 	void increaseVolume();
 	void increaseVolume(ik_f32 increment);
 	void decreaseVolume();
-	void decreaseVolume(ik_f32 increment);
+	void decreaseVolume(ik_f32 decrement);
 	ik_f32 getCurrentVolume();
 };
 
