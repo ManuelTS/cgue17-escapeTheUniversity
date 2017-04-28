@@ -119,9 +119,11 @@ This is just a trial run... consider yourself planning your escape for the real 
 \section{Effects}
 \begin{itemize}
 	\item Blinn Phong lighting with materials from \href{http://learnopengl.com/#!Advanced-Lighting/Advanced-Lighting}{learnopengl.com advanced lighting tutorial}.
+	\item [1] Effect Point: Deferred Shading as described in section \ref{Features}.
 \end{itemize}
 
 \section{Features}
+\label{Features}
 \begin{itemize}
 	\item Temporary godlike powers: You can open all doors at once! Except the ``bad'' one.
 	\item Feel free to explore the floor plane of the building without collision and enjoy a beautifully designed building.
@@ -135,10 +137,10 @@ This is just a trial run... consider yourself planning your escape for the real 
 	% Optimization: https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Text_Rendering_02#Rendering_lines_of_text_using_the_atlas
 	% Calculation of SDF: https://github.com/libgdx/libgdx/wiki/Distance-field-fonts
 	\item Scenegraph and different node type usage.
-  \item \href{https://www.youtube.com/watch?v=2LW9JSYn_h0}{Radar} frustum culling from a \href{http://www.lighthouse3d.com/tutorials/view-frustum-culling/radar-approach-implementation-ii}{lighthouse3d.com tutorial} and \cite{gems5} with a lot of changes.
+  \item \href{https://www.youtube.com/watch?v=2LW9JSYn_h0}{Radar} frustum culling from a \href{http://www.lighthouse3d.com/tutorials/view-frustum-culling/radar-approach-implementation-ii}{lighthouse3d.com tutorial} and \cite{gems5} with a lot of changes. (In Progress)
   % https://stackoverflow.com/questions/8101119/how-do-i-methodically-choose-the-near-clip-plane-distance-for-a-perspective-proj#8101234
 	% https://stackoverflow.com/questions/13896385/calculate-near-and-far-value-for-glperspective-in-opengl#13896488
-  \item Physics done with \href{http://bulletphysics.org/wordpress/}{bullet}.
+  \item Physics done with \href{http://bulletphysics.org/wordpress/}{bullet}. (In Progress)
   % http://bulletphysics.org/Bullet/BulletFull/
   % Automatic minimal collision shape calculation https://github.com/kmammou/v-hacd and its integration https://kmamou.blogspot.co.at/2014/12/v-hacd-20-in-your-project.html
 \end{itemize}
@@ -148,9 +150,9 @@ This is just a trial run... consider yourself planning your escape for the real 
 \section{Textured objects \label{Texture Mapping}}
 \begin{itemize}
 \item Door + door handle + doorframe
-\item Hanging lamp
+\item Lamps
 \item Table + chairs for outside use
-\item Male character
+\item Character
 \item Whole building
 \item Paved pathwalk outside the building
 \end{itemize}
@@ -161,7 +163,7 @@ All objects are now illuminated with blinn phong lighting from a \href{http://le
 Directional and point lights done with the \href{http://learnopengl.com/#!Lighting/Light-casters}{light casters tutorial on learnOpenGL.com}.\\
 
 
-The illuminated light source is Vorlesungssaal\_light.
+There are currently 10 light-sources in use, distributed among the playfield.
 
 \section{Additional libraries in use}
  %What additional libraries (eg for collision, object-loader, sound, …) were used, including references (URL) (see restrictions)?
@@ -173,6 +175,10 @@ The illuminated light source is Vorlesungssaal\_light.
 \item irrKlang from \url{http://www.ambiera.com/irrklang/index.html}
 \item GLM from \url{http://glm.g-truc.net/}
 \item Assimp from \url{http://www.assimp.org/}
+\item BulletCollision from
+\url{http://bulletphysics.org/wordpress/} not yet in use (includes LinearMath Library)
+\item VHACD from 
+\url{https://github.com/kmammou/v-hacd} not yet in use
 \end{itemize}
 
 
@@ -212,8 +218,8 @@ The illuminated light source is Vorlesungssaal\_light.
 \item School bench from
 \url{ https://www.cgtrader.com/3d-models/interior/office/school-desk-206e3c48-1bea-40d0-9c75-cbb46eaa64af}. Model has been purchased and is used in compliance with the Royalty Free License.
 
-\item Freddie Krueger like character from
-\url{https://www.cgtrader.com/free-3d-models/character/man/sketchfast-7-halloween-contest}. Model is used in compliance with the Editorial License.
+%\item Freddie Krueger like character from
+%\url{https://www.cgtrader.com/free-3d-models/character/man/sketchfast-7-halloween-contest}. Model is used in compliance with the Editorial License.
 
 \end{itemize}
 
@@ -230,7 +236,7 @@ The illuminated light source is Vorlesungssaal\_light.
 \end{itemize}
 
 \section{Possible Optimizations}
-Implement and optimization of deferred rendering, this can be for one point \href{deferred illumination}{https://www.opengl.org/discussion_boards/showthread.php/180940-Deferred-shading-and-light-volumes}
+Implement and optimization of deferred rendering, this can be for one point \href{deferred illumination}{https://www.opengl.org/discussion\_boards/showthread.php/180940-Deferred-shading-and-light-volumes}
 or \href{http://ogldev.atspace.co.uk/www/tutorial37/tutorial37.html}{this}, or for two points \textit{tile based deferred rendering}.
 
 \bibliographystyle{plain}

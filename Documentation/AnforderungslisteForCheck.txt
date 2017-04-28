@@ -5,8 +5,8 @@
 [ ] GPU Vertex Skinning
 -----------------------------------
 ---------- 1st Talk ----------
-[ ] Upload on 6.4
-[ ] Test before at Uni-Rechner
+[X] Upload on 6.4
+[X] Test before at Uni-Rechner
 -----------------------------------
 ---------- 1st Submission ----------
 	---------- Grading Schema ----------
@@ -15,7 +15,7 @@
 	[X]Texture Mapping
 	[X]Simple lighting and materials
 	[X]Controls
-	[ ]Basic Gameplay  --> The key part is that your gameplay already demonstrates what your game is about and how you play it!
+	[X]Basic Gameplay  --> The key part is that your gameplay already demonstrates what your game is about and how you play it!
 	-----------------------------------
 	---------- Uploads ----------
 	1. Mai 2017
@@ -35,20 +35,20 @@
 
 			When you have gathered all necessary files, compress them all in one ZIP archive together with the documentation pdf (see below) and name it "executable1-[groupname]" where [groupname] has to be replaced by your games title. Your submission has to contain at least the following files and folders. If files are not included in the folders they should be, the submission will not be graded.
 
-			bin/
+		[ ]	bin/
 				A binary directory containing your EXE file.
 				Put content files needed for your game into a subfolder of bin.
-			doc/
+		[ ]	doc/
 				A documentation directory with a PDF file documenting the controls, development status and effects of your game
-			readme.txt
+		[x]	readme.txt
 				A text-file containing your group name and you names, Matrikelnummer and Kennzahl. In addition you should state on which graphics card (AMD/NVIDIA) you have tested your solution.
 		-----------------------------------
 		---------- Documentation ----------
 
-		[ ] Brief description of the implementation, in particular a short description of how the different aspects of the requirements (see above) were implemented.
-		[ ] �Features� of the game.
-		[ ] How and which objects were illuminated (description of light sources) or textured.
-		[ ] What additional libraries (eg for collision, object-loader, sound, �) were used, including references (URL) (see restrictions)?
+		[X] Brief description of the implementation, in particular a short description of how the different aspects of the requirements (see above) were implemented.
+		[X] �Features� of the game.
+		[X] How and which objects were illuminated (description of light sources) or textured.
+		[X] What additional libraries (eg for collision, object-loader, sound, �) were used, including references (URL) (see restrictions)?
 		-----------------------------------
 	-----------------------------------
 -----------------------------------
