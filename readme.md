@@ -4,4 +4,4 @@ is a 3D single player stealth game by [Manuel T. Schrempf](mailto:e0920136@stude
 This game is made and tested on AMD graphic cards. 
 
 ## Build
-Make sure that in Virtual Studio 2015 `Tools/Options/Debugging/Symbols/Microsoft Symbol Servers` is checked and C++ 11 or higher is installed.
+Make sure that in Virtual Studio 2015 `Tools/Options/Debugging/Symbols/Microsoft Symbol Servers` is checked and C++ 11 or higher is installed. Runs on x86 plattformsa, together with making "Working directory" = $(SolutionDir).

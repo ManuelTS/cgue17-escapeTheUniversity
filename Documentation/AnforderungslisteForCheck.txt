@@ -20,10 +20,10 @@
 	---------- Uploads ----------
 	1. Mai 2017
 		---------- Code ----------
-		[ ] Source Code
+		[X] Source Code
 			 Upload the zip archive to this TUWEL course with the name "source1-[groupname]"
 			 Download ZIP from github
-		[ ] Executeable
+		[X] Executeable
 
 			Don't include any source files or any unnecessary intermediate files such as Visual Studio databases, solutions, etc. Just think of this submission as if you were actually distributing your game.
 			The maximum file size for a submission is 256MB. Make sure that all your content fits to this.
@@ -35,10 +35,10 @@
 
 			When you have gathered all necessary files, compress them all in one ZIP archive together with the documentation pdf (see below) and name it "executable1-[groupname]" where [groupname] has to be replaced by your games title. Your submission has to contain at least the following files and folders. If files are not included in the folders they should be, the submission will not be graded.
 
-		[ ]	bin/
+		[X]	bin/
 				A binary directory containing your EXE file.
 				Put content files needed for your game into a subfolder of bin.
-		[ ]	doc/
+		[X]	doc/
 				A documentation directory with a PDF file documenting the controls, development status and effects of your game
 		[x]	readme.txt
 				A text-file containing your group name and you names, Matrikelnummer and Kennzahl. In addition you should state on which graphics card (AMD/NVIDIA) you have tested your solution.
