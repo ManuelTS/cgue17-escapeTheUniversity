@@ -21,12 +21,12 @@ void TransformationNode::switchState()
 
 void TransformationNode::draw()
 {
-	double deltaTime = RenderLoop::getInstance()->deltaTime;
-
+	double deltaTime = 1.0f/RenderLoop::getInstance()->deltaTime;
+	float newAngle = glm::radians(ANGLE*deltaTime);
 	if (transform &&  currentRotation < MAX_ROTATION)
-		currentRotation += ANGLE * deltaTime;
+		currentRotation += newAngle;
 	else if (!transform && currentRotation > 0)
-		currentRotation -= ANGLE * deltaTime;
+		currentRotation -= newAngle;
 
 	if (!transform && currentRotation > 0 || transform && currentRotation <= MAX_ROTATION)
 	{
@@ -37,7 +37,7 @@ void TransformationNode::draw()
 			if (mn != nullptr)
 			{
 				mn->modelMatrix = glm::translate(mn->modelMatrix, -mn->position);
-				mn->modelMatrix = glm::rotate(mn->modelMatrix, transform ? ANGLE : -ANGLE, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it
+				mn->modelMatrix = glm::rotate(mn->modelMatrix, transform ? newAngle : -newAngle, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it
 				mn->modelMatrix = glm::translate(mn->modelMatrix, mn->position);
 				mn->inverseModelMatrix = glm::inverseTranspose(mn->modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
 			}
