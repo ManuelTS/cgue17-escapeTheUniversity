@@ -29,6 +29,8 @@ layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
 layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
 layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, rgb unused
 
+Visualize depth: https://learnopengl.com/#!Advanced-OpenGL/Depth-testing
+
 Optimization:
 Transform feedback: https://open.gl/feedback
 Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines

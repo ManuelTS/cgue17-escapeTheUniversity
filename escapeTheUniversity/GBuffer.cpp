@@ -1,4 +1,4 @@
-#include <GL/glew.h>
+ #include <GL/glew.h>
 #include "GBuffer.hpp"
 #include "Initialization.hpp"
 #include "./Debug/Debugger.hpp"
@@ -37,8 +37,8 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 
 	// Depth and stencil buffer
 	glBindTexture(GL_TEXTURE_2D, positionNormalColorHandles[3]);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH32F_STENCIL8,	MAX_WIDTH, MAX_HEIGHT);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, positionNormalColorHandles[3], 0);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F,	MAX_WIDTH, MAX_HEIGHT);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, positionNormalColorHandles[3], 0);
 	
 
 	Debugger::getInstance()->checkWholeFramebufferCompleteness();

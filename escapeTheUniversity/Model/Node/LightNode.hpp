@@ -15,7 +15,7 @@ public:
 		glm::vec4 ambient = glm::vec4(0.1f, 0.1f, 0.1f, 0.0f); // w unused
 		glm::vec4 diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f); // w unused
 		glm::vec4 specular = glm::vec4(0.3f, 0.3f, 0.3f, 0.0f); // w unused, TODO: optimization, use all w's for shiConLinQua
-		glm::vec4 shiConLinQua = glm::vec4(64.0f, 1.0f, 0.7f, 1.8f); // shininess, constant, linear, quadratic http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Point+Light+Attenuation
+		glm::vec4 shiConLinQua = glm::vec4(64.0f, 1.0f, 0.22f, 0.20f); // shininess, constant, linear, quadratic http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Point+Light+Attenuation
 	} light;
 
 	const unsigned int UBO;

@@ -246,10 +246,13 @@ private:
 	const char* DEPTH_VERT = R"glsl(
 	#version 430 core
 
-	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link();
+	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link(); // Of a point of the light sphere, used in .cpp, w is unused and must be one
+	layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
+	layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
+	layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, rgb unused
 
-	layout (location = 0)  uniform mat4 model;	      // Usage in: Node.hpp
-	layout (location = 4)  uniform mat4 view;	      // Usage in: RenderLoop.cpp init(); before loop
+	layout (location = 0)  uniform mat4 model;	     // Usage in: Node.hpp
+	layout (location = 4)  uniform mat4 view;	     // Usage in: RenderLoop.cpp init(); before loop
 	layout (location = 8) uniform mat4 projection;   // Usage in: RenderLoop.cpp init(); before loop
 
 	void main()

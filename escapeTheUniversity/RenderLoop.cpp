@@ -61,7 +61,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		else if (key == GLFW_KEY_F8) {
 			rl->frustum = !rl->frustum;
 			cout << "Switching Frustum Culling to ";
-			if (rl->frustum == 1)
+			if (rl->frustum)
 				cout << "disabled." << endl;
 			else
 				cout << "enabled." << endl;
@@ -207,9 +207,9 @@ void RenderLoop::start()
 	Shader* deferredShaderStencil = new Shader("deferredShadingStencil");
 
 	ml->load("Playground.dae");
-	vec4 pos = ml->lights[7]->light.position;
+	vec4 pos = ml->lights[9]->light.position;
 	pos.y -= 2.0f;
-	pos.z -= 70.0f;
+	pos.z -= 1.0f;
 	camera->position = glm::vec3(pos); // Set position of camera to the first light
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
@@ -247,10 +247,7 @@ void RenderLoop::start()
 void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, Shader*  deferredShaderStencil, ModelLoader* ml) 
 {
 	if (wireFrameMode)
-	{
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	}
 
 	if (fps)
 		drawnTriangles = 0;
@@ -263,7 +260,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glDepthMask(GL_TRUE); // Must be before glClearColor, otherwise it remains untouched
 	glDepthFunc(GL_LEQUAL);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glm::mat4 projectionMatrix = glm::perspective((float)camera->zoom, (float)width / (float)height, 0.1f, 100.0f);
 	gBufferShader->useProgram();
@@ -273,14 +270,14 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glDepthMask(GL_FALSE);
 
 	// Deferred Shading: Stencil and point light pass for point lights the gBuffer must be bound, reading from depth buffer is allowed, writing to it not, only stencil buffer is updated
-	glEnable(GL_STENCIL_TEST);
+	//glEnable(GL_STENCIL_TEST);
 
 	for (unsigned int i = 0; i < ml->lights.size();i++)
 	{
 		LightNode* ln = ml->lights.at(i);
 		
 		// Stencil pass
-		deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
+		/*deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // During drawing of the stencil pass no color or depth values are written, but the depth is read
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
@@ -290,19 +287,20 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
 		mat4 m = glm::translate(mat4(), vec3(ln->light.position)); // Create model matrix
-		glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ln))); // Scale it with the sphere radius
+		m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ln))); // Scale it with the sphere radius
 
 		glUniformMatrix4fv(gBuffer->modelLocation, 1, GL_FALSE, glm::value_ptr(m));
 		glUniformMatrix4fv(gBuffer->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
 		glUniformMatrix4fv(gBuffer->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 		draw(ml->lightSphere); // Render into stencil
+		*/
+		
 
 		// Point light pass
 		gBuffer->bindForLightPass();//Setup stencil to determine drawn pixels and enable blending to fuse multiple lights
-		glStencilFunc(GL_NOTEQUAL, 0, 0xFF); 
-		glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
+		//glStencilFunc(GL_NOTEQUAL, 0, 0xFF); 
+		//glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		glDisable(GL_DEPTH_TEST); // Color values must be blended, disable depth test
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_ONE, GL_ONE);
@@ -312,19 +310,23 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		deferredShader->useProgram(); // Set light parameters
 		glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
 		glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
-		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ml->lights[i]), &ml->lights[i]);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ln->light), &ln->light);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
 		gBufferShader->useProgram(); // Prepare and then render light geometry
+		mat4 m = glm::scale(glm::translate(mat4(), vec3(ln->light.position)), vec3(gBuffer->calcPointLightBSphere(ln))); // Create model matrix, frist translation, second scaling
+		glUniformMatrix4fv(gBuffer->modelLocation, 1, GL_FALSE, glm::value_ptr(m));
 		glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 		glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
-		draw(ml->lightSphere);
-
+		draw(ml->lightSphere); // Light sphere in wireframe mode not rendered
+		
 		glCullFace(GL_BACK);
 		glDisable(GL_BLEND);
+
+		// http://stackoverflow.com/questions/14413094/how-to-draw-from-the-inside-of-the-light-geometry-in-deferred-shading/14419722#14419722
 	}
 
-	glDisable(GL_STENCIL_TEST);
+	//glDisable(GL_STENCIL_TEST);
 
 	// Now would come the directional light pass without sphere
 	deferredShader->useProgram();
@@ -335,10 +337,9 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glBlendFunc(GL_ONE, GL_ONE);
 	// Render direciontal light
 	glDisable(GL_BLEND);*/
-
-	if (wireFrameMode)
+	
+	if (wireFrameMode) // Right past geometry pass?
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 
 	gBuffer->renderQuad(); // Render 2D quad to buffer
 
