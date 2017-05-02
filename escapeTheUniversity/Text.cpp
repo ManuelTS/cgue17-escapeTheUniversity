@@ -188,6 +188,10 @@ void Text::fps(const double pastTime, const double deltaTime, const unsigned int
 	write(fpsBuffer, -0.9f, 0.9f, 0.5f, 0.0f);
 }
 
+void Text::wireframe() {
+	write("Wireframe mode", -0.9f, 0.9f, 0.5f, 0.0f);
+}
+
 void Text::loadingScreenInfo() {
 	char infoText[1024] = "Working on:\n";
 	unsigned int i;

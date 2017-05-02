@@ -70,6 +70,7 @@ public:
 	void pause(); // Displays the pause or resume text on screen, the latter for one second more
 	void help(); // Displays the help on screen
 	void gameOver(const double deltaTime); // Displays the game over text on screen
-	void Text::setDisplayTime(const double miliSeconds); // Sets the display time of text on screen which is decremented over time until it becomes the first time negative
-	bool Text::hasTimeLeft(); // Returns true if there is displayTime left, otherwise false
+	void setDisplayTime(const double miliSeconds); // Sets the display time of text on screen which is decremented over time until it becomes the first time negative
+	bool hasTimeLeft(); // Returns true if there is displayTime left, otherwise false
+	void wireframe(); // Displays wireframe text on screen
 };

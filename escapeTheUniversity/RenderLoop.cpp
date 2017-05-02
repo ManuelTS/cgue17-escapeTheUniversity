@@ -278,6 +278,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	for (unsigned int i = 0; i < ml->lights.size();i++)
 	{
 		LightNode* ln = ml->lights.at(i);
+		
 		// Stencil pass
 		deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // During drawing of the stencil pass no color or depth values are written, but the depth is read
@@ -368,12 +369,16 @@ void RenderLoop::renderText()
 	if(fps)
 		Text::getInstance()->fps(timeNow, deltaTime, drawnTriangles);
 
+	if (wireFrameMode)
+		Text::getInstance()->wireframe();
+
 	if (help)
 		Text::getInstance()->help();
 	else if(!render)
 		Text::getInstance()->pause();
 	else if (Text::getInstance()->hasTimeLeft()) // Watch out, if more text becomes time dependent make an enum with the single times in it to set and render
 		Text::getInstance()->gameOver(deltaTime);
+	
 }
 
 // Calculates the delta time, e.g. the time between frames
