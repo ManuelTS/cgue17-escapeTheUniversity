@@ -300,7 +300,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		gBuffer->bindForLightPass();//Setup stencil to determine drawn pixels and enable blending to fuse multiple lights
 		//glStencilFunc(GL_NOTEQUAL, 0, 0xFF); 
 		//glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_ONE, GL_ONE);

@@ -97,15 +97,17 @@ void GBuffer::renderQuad(){
 	}
 }
 
-// The calculation solves a quadratic equation (see http://en.wikipedia.org/wiki/Quadratic_equation). It returns the effecting max light distance.
+// The calculation solves a quadratic equation (see http://en.wikipedia.org/wiki/Quadratic_equation). It returns the effecting max light distance which is the radius of the light sphere.
 float GBuffer::calcPointLightBSphere(LightNode* ln)
 {
-	float maxChannel = fmax(fmax(ln->light.diffuse.x, ln->light.diffuse.y), ln->light.diffuse.z);
+	glm::vec3 lightLuminance = glm::cross(glm::vec3(ln->light.diffuse), glm::vec3(0.2126, 0.7152, 0.0722));// Get light's luminance using Rec 709 luminance formula
+	const float maxLuminance = 0.01 / fmax(fmax(lightLuminance.x, lightLuminance.y), lightLuminance.z); // min luminance divided by max luminance, from https://gamedev.stackexchange.com/questions/51291/deferred-rendering-and-point-light-radius
+	const float maxChannel = fmax(fmax(ln->light.diffuse.x, ln->light.diffuse.y), ln->light.diffuse.z);
 
 	// Calculation on: http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html
-	return (float) (-ln->light.shiConLinQua.z + sqrtf(ln->light.shiConLinQua.z * ln->light.shiConLinQua.z - 4 * ln->light.shiConLinQua.w * (ln->light.shiConLinQua.y - 256 * maxChannel * ln->light.shiConLinQua.x)))
+	return (float) (-ln->light.shiConLinQua.z + sqrtf(ln->light.shiConLinQua.z * ln->light.shiConLinQua.z - 4 * ln->light.shiConLinQua.w * (ln->light.shiConLinQua.w - 256.0f * maxChannel * maxLuminance)))
 		/
-		(2 * ln->light.shiConLinQua.w);
+		(2.0f * ln->light.shiConLinQua.w);
 }
 
 
