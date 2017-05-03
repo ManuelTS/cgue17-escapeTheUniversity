@@ -140,6 +140,9 @@ void RenderLoop::initGLFWandGLEW(){
 		Debugger::getInstance()->pauseExit("Could not init GLFW.");
 
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_FALSE);
+	#if _DEBUG
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+	#endif
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // Using OpenGL version 4.3, 4.4 could be used if necessary
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -159,7 +162,6 @@ void RenderLoop::initGLFWandGLEW(){
 	glGetError(); // Error 1280 after glewInit() internet says this one call can be ignored
 
 	#if _DEBUG
-		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 		InitMemoryTracker();
 		Debugger* d = Debugger::getInstance();
 		d->setDebugContext();
@@ -301,12 +303,13 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		//glStencilFunc(GL_NOTEQUAL, 0, 0xFF); 
 		//glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
 		//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_ONE, GL_ONE);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT); // The camera may be inside the light volume and if we do back face culling as we normally do we will not see the light until we exit its volume
+		//glEnable(GL_CULL_FACE);
+		//glCullFace(GL_FRONT); // The camera may be inside the light volume and if we do back face culling as we normally do we will not see the light until we exit its volume
 
 		deferredShader->useProgram(); // Set light parameters
 		glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
@@ -314,14 +317,16 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ln->light), &ln->light);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
+		mat4 m = mat4();
+		m = glm::translate(m, vec3(ln->light.position)); // Create model matrix, frist translation, second scaling
+		m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ln)));
+		ml->lightSphere->setModelMatrix(&m);
 		gBufferShader->useProgram(); // Prepare and then render light geometry
-		mat4 m = glm::scale(glm::translate(mat4(), vec3(ln->light.position)), vec3(gBuffer->calcPointLightBSphere(ln))); // Create model matrix, frist translation, second scaling
-		glUniformMatrix4fv(gBuffer->modelLocation, 1, GL_FALSE, glm::value_ptr(m));
 		glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 		glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
 		draw(ml->lightSphere); // Light sphere in wireframe mode not rendered
 		
-		glCullFace(GL_BACK);
+		//glCullFace(GL_BACK);
 		glDisable(GL_BLEND);
 
 		// http://stackoverflow.com/questions/14413094/how-to-draw-from-the-inside-of-the-light-geometry-in-deferred-shading/14419722#14419722

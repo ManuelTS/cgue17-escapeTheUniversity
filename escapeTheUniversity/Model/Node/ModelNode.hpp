@@ -22,6 +22,7 @@ public:
 
 	void draw() override;
 	bool isEmpty(); // Returns true if empty, false if not
+	void setModelMatrix(glm::mat4* m); // Sets the model matrix and computes the inverse one too
 
 protected:
 	const GLint modelLocation = 0; // gBuffer.vert

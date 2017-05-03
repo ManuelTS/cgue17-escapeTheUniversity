@@ -32,7 +32,7 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 	FBO we don't have access to the depth buffer from the default FBO. Therefore, the solution is to add to the G Buffer FBO 
 	a color buffer to render into and in the final pass blit it to the default FBO color buffer.*/
 	glBindTexture(GL_TEXTURE_2D, positionNormalColorHandles[2]);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, MAX_WIDTH, MAX_HEIGHT);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16, MAX_WIDTH, MAX_HEIGHT);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, attachments[2], GL_TEXTURE_2D, positionNormalColorHandles[2], 0);
 
 	// Depth and stencil buffer
@@ -74,7 +74,6 @@ void GBuffer::bindForLightPass()
 void GBuffer::startFrame() {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
 	glDrawBuffer(attachments[2]);
-	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 /* When we get to the final pass our final buffer is populated with the final image. Here we set things up for the blitting that takes place in the main application code. The default FBO is the target and the G Buffer FBO is the source.*/

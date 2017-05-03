@@ -91,10 +91,10 @@ private:
 	const char* GBUFFER_VERT = R"glsl(
 	#version 430 core
 
-	layout (location = 0)  uniform mat4 model;	      // Usage in: Node.hpp
-	layout (location = 4)  uniform mat4 inverseModel; // Usage in: Node.hpp
-	layout (location = 8)  uniform mat4 view;	      // Usage in: RenderLoop.cpp init(); before loop
-	layout (location = 12) uniform mat4 projection;   // Usage in: RenderLoop.cpp init(); before loop
+	layout (location = 0)  uniform mat4 model;	      // Usage in: Node.hpp#draw()
+	layout (location = 4)  uniform mat4 inverseModel; // Usage in: Node.hpp#draw()
+	layout (location = 8)  uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading()
+	layout (location = 12) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading()
 
 	// This four must be the same as DEFERRED_SHADING_STENCIL_VERT
 	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link();
@@ -117,7 +117,6 @@ private:
 		normalVector = mat3(inverseModel) * normal; // Forward normals to fragment shader
 		materialDiffuseShininess = material;        // rgb unused
 	})glsl";
-
 	const char* GBUFFER_FRAG = R"glsl(
 	#version 430 core
 
