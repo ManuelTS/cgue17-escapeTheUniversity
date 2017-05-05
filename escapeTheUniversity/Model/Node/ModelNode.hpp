@@ -16,6 +16,8 @@ public:
 	glm::mat4 modelMatrix; // MM of this node
 	glm::mat4 inverseModelMatrix; // Inverse MM
 
+	bool render = true; // True if this node should be rendered fals if not
+
 	/*This is the default node containing information about a model.*/
 	ModelNode();
 	~ModelNode();
@@ -23,6 +25,7 @@ public:
 	void draw() override;
 	bool isEmpty(); // Returns true if empty, false if not
 	void setModelMatrix(glm::mat4* m); // Sets the model matrix and computes the inverse one too
+	glm::mat4 ModelNode::getAncestorModelMatrix(); // Calculates the current world space position of this node traversing bottom up
 
 protected:
 	const GLint modelLocation = 0; // gBuffer.vert

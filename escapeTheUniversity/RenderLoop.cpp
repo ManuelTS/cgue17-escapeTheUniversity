@@ -91,6 +91,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			Text::getInstance()->setDisplayTime(4000);
 			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
 		}
+		else if (key == GLFW_KEY_B)
+			SoundManager::getInstance()->playSound("Dialog\\burp.mp3");
 		else if (key == GLFW_KEY_PRINT_SCREEN)
 		{
 			cout << "Hope you don't do anything bad with that screeny, sweetie." << endl;
@@ -269,6 +271,12 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
 	draw(ml->root); // Draw all nodes except light ones
+					mat4 m = mat4();
+					vec3 distance = vec3(glm::distance(ml->lights.at(9)->light.position, vec4(ml->lightSphere->getAncestorModelMatrix()[3])));
+					m = glm::translate(m, distance); // Create model matrix, frist translation, second scaling
+					//m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ml->lights.at(9))));
+					ml->lightSphere->setModelMatrix(&m);
+					draw(ml->lightSphere);
 	glDepthMask(GL_FALSE);
 
 	// Deferred Shading: Stencil and point light pass for point lights the gBuffer must be bound, reading from depth buffer is allowed, writing to it not, only stencil buffer is updated
@@ -317,7 +325,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ln->light), &ln->light);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
-		mat4 m = mat4();
+		/*mat4 m = mat4();
 		m = glm::translate(m, vec3(ln->light.position)); // Create model matrix, frist translation, second scaling
 		m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ln)));
 		ml->lightSphere->setModelMatrix(&m);
@@ -325,7 +333,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 		glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
 		draw(ml->lightSphere); // Light sphere in wireframe mode not rendered
-		
+		*/
+		// Usage as light geometry buggy, normal drawing works, draw normal but scaled and then transformed
 		//glCullFace(GL_BACK);
 		glDisable(GL_BLEND);
 
@@ -361,13 +370,13 @@ void RenderLoop::draw(Node* current)
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
 		//TODO AABBs frustum culling, the used point one is inefficient but works
-		//if (frustum || dynamic_cast<TransformationNode*>(current) != nullptr || mn != nullptr && Frustum::getInstance()->pointInFrustum(mn->position) != -1)
-		//{ // TODO frustum not working, too much triangles drawn
+		if (current != nullptr || mn->render) //frustum || dynamic_cast<TransformationNode*>(current) != nullptr || Frustum::getInstance()->pointInFrustum(mn->position) != -1)
+		{ // TODO frustum not working, too much triangles drawn
 			current->draw();
 
 			for (Node* child : current->children)
 				draw(child);
-		//}
+		}
 	}
 }
 

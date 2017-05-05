@@ -63,6 +63,11 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 		current->name = name;
 		processMeshesAndChildren(current, node, scene);
 
+		if (string::npos != name.find(LIGHT_VOLUME_SPHERE_NAME)) { // Sphere used in light volume calculation
+			current->render = false;
+			lightSphere = current;
+		}
+
 		if (string::npos != name.find(DOOR_PREFIX)) // Door Model, Door Node
 		{
 			aiNode* aiParent = node->mParent;
@@ -77,12 +82,6 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 			interpolation->children.push_back(current);
 
 			return dynamic_cast<Node*>(interpolation);
-		}
-		else if (string::npos != name.find(LIGHT_VOLUME_SPHERE_NAME)) // Sphere used in light volume calculation
-		{
-			// TODO Use position mesh
-			lightSphere = current; 
-			return new Node(); // Empty node
 		}
 		else
 		{
