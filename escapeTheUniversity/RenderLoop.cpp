@@ -89,7 +89,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 		else if (key == GLFW_KEY_O) {
 			Text::getInstance()->setDisplayTime(4000);
-			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
+			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.wav");
 		}
 		else if (key == GLFW_KEY_PRINT_SCREEN)
 		{
@@ -207,8 +207,11 @@ void RenderLoop::start()
 
 	ml->load("Playground.dae");
 	vec4 pos = ml->lights[7]->light.position;
-	pos.y -= 2.0f;
-	pos.z -= 70.0f;
+	pos.x = -30.0f;
+	pos.y = 11.0f;
+	pos.z = -28.0f;
+	//pos.y -= 12.0f;
+	//pos.z -= 70.0f;
 	camera->position = glm::vec3(pos); // Set position of camera to the first light
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
