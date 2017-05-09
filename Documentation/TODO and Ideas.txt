@@ -15,7 +15,7 @@ for(boundingBoxIndex)
 }
 for_each_thread(wait until all threads terminated)
 
-Rim lighting openGL super Bibile page 634
+Rim lighting openGL super Bibile page 626, only use on objects lit from the back
 
 Skymap, with a beautiful night sky full of stars in OGLSB as cube map on page 640. Example: Don't render full skypmap, only what is visible
 

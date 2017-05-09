@@ -128,7 +128,7 @@ void scrollCallback(GLFWwindow* window, double xpos, double ypos) // this method
 
 void mouseCallback(GLFWwindow* window, double x, double y)
 {
-	RenderLoop::getInstance()->camera->processMouseMovement(x,y);
+	RenderLoop::getInstance()->camera->processMouseMovement(x, y);
 }
 
 void errorCallback(int error, const char* description)
@@ -137,14 +137,14 @@ void errorCallback(int error, const char* description)
 }
 
 // Initializes GLFW and GLEW
-void RenderLoop::initGLFWandGLEW(){
+void RenderLoop::initGLFWandGLEW() {
 	if (!glfwInit())
 		Debugger::getInstance()->pauseExit("Could not init GLFW.");
 
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_FALSE);
-	#if _DEBUG
-		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-	#endif
+#if _DEBUG
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+#endif
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // Using OpenGL version 4.3, 4.4 could be used if necessary
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -163,12 +163,12 @@ void RenderLoop::initGLFWandGLEW(){
 
 	glGetError(); // Error 1280 after glewInit() internet says this one call can be ignored
 
-	#if _DEBUG
-		InitMemoryTracker();
-		Debugger* d = Debugger::getInstance();
-		d->setDebugContext();
-		glfwSetErrorCallback(errorCallback);
-	#endif
+#if _DEBUG
+	InitMemoryTracker();
+	Debugger* d = Debugger::getInstance();
+	d->setDebugContext();
+	glfwSetErrorCallback(errorCallback);
+#endif
 
 	glfwSetKeyCallback(window, keyCallback);// Set callbacks
 	glfwSetScrollCallback(window, scrollCallback);
@@ -248,7 +248,7 @@ void RenderLoop::start()
 	glfwTerminate();
 }
 
-void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, Shader*  deferredShaderStencil, ModelLoader* ml) 
+void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, Shader*  deferredShaderStencil, ModelLoader* ml)
 {
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -271,21 +271,21 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
 	draw(ml->root); // Draw all nodes except light ones
-					mat4 m = mat4();
-					vec3 distance = vec3(glm::distance(ml->lights.at(9)->light.position, vec4(ml->lightSphere->getAncestorModelMatrix()[3])));
-					m = glm::translate(m, distance); // Create model matrix, frist translation, second scaling
-					//m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ml->lights.at(9))));
-					ml->lightSphere->setModelMatrix(&m);
-					draw(ml->lightSphere);
+	mat4 m = ml->lightSphere->getAncestorModelMatrix();
+	vec3 distance = vec3(glm::distance(ml->lights.at(9)->light.position, vec4(m[3])));
+	m = glm::translate(m, distance); // Create model matrix, frist translation, second scaling
+	//m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ml->lights.at(9))));
+	ml->lightSphere->setModelMatrix(&m);
+	pureDraw(ml->lightSphere);
 	glDepthMask(GL_FALSE);
 
 	// Deferred Shading: Stencil and point light pass for point lights the gBuffer must be bound, reading from depth buffer is allowed, writing to it not, only stencil buffer is updated
 	//glEnable(GL_STENCIL_TEST);
 
-	for (unsigned int i = 0; i < ml->lights.size();i++)
+	for (unsigned int i = 0; i < ml->lights.size(); i++)
 	{
 		LightNode* ln = ml->lights.at(i);
-		
+
 		// Stencil pass
 		/*deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // During drawing of the stencil pass no color or depth values are written, but the depth is read
@@ -304,7 +304,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glUniformMatrix4fv(gBuffer->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 		draw(ml->lightSphere); // Render into stencil
 		*/
-		
+
 
 		// Point light pass
 		gBuffer->bindForLightPass();//Setup stencil to determine drawn pixels and enable blending to fuse multiple lights
@@ -352,7 +352,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glBlendFunc(GL_ONE, GL_ONE);
 	// Render direciontal light
 	glDisable(GL_BLEND);*/
-	
+
 	if (wireFrameMode) // Right past geometry pass?
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -365,24 +365,33 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 
 void RenderLoop::draw(Node* current)
 {
-	if (dynamic_cast<LightNode*>(current) == nullptr) // No light node, draw
+	if (current != nullptr && dynamic_cast<LightNode*>(current) == nullptr) // Don't draw light nodes or empty ones
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
 		//TODO AABBs frustum culling, the used point one is inefficient but works
-		if (current != nullptr || mn->render) //frustum || dynamic_cast<TransformationNode*>(current) != nullptr || Frustum::getInstance()->pointInFrustum(mn->position) != -1)
-		{ // TODO frustum not working, too much triangles drawn
-			current->draw();
-
-			for (Node* child : current->children)
-				draw(child);
+		// TODO frustum not working, too much triangles drawn
+		//frustum || dynamic_cast<TransformationNode*>(current) != nullptr || Frustum::getInstance()->pointInFrustum(mn->position) != -1)
+		if (mn != nullptr) // If Model Node
+		{
+			if (mn->render) // ... render only when the model node schould be rendered, example the lightSphere node is not rendered used here
+				pureDraw(current);
 		}
+		else // If no model node render anyway
+			pureDraw(current);
 	}
 }
 
-void RenderLoop::renderText() 
+void RenderLoop::pureDraw(Node* current) {
+	current->draw();
+
+	for (Node* child : current->children)
+		draw(child);
+}
+
+void RenderLoop::renderText()
 { // It is important to leave the if else structure here as it is
-	if(fps)
+	if (fps)
 		Text::getInstance()->fps(timeNow, deltaTime, drawnTriangles);
 
 	if (wireFrameMode)
@@ -390,11 +399,11 @@ void RenderLoop::renderText()
 
 	if (help)
 		Text::getInstance()->help();
-	else if(!render)
+	else if (!render)
 		Text::getInstance()->pause();
 	else if (Text::getInstance()->hasTimeLeft()) // Watch out, if more text becomes time dependent make an enum with the single times in it to set and render
 		Text::getInstance()->gameOver(deltaTime);
-	
+
 }
 
 // Calculates the delta time, e.g. the time between frames
@@ -420,7 +429,7 @@ void RenderLoop::doMovement(double timeDelta)
 }
 
 // Displays the ETU loading screen with music, source https://open.gl/textures
-void RenderLoop::displayLoadingScreen(ModelLoader* ml){
+void RenderLoop::displayLoadingScreen(ModelLoader* ml) {
 	GLuint vao;// Create Vertex Array Object
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);

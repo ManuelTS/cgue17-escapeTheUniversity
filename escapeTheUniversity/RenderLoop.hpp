@@ -25,7 +25,8 @@ class RenderLoop{
 		void doMovement(double timeDelta);
 		void doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, Shader* deferredShaderStencil, ModelLoader* ml); // Does the deferred shading gemetry and lighning pass and draws the screen quad afterwards
 		void calculateDeltaTime(); // Calculates the delta time, e.g. the time between frames
-		void draw(Node* current); // Draws all lights except light nodes
+		void draw(Node* current); // Draws all lights which checking their dependencies and condition (no Light Node drawing, frustum culling, flag setting)
+		void pureDraw(Node* current); // Draws the argument node without any checks and calls draw for its children again
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
 	public:
 		Camera* camera;

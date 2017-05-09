@@ -176,6 +176,24 @@ private:
 		LightStruct light;
 	} l; // Workaround, direct struct blockbinding only in openGL 4.5
 
+	const float RIM_POWER = 10.0f; // Rim light power
+
+	// Calculate Rim Light
+	vec3 calculateRim(vec3 normal, vec3 viewDirection)
+	{
+		// Calculate the rim factor
+		float rimFactor = 1.0 - dot(normal, viewDirection);
+
+		// Constrain it to the range 0 to 1 using a smoothstep function
+		rimFactor = smoothstep(0.0, 1.0, rimFactor);
+
+		// Raise it to the rim exponent
+		rimFactor = pow(rimFactor, RIM_POWER);
+
+		// Finally, multiply it by the rim color which is here simply the light diffuse color
+		return rimFactor * vec3(l.light.diffuse);
+	}
+
 	// Blinn Phong light
 	vec3 calculateLight(vec3 diffuse, float specular, vec3 norm, vec3 fragmentPosition, vec3 viewDirection)
 	{
@@ -201,7 +219,7 @@ private:
 		specularColor *= attenuation;
 
 		// Calculate Final color	
-		return ambientColor + diffuseColor + specularColor;
+		return ambientColor + diffuseColor + specularColor;// + calculateRim(norm, viewDirection);
 	}
 
 	void main()
