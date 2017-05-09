@@ -2,7 +2,10 @@ All ordered by priority!
 
 Programming (Manuel):
 
-
+One of this:
+http://gafferongames.com/game-physics/fix-your-timestep/
+or
+http://www.gamasutra.com/blogs/BramStolk/20160408/269988/Fixing_your_time_step_the_easy_way_with_the_golden_48537_ms.php
 
 make bounding volumes with threads (with vhacd)
 for(boundingBoxIndex)
