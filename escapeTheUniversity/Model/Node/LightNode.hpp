@@ -12,8 +12,7 @@ public:
 	are only vec3 this is okay due to unit memory allocation.*/
 	struct Light{ // Due to openGL byte ordering only vec4 usage
 		glm::vec4 position = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f); // w=0 point light, w=1 directional light in mesh.frag
-		glm::vec4 ambient = glm::vec4(0.1f, 0.1f, 0.1f, 0.0f); // w unused
-		glm::vec4 diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f); // w unused
+		glm::vec4 diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.01f); // rgb of diffuse light, ambient light coefficient to decrase the diffuse light and use it as ambient one
 		glm::vec4 specular = glm::vec4(0.3f, 0.3f, 0.3f, 0.0f); // w unused, TODO: optimization, use all w's for shiConLinQua
 		glm::vec4 shiConLinQua = glm::vec4(64.0f, 1.0f, 0.22f, 0.20f); // shininess, constant, linear, quadratic http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Point+Light+Attenuation
 	} light;
@@ -23,9 +22,6 @@ public:
 
 	LightNode(const unsigned int _UBO, const unsigned int _arrayIndex);
 	~LightNode();
-
-	// For debugging, set ambient, diffuse, and specular to the argument
-	void setAllLightComponents(glm::vec3 ads);
 private:
 };
 

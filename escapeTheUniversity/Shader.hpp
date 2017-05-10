@@ -165,8 +165,7 @@ private:
 	struct LightStruct 
 	{ // Same as LightNode.hpp#Light
 		vec4 position; //w = 0 pointLight, 1 directional (unused)
-		vec4 ambient; 
-		vec4 diffuse; 
+		vec4 diffuse;  // rgb = diffuse light, a = ambient coefficient
 		vec4 specular;
 		vec4 shiConLinQua; // x = shininess, y = constant attentuation, z = linear attentuation, w = quadratic attentuation value
 	};
@@ -191,14 +190,14 @@ private:
 		rimFactor = pow(rimFactor, RIM_POWER);
 
 		// Finally, multiply it by the rim color which is here simply the light diffuse color
-		return rimFactor * vec3(l.light.diffuse);
+		return rimFactor * l.light.diffuse.rgb;
 	}
 
 	// Blinn Phong light
 	vec3 calculateLight(vec3 diffuse, float specular, vec3 norm, vec3 fragmentPosition, vec3 viewDirection)
 	{
 		//  Calculate ambientColor
-		vec3 ambientColor = diffuse * 0.01;
+		vec3 ambientColor = diffuse * l.light.diffuse.a;
 
 		// Calculate diffuseColor 
 		vec3 lightPosition = l.light.position.xyz;

@@ -149,8 +149,8 @@ LightNode* ModelLoader::processLightNode(string* name, Node* parent, aiNode* nod
 			if (ln->light.position.x == 0.0f && ln->light.position.y == 0.0f && ln->light.position.z == 0.0f) // Position in light node often not set, but in the normal node representation it is...
 				ln->light.position = glm::vec4(getTransformationVec(&node->mTransformation), ln->light.position.w);
 
-			ln->light.ambient = glm::vec4(lightNode->mColorAmbient.r, lightNode->mColorAmbient.g, lightNode->mColorAmbient.b, 1.0f); // W unused
-			ln->light.diffuse = glm::vec4(lightNode->mColorDiffuse.r, lightNode->mColorDiffuse.g, lightNode->mColorDiffuse.b, 1.0f); // W unused
+			// Ambient light is in the shader ambient = diffuse.rbg * diffuse.a where .a is a simple coefficient
+			ln->light.diffuse = glm::vec4(lightNode->mColorDiffuse.r, lightNode->mColorDiffuse.g, lightNode->mColorDiffuse.b, 0.01f);
 			ln->light.specular = glm::vec4(lightNode->mColorSpecular.r, lightNode->mColorSpecular.g, lightNode->mColorSpecular.b, 1.0f); // w unused
 			ln->light.shiConLinQua = glm::vec4(64.0f, lightNode->mAttenuationConstant, lightNode->mAttenuationLinear, lightNode->mAttenuationQuadratic);
 			// Shin,Lin, Qua values with distance: http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Point+Light+Attenuation

@@ -58,14 +58,14 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			cout << "TODO: Visualizing the depth buffer." << endl; // TODO Visualizing the depth buffer http://learnopengl.com/#!Advanced-OpenGL/Depth-testing, swith shaders to depth ones
 		else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE)
 			rl->render = !rl->render;
-		else if (key == GLFW_KEY_F8) {
+		else if (key == GLFW_KEY_F8)
+		{
 			rl->frustum = !rl->frustum;
 			cout << "Switching Frustum Culling to ";
 			if (rl->frustum)
 				cout << "disabled." << endl;
 			else
 				cout << "enabled." << endl;
-
 		}
 		else if (key == GLFW_KEY_F9)
 			cout << "TODO: Blending on/off" << endl; // TODO
@@ -73,6 +73,13 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			cout << "TODO:" << endl; // TODO
 		else if (key == GLFW_KEY_F11)
 			rl->toggleFullscreen();
+		else if (key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT || key == GLFW_KEY_RIGHT_BRACKET || key == GLFW_KEY_KP_ADD)
+		{ // slash is german minus and right bracket is german plus on a german keyboard
+			bool minus = key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT; // In- or decrease ambient light coefficient
+
+			for (LightNode* ln : ModelLoader::getInstance()->lights)
+					ln->light.diffuse.a += minus ? -0.01f : 0.01f;
+		}
 		else if (key == GLFW_KEY_E)
 		{
 			for (Node* n : ModelLoader::getInstance()->getAllNodes())
@@ -209,9 +216,9 @@ void RenderLoop::start()
 	Shader* deferredShaderStencil = new Shader("deferredShadingStencil");
 
 	ml->load("Playground.dae");
-	vec4 pos = ml->lights[7]->light.position;
-	pos.y -= 2.0f;
-	pos.z -= 1.0f;
+	vec4 pos = ml->lights[9]->light.position;
+	pos.y += 2.0f;
+	pos.z += 1.0f;
 
 	camera->position = glm::vec3(pos); // Set position of camera to the first light
 
@@ -270,9 +277,9 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
 	draw(ml->root); // Draw all nodes except light ones
-	vec3 distance = vec3(glm::distance(ml->lights.at(7)->light.position, vec4(ml->lightSphere->getLocalWorldPosition(), 1.0f)));
+	vec3 distance = vec3(glm::distance(ml->lights.at(9)->light.position, vec4(ml->lightSphere->getLocalWorldPosition(), 1.0f)));
 	mat4 m = glm::translate(mat4(), distance); // Create model matrix, frist translation, second scaling
-	//m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ml->lights.at(7))));
+	//m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ml->lights.at(9))));
 //	ml->lightSphere->setModelMatrix(&m);
 	pureDraw(ml->lightSphere);
 	glDepthMask(GL_FALSE);
