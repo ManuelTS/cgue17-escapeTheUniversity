@@ -318,6 +318,7 @@ void Text::help()
 	i = copyInBuffer(help, i, (const unsigned char*) "Left click = interaction", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Right click = ?", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Print = Screenshot", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "All other keys have surprises for you.", true);
 
 	write(help, -1.0, 0.8, 0.5, 0.0f);
 }

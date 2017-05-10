@@ -164,9 +164,9 @@ private:
 
 	struct LightStruct 
 	{ // Same as LightNode.hpp#Light
-		vec4 position; //w = 0 pointLight, 1 directional (unused)
-		vec4 diffuse;  // rgb = diffuse light, a = ambient coefficient
-		vec4 specular;
+		vec4 position;     // w unused
+		vec4 diffuse;      // rgb = diffuse light, a = ambient coefficient
+		vec4 specular;     // w unused
 		vec4 shiConLinQua; // x = shininess, y = constant attentuation, z = linear attentuation, w = quadratic attentuation value
 	};
 
