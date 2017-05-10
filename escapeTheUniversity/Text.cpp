@@ -161,17 +161,45 @@ void Text::writeVertices(vector<float>*vertices)
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, size / 4); //Each vertex has two xy and two uv entries, ergo divide by four for correct vertex amount	
 }
 
-void Text::setDisplayTime(const double miliSeconds = 0) {
-	displayTime = miliSeconds;
+void Text::addText2Display(const int toAdd) {
+	displayTime.push_back(toAdd);
+	displayTime.push_back(toAdd);
 }
 
-bool Text::hasTimeLeft() {
-	return displayTime > 0;
+bool Text::hasTimeLeft(const unsigned int i, const double deltaTime) {
+
+	if(i == 0 && deltaTime == 0)
+		return displayTime.size() > 0;
+	else {
+		if ((displayTime[i + 1] -= (int)(deltaTime * 1000)) < 0) // Convert it to seconds and calculate new remaining display time on screen, truncation is okay here
+			displayTime.erase(displayTime.begin() + i, displayTime.begin() + i + 2); // If below zero earase entries
+		return true;
+	}
 }
 
-void Text::gameOver(const double deltaTime)
+void Text::removeTime(const double deltaTime)
 {
-	displayTime -= deltaTime*1000;
+	for (unsigned int i = 0; i < displayTime.size(); i += 2)
+		switch (displayTime.at(i))
+		{
+			case SCREENY:
+				screeny();
+				hasTimeLeft(i, deltaTime);
+				break;
+			case GAME_OVER:
+				gameOver();
+				hasTimeLeft(i, deltaTime);
+				break;
+		}
+}
+
+void Text::screeny()
+{
+	write("Hope you don't do anything bad\nwith that screeny, sweetie.", -0.9f, 0.0f, 0.5f, 0.0f);
+}
+
+void Text::gameOver()
+{
 	color = glm::vec3(1.0f, 0.0f, 0.0f);
 	write("Exmatriculated", -1.05f, -0.1f, 1.0f, -45.0f);
 	color = DEFAULT_COLOR; // Restet original color for other possible text draws
@@ -236,6 +264,16 @@ void Text::loadingScreenInfo() {
 	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
 	//int m_viewport[4]; // 0=x, 1=y, 2=w, 3=h
 	//glGetIntegerv(GL_VIEWPORT, m_viewport);
+
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "format c: /x /fs:exFAT", true);
 
 	write(infoText, -1.0f, 1.0f, 0.45f, 0.0f);
 }

@@ -88,15 +88,13 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			// TODO
 		}
 		else if (key == GLFW_KEY_O) {
-			Text::getInstance()->setDisplayTime(4000);
+			Text::getInstance()->addText2Display(Text::GAME_OVER);
 			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
 		}
 		else if (key == GLFW_KEY_B)
 			SoundManager::getInstance()->playSound("Dialog\\burp.mp3");
 		else if (key == GLFW_KEY_PRINT_SCREEN)
-		{
-			cout << "Hope you don't do anything bad with that screeny, sweetie." << endl;
-		}
+			Text::getInstance()->addText2Display(Text::SCREENY);
 	}
 }
 
@@ -402,8 +400,8 @@ void RenderLoop::renderText()
 		Text::getInstance()->help();
 	else if (!render)
 		Text::getInstance()->pause();
-	else if (Text::getInstance()->hasTimeLeft()) // Watch out, if more text becomes time dependent make an enum with the single times in it to set and render
-		Text::getInstance()->gameOver(deltaTime);
+	else if (Text::getInstance()->hasTimeLeft())
+		Text::getInstance()->removeTime(deltaTime);
 
 }
 

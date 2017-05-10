@@ -15,8 +15,8 @@ class RenderLoop{
 	private:
 		GLFWwindow* window;
 		// Time
-		double timePast; // Last, past time  in nano seconds
-		double timeNow; // New, current time in nano seconds
+		double timePast; // Last, past time  in milliseconds
+		double timeNow; // New, current time in milliseconds
 	
 		RenderLoop(void){}; // Private constructor to allow only one instance
 		RenderLoop(RenderLoop const&); // Private constructor to prevent copies
