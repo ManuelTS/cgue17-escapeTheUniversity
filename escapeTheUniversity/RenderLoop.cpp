@@ -207,7 +207,7 @@ void RenderLoop::start()
 
 	ml->load("Playground.dae");
 	vec4 pos = ml->lights[9]->light.position;
-	pos.y -= 12.0f;
+	//pos.y -= 12.0f;
 	//pos.z -= 70.0f;
     camera->position = glm::vec3(pos); // Set position of camera to the first light
 
