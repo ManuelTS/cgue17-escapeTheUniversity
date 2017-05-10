@@ -97,6 +97,9 @@ void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const ai
 {
 	ModelNode* mn = (ModelNode*)current;
 
+	if (mn != 0)
+		mn->position = getTransformationVec(&node->mTransformation);
+
 	for (GLuint i = 0; i < node->mNumMeshes; i++)// Process each mesh located at the current node
 	{
 		// The node object only contains indices to index the actual objects in the scene. 
@@ -104,10 +107,7 @@ void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const ai
 		// The scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 		
 		if (mn != 0)
-		{
-			mn->position = getTransformationVec(&node->mTransformation);
 			mn->meshes.push_back(processMesh(mesh, scene));
-		}
 	}
 
 	// After we've processed all of the meshes (if any) we then recursively process each of the children nodes

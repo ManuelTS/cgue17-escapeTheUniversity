@@ -121,7 +121,7 @@ void scrollCallback(GLFWwindow* window, double xpos, double ypos) // this method
 	if (instance->yScroll < 0)
 		instance->yScroll = 0;
 
-	//instance->camera->processMouseScroll(instance->yScroll); // TODO ?
+	//instance->camera->processMouseScroll(instance->yScroll); // TODO the zoom?
 }
 
 void mouseCallback(GLFWwindow* window, double x, double y)
@@ -140,9 +140,9 @@ void RenderLoop::initGLFWandGLEW() {
 		Debugger::getInstance()->pauseExit("Could not init GLFW.");
 
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_FALSE);
-#if _DEBUG
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-#endif
+	#if _DEBUG
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+	#endif
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // Using OpenGL version 4.3, 4.4 could be used if necessary
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -161,12 +161,12 @@ void RenderLoop::initGLFWandGLEW() {
 
 	glGetError(); // Error 1280 after glewInit() internet says this one call can be ignored
 
-#if _DEBUG
-	InitMemoryTracker();
-	Debugger* d = Debugger::getInstance();
-	d->setDebugContext();
-	glfwSetErrorCallback(errorCallback);
-#endif
+	#if _DEBUG
+		InitMemoryTracker();
+		Debugger* d = Debugger::getInstance();
+		d->setDebugContext();
+		glfwSetErrorCallback(errorCallback);
+	#endif
 
 	glfwSetKeyCallback(window, keyCallback);// Set callbacks
 	glfwSetScrollCallback(window, scrollCallback);
@@ -209,7 +209,7 @@ void RenderLoop::start()
 	Shader* deferredShaderStencil = new Shader("deferredShadingStencil");
 
 	ml->load("Playground.dae");
-	vec4 pos = ml->lights[9]->light.position;
+	vec4 pos = ml->lights[7]->light.position;
 	pos.y -= 2.0f;
 	pos.z -= 1.0f;
 
@@ -270,11 +270,10 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
 	draw(ml->root); // Draw all nodes except light ones
-	mat4 m = ml->lightSphere->getAncestorModelMatrix();
-	vec3 distance = vec3(glm::distance(ml->lights.at(9)->light.position, vec4(m[3])));
-	m = glm::translate(m, distance); // Create model matrix, frist translation, second scaling
-	//m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ml->lights.at(9))));
-	ml->lightSphere->setModelMatrix(&m);
+	vec3 distance = vec3(glm::distance(ml->lights.at(7)->light.position, vec4(ml->lightSphere->getLocalWorldPosition(), 1.0f)));
+	mat4 m = glm::translate(mat4(), distance); // Create model matrix, frist translation, second scaling
+	//m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ml->lights.at(7))));
+//	ml->lightSphere->setModelMatrix(&m);
 	pureDraw(ml->lightSphere);
 	glDepthMask(GL_FALSE);
 

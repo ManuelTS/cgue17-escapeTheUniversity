@@ -14,6 +14,7 @@ Text::~Text() {
 	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteVertexArrays(1, &VAO);
+	displayTime.clear();
 }
 
 void Text::init() {

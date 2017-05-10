@@ -40,18 +40,21 @@ bool ModelNode::isEmpty() {
 	return false;
 }
 
-glm::mat4 ModelNode::getAncestorModelMatrix()
+glm::vec3 ModelNode::getLocalWorldPosition()
 {
 	// TODO https://gamedev.stackexchange.com/questions/108945/assimp-transformation-hierarchy-and-animations
 	// Yes you need to multiply the child node's transform with the parent node's transform to obtain the final world transform for the mesh at that node. You basically have to walk down the hierarchy to the child nodes, multiplying all the transform together to get the transform for each child node's mesh.
-	glm::mat4 calculated = modelMatrix;
+	glm::vec3 calculated = position;
 
-	if (parent != nullptr)
+	if (glm::all(glm::equal(calculated, glm::vec3(0.0f))))// Check if not a null vector
+		calculated = glm::vec3(1.0f); // Does not change multiplication on other recursions
+	
+	if (parent != nullptr) 
 	{
 		ModelNode* mParent = dynamic_cast<ModelNode*>(parent);
 
 		if (mParent != nullptr)
-			calculated *= mParent->getAncestorModelMatrix();
+			calculated += mParent->getLocalWorldPosition();
 	}
 
 	return calculated;

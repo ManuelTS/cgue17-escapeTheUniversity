@@ -25,7 +25,7 @@ public:
 	void draw() override;
 	bool isEmpty(); // Returns true if empty, false if not
 	void setModelMatrix(glm::mat4* m); // Sets the model matrix and computes the inverse one too
-	glm::mat4 ModelNode::getAncestorModelMatrix(); // Calculates the current world space position of this node traversing bottom up
+	glm::vec3 getLocalWorldPosition(); // Calculates the current local world space position of this node traversing bottom up
 
 protected:
 	const GLint modelLocation = 0; // gBuffer.vert
