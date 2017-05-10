@@ -280,7 +280,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	vec3 distance = vec3(glm::distance(ml->lights.at(9)->light.position, vec4(ml->lightSphere->getLocalWorldPosition(), 1.0f)));
 	mat4 m = glm::translate(mat4(), distance); // Create model matrix, frist translation, second scaling
 	//m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ml->lights.at(9))));
-//	ml->lightSphere->setModelMatrix(&m);
+	ml->lightSphere->setModelMatrix(&m);
 	pureDraw(ml->lightSphere);
 	glDepthMask(GL_FALSE);
 
