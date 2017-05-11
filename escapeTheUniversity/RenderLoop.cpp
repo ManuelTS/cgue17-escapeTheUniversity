@@ -217,9 +217,6 @@ void RenderLoop::start()
 
 	ml->load("Playground.dae");
 	vec4 pos = ml->lights[9]->light.position;
-	pos.y += 2.0f;
-	pos.z += 1.0f;
-
 	camera->position = glm::vec3(pos); // Set position of camera to the first light
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
@@ -277,22 +274,17 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
 	draw(ml->root); // Draw all nodes except light ones
-	vec3 distance = vec3(glm::distance(ml->lights.at(9)->light.position, vec4(ml->lightSphere->getLocalWorldPosition(), 1.0f)));
-	mat4 m = glm::translate(mat4(), distance); // Create model matrix, frist translation, second scaling
-	//m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ml->lights.at(9))));
-	ml->lightSphere->setModelMatrix(&m);
-	pureDraw(ml->lightSphere);
 	glDepthMask(GL_FALSE);
 
 	// Deferred Shading: Stencil and point light pass for point lights the gBuffer must be bound, reading from depth buffer is allowed, writing to it not, only stencil buffer is updated
-	//glEnable(GL_STENCIL_TEST);
+	glEnable(GL_STENCIL_TEST);
 
 	for (unsigned int i = 0; i < ml->lights.size(); i++)
 	{
 		LightNode* ln = ml->lights.at(i);
 
 		// Stencil pass
-		/*deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
+		deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // During drawing of the stencil pass no color or depth values are written, but the depth is read
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
@@ -301,28 +293,27 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
-		mat4 m = glm::translate(mat4(), vec3(ln->light.position)); // Create model matrix
-		m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ln))); // Scale it with the sphere radius
+		vec3 distance = vec3(ln->light.position) - ml->lightSphere->position; // Calculate distance between the light and sphere points
+		mat4 m = glm::scale(glm::translate(mat4(), distance), vec3(gBuffer->calcPointLightBSphere(ln))); // Translate and then scale the sphere to the light
+		ml->lightSphere->setModelMatrix(&m); // Set new model matrix
 
 		glUniformMatrix4fv(gBuffer->modelLocation, 1, GL_FALSE, glm::value_ptr(m));
 		glUniformMatrix4fv(gBuffer->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
 		glUniformMatrix4fv(gBuffer->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-		draw(ml->lightSphere); // Render into stencil
-		*/
-
+		pureDraw(ml->lightSphere); // Render sphere into stencil buffer
 
 		// Point light pass
 		gBuffer->bindForLightPass();//Setup stencil to determine drawn pixels and enable blending to fuse multiple lights
-		//glStencilFunc(GL_NOTEQUAL, 0, 0xFF); 
-		//glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
-		//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glStencilFunc(GL_NOTEQUAL, 0, 0xFF); 
+		glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_ONE, GL_ONE);
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_FRONT); // The camera may be inside the light volume and if we do back face culling as we normally do we will not see the light until we exit its volume
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT); // The camera may be inside the light volume and if we do back face culling as we normally do we will not see the light until we exit its volume
 
 		deferredShader->useProgram(); // Set light parameters
 		glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
@@ -330,23 +321,18 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ln->light), &ln->light);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
-		/*mat4 m = mat4();
-		m = glm::translate(m, vec3(ln->light.position)); // Create model matrix, frist translation, second scaling
-		m = glm::scale(m, vec3(gBuffer->calcPointLightBSphere(ln)));
-		ml->lightSphere->setModelMatrix(&m);
 		gBufferShader->useProgram(); // Prepare and then render light geometry
 		glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 		glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
-		draw(ml->lightSphere); // Light sphere in wireframe mode not rendered
-		*/
-		// Usage as light geometry buggy, normal drawing works, draw normal but scaled and then transformed
-		//glCullFace(GL_BACK);
+		pureDraw(ml->lightSphere); // Light sphere in wireframe mode not rendered
+		
+		glCullFace(GL_BACK);
 		glDisable(GL_BLEND);
 
 		// http://stackoverflow.com/questions/14413094/how-to-draw-from-the-inside-of-the-light-geometry-in-deferred-shading/14419722#14419722
 	}
 
-	//glDisable(GL_STENCIL_TEST);
+	glDisable(GL_STENCIL_TEST);
 
 	// Now would come the directional light pass without sphere
 	deferredShader->useProgram();

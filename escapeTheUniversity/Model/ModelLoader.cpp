@@ -164,7 +164,6 @@ LightNode* ModelLoader::processLightNode(string* name, Node* parent, aiNode* nod
 	if (ln == nullptr)
 		Debugger::getInstance()->pauseExit("Malfunction: Light node " + *name + " not found.");
 
-	processMeshesAndChildren(ln, node, scene);
 	lights.push_back(ln);
 	return ln;
 }
