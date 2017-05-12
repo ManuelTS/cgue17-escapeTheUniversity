@@ -286,7 +286,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		// Stencil pass
 		deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // During drawing of the stencil pass no color or depth values are written, but the depth is read
-		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 		glClear(GL_STENCIL_BUFFER_BIT);
 		glStencilFunc(GL_ALWAYS, 0, 0);
@@ -297,18 +297,18 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		mat4 m = glm::scale(glm::translate(mat4(), distance), vec3(gBuffer->calcPointLightBSphere(ln))); // Translate and then scale the sphere to the light
 		ml->lightSphere->setModelMatrix(&m); // Set new model matrix
 
-		glUniformMatrix4fv(gBuffer->modelLocation, 1, GL_FALSE, glm::value_ptr(m));
-		glUniformMatrix4fv(gBuffer->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
 		glUniformMatrix4fv(gBuffer->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-		pureDraw(ml->lightSphere); // Render sphere into stencil buffer
+		glUniformMatrix4fv(gBuffer->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
+		// Model is set in the following draw call
+		stencilDraw(ml->lightSphere); // Render sphere into stencil buffer
 
 		// Point light pass
 		gBuffer->bindForLightPass();//Setup stencil to determine drawn pixels and enable blending to fuse multiple lights
 		glStencilFunc(GL_NOTEQUAL, 0, 0xFF); 
 		glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
+		//glEnable(GL_DEPTH_TEST);
+		//glDepthFunc(GL_LEQUAL);
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_ONE, GL_ONE);
@@ -320,11 +320,14 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ln->light), &ln->light);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
 		glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
+
 		gBufferShader->useProgram(); // Prepare and then render light geometry
 		glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 		glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
-		pureDraw(ml->lightSphere); // Light sphere in wireframe mode not rendered
+		// Model is set in the following draw call
+		pureDraw(ml->lightSphere);
 		
 		glCullFace(GL_BACK);
 		glDisable(GL_BLEND);
@@ -378,6 +381,18 @@ void RenderLoop::pureDraw(Node* current) {
 
 	for (Node* child : current->children)
 		draw(child);
+}
+
+void RenderLoop::stencilDraw(ModelNode* current) {
+	current->stencilDraw();
+
+	for (Node* child : current->children)
+	{
+		ModelNode* mn = dynamic_cast<ModelNode*>(child);
+
+		if(mn != nullptr)
+			stencilDraw(mn);
+	}
 }
 
 void RenderLoop::renderText()

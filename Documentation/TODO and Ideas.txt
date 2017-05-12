@@ -2,6 +2,8 @@ All ordered by priority!
 
 Programming (Manuel):
 
+todo: make own stencil draw only with the needed data
+
 make bounding volumes with threads (with vhacd)
 for(boundingBoxIndex)
 {
@@ -33,13 +35,15 @@ Fade for sound
 
 check vertical sync impact on the game
 
+Omnidirectional shadows
+
 in stencil and gbuffer vertex shader combine this parameters with using only vec4 s
 layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link(); // Of a point of the light sphere, used in .cpp, w is unused and must be one
 layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
 layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
 layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, rgb unused
 
-Omnidirectional shadows
+in the gBuffer try to reduce the single GL_** bit attachments from GL_DEPTH32F_STENCIL8 to GL_DEPTH24F_STENCIL8 for example
 
 Visualize depth: https://learnopengl.com/#!Advanced-OpenGL/Depth-testing
 

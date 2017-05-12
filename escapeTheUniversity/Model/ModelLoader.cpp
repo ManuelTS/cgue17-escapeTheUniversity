@@ -41,7 +41,8 @@ void ModelLoader::load(string path)
 	}
 }
 
-void ModelLoader::linkLightUBO(){
+void ModelLoader::linkLightUBO()
+{
 		glGenBuffers(1, &lightUBO);
 		glBindBuffer(GL_UNIFORM_BUFFER, lightUBO);
 		glBufferData(GL_UNIFORM_BUFFER, sizeof(LightNode::Light), NULL, GL_DYNAMIC_DRAW); // Play with last param 4 performance
@@ -61,12 +62,13 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 		ModelNode* current = new ModelNode();
 
 		current->name = name;
-		processMeshesAndChildren(current, node, scene);
-
 		if (string::npos != name.find(LIGHT_VOLUME_SPHERE_NAME)) { // Sphere used in light volume calculation
 			current->render = false;
+			current->stencil = true;
 			lightSphere = current;
 		}
+
+		processMeshesAndChildren(current, node, scene);
 
 		if (string::npos != name.find(DOOR_PREFIX)) // Door Model, Door Node
 		{
@@ -107,7 +109,7 @@ void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const ai
 		// The scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 		
 		if (mn != 0)
-			mn->meshes.push_back(processMesh(mesh, scene));
+			mn->meshes.push_back(processMesh(mesh, scene, mn->stencil));
 	}
 
 	// After we've processed all of the meshes (if any) we then recursively process each of the children nodes
@@ -205,7 +207,7 @@ std::string ModelLoader::lightSourceTypeToString(aiLightSourceType type)
 		return "Unknown light enum type";
 }
 
-Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene)
+Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene, bool generateStencilVBO)
 {
 	// Data to fill, Vertex data
 	vector<Mesh::Vertex> data;
@@ -264,7 +266,7 @@ Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene)
 		text.clear();
 	}
 	
-	return new Mesh(indices, data, textures, materials);
+	return new Mesh(indices, data, textures, materials, generateStencilVBO);
 }
 
 // Checks all material textures of a given type and loads the textures if they're not loaded yet.

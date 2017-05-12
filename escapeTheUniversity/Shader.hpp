@@ -91,8 +91,8 @@ private:
 	const char* GBUFFER_VERT = R"glsl(
 	#version 430 core
 
-	layout (location = 0)  uniform mat4 model;	      // Usage in: Node.hpp#draw()
-	layout (location = 4)  uniform mat4 inverseModel; // Usage in: Node.hpp#draw()
+	layout (location = 0)  uniform mat4 model;	      // Usage in: ModelNode.hpp#draw()
+	layout (location = 4)  uniform mat4 inverseModel; // Usage in: ModelNode.hpp#draw()
 	layout (location = 8)  uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading()
 	layout (location = 12) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading()
 
@@ -243,13 +243,10 @@ private:
 
 	// This four must be the same as in GBUFFER_VERT
 	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link(); // Of a point of the light sphere, used in .cpp, w is unused and must be one
-	layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
-	layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
-	layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, rgb unused
 
-	layout (location = 0) uniform mat4 model;      // translated, scaled sphere model of a light, used in gBuffer.hpp
-	layout (location = 4) uniform mat4 view;       // of the camera, used in gBuffer.hpp
-	layout (location = 8) uniform mat4 projection; // to see what is on the screen, used in gBuffer.hpp
+	layout (location = 0) uniform mat4 model;	      // Usage in: ModelNode.hpp#draw(), translated, scaled sphere model of a light, used in gBuffer.hpp
+	layout (location = 4) uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading(), of the camera, used in gBuffer.hpp
+	layout (location = 8) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading(), to see what is on the screen, used in gBuffer.hpp
 
 	void main()
 	{          

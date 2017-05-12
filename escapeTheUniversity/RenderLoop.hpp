@@ -27,6 +27,7 @@ class RenderLoop{
 		void calculateDeltaTime(); // Calculates the delta time, e.g. the time between frames
 		void draw(Node* current); // Draws all lights which checking their dependencies and condition (no Light Node drawing, frustum culling, flag setting)
 		void pureDraw(Node* current); // Draws the argument node without any checks and calls draw for its children again
+		void stencilDraw(ModelNode* current); // Draws the argument node in the stencil using only the mesh positions nothing more
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
 	public:
 		Camera* camera;

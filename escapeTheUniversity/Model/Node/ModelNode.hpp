@@ -16,16 +16,16 @@ public:
 	glm::mat4 modelMatrix; // MM of this node
 	glm::mat4 inverseModelMatrix; // Inverse MM
 
-	bool render = true; // True if this node should be rendered fals if not
+	bool render = true; // True if this node should be rendered false if not, default: true
+	bool stencil = false; // True if an extra stencil FBO for this node VAO should be generated in the mesh constructor, false if not. Default: false
 
 	/*This is the default node containing information about a model.*/
 	ModelNode();
 	~ModelNode();
 
 	void draw() override;
-	bool isEmpty(); // Returns true if empty, false if not
+	void stencilDraw(); // Draws this nodes position only to the stencil buffer
 	void setModelMatrix(glm::mat4* m); // Sets the model matrix and computes the inverse one too
-	glm::mat4 getModelMatrix(); // Calculates the current model matrix with all ancestors
 
 protected:
 	const GLint modelLocation = 0; // gBuffer.vert

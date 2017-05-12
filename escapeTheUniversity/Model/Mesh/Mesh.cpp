@@ -12,23 +12,18 @@ Mesh::~Mesh(){
 }
 
 /*Links the VBOs, indices, positions, normals, textCoords (UVs), textureIds, -names and -paths together in one VAO.*/
-Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _data, vector<Texture> _textures, vector<glm::vec4> _materials) : indices(_indices), data(_data), textures(_textures), materials(_materials)
+Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _data, vector<Texture> _textures, vector<glm::vec4> _materials, bool generateStencilVAO) : indices(_indices), data(_data), textures(_textures), materials(_materials)
 {
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
 	//Link
-	glGenVertexArrays(1, &VAO); // Bind
+	glGenBuffers(1, &EBO); // Multiple VAOS can refer to the same element buffer
+	glGenVertexArrays(1, &VAO); // Generate and setup normal VAO and VBO
 	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
-
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(Vertex), &data[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(GLuint), &this->indices[0], GL_STATIC_DRAW);
 
-	glEnableVertexAttribArray(positionsLocation);
-	glVertexAttribPointer(positionsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
+	partitialSetup(VAO, VBO);
 	glEnableVertexAttribArray(normalsLocation);
 	glVertexAttribPointer(normalsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, normal));
 	glEnableVertexAttribArray(uvLocation);
@@ -40,9 +35,30 @@ Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _data, vector<Texture> 
 	glVertexAttribPointer(materialLocation, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 
 	glBindVertexArray(0); // Unbind VAO first!
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	if (generateStencilVAO)
+	{
+		glGenVertexArrays(1, &stencilVAO); // Generate VAO and VBO
+		glGenBuffers(1, &stencilVBO);
+		
+		partitialSetup(stencilVAO, stencilVBO);
+
+		glBindVertexArray(0); // Unbind VAO first!
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void Mesh::partitialSetup(unsigned int currentVAO, unsigned int currentVBO) 
+{
+	glBindVertexArray(currentVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, currentVBO);
+	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(Vertex), &data[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(positionsLocation);
+	glVertexAttribPointer(positionsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
 }
 
 /*Draws this mesh*/
@@ -63,6 +79,9 @@ void Mesh::draw()
 			}*/
 		}	
 
+		// use multiple FBOs ONLY for sphere, than make own draw call, trickle down from name
+		// on stencil draw call, no textures are needed
+
 		glBindVertexArray(VAO);
 
 		if (rl->fps)
@@ -76,4 +95,11 @@ void Mesh::draw()
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
+}
+
+void Mesh::stencilDraw()
+{
+	glBindVertexArray(stencilVAO);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
 }
