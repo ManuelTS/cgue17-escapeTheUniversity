@@ -287,12 +287,11 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // During drawing of the stencil pass no color or depth values are written, but the depth is read
 		glEnable(GL_DEPTH_TEST);
+		glClear(GL_STENCIL_BUFFER_BIT); // Clear buffer
+		glStencilFunc(GL_ALWAYS, 0, 0xff); // The function always passes all bits
+		glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
+		glStencilMask(0xff); // Allow stencil buffer to write to all bits
 		glDisable(GL_CULL_FACE);
-		glStencilMask(0xff);
-		glClear(GL_STENCIL_BUFFER_BIT);
-		glStencilFunc(GL_ALWAYS, 0, 0);
-		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
-		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
 		vec3 distance = vec3(ln->light.position) - ml->lightSphere->position; // Calculate distance between the light and sphere points
 		mat4 m = glm::scale(glm::translate(mat4(), distance), vec3(gBuffer->calcPointLightBSphere(ln))); // Translate and then scale the sphere to the light
@@ -307,7 +306,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		gBuffer->bindForLightPass();//Setup stencil to determine drawn pixels and enable blending to fuse multiple lights
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		glDisable(GL_DEPTH_TEST);
-		glStencilFunc(GL_NOTEQUAL, 0, 0xFF); 
+		glStencilFunc(GL_GREATER, 0, 0xFF); // Render all pixels which are not zero
 		glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
 		//glEnable(GL_DEPTH_TEST); // You can do depth testing. Test for greater or equal to see if the backface is behind or on a geometry, therefore intersects with the surface of the geometry. http://stackoverflow.com/a/14418862
 		//glDepthFunc(GL_GEQUAL);
