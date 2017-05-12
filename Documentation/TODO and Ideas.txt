@@ -2,8 +2,6 @@ All ordered by priority!
 
 Programming (Manuel):
 
-
-
 make bounding volumes with threads (with vhacd)
 for(boundingBoxIndex)
 {
@@ -16,17 +14,23 @@ for(boundingBoxIndex)
   ...
 }
 
-Make time with Chroma.cpp
+One of this for bullet timestep:
+http://gafferongames.com/game-physics/fix-your-timestep/
+or
+http://www.gamasutra.com/blogs/BramStolk/20160408/269988/Fixing_your_time_step_the_easy_way_with_the_golden_48537_ms.php
+update in bullet only each second or x frame if the deltaTime gets too low since bullet can get nummerical instable. for example if frames are above 60 fps only each second or x frame...
 
 Transform feedback: https://open.gl/feedback
 
 Rim lighting openGL super Bibile page 634
 
-Skymap, with a beautiful night sky full of stars in OGLSB as cube map on page 640.
+Skymap, with a beautiful night sky von NASA deep field image full of stars in OGLSB as cube map on page 640. Before doing that check "seamless cube map / sky box2".
 
 Game over screen, If the player fails, show a game over screen with text, sound, or music, and restart.
 
 Fade for sound
+
+check vertical sync impact on the game
 
 Optimization:
 Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines
@@ -47,23 +51,17 @@ University interriors,
 Critical books, use only critical literature about the following topics:
 - 9/11
 - Bank System
-- MK Ultra
+- Book cover from: https://www.amazon.com/Bluebird-Deliberate-Creation-Personality-Psychiatrists/dp/0970452519/ref=sr_1_1?ie=UTF8&qid=1494384682&sr=8-1&keywords=bluebird+deliberate+creation+of+multiple+personality+by++psychiatrists
 - Biocybernetics
 - Money system
-- NWO
-- Charls Darwin
-- 8 Todsünden der Zivilisierten Menschheit
-- books from danielle ganser
+- Impfen: http://www.dr.loibner.net/bilder/cover2.jpg
+- 8 Todsünden der Zivilisierten Menschheit: http://www.langelieder.de/lit-pics/lorenz73.jpg
+- books from danielle ganser: https://www.danieleganser.ch/monografien.html
 ...
 
 Our real life pictures somewhere in an office on the wall as framed pictures.
 
 Perspective Room from https://youtu.be/xleyq2oJt_8?t=30m53s as art installation in a room with a sign beside the door which says "There is only a perspective seeing, only a perspective "knowing"". - Friedrich Nietzsche 1844 - 1900
-
-Roof revision:
-- roof with stairs up to it and door on top
-- handrails to not to fall down
-- roofgarden
 
 Uniform Texture Pre- and Suffixes:
 const std::string ANGLE_SUFFIX = "Angle";
@@ -76,25 +74,16 @@ Unification is needed.
 
 Elevator, from the basement up to to roof top, must be dirty with typical elevator music.
 
-Compress all textures to reduce loading time with: http://gpuopen.com/gaming-product/compressonator/
-
-Define all texture material and light ambient, diffuse, and specular colors in textures, logic for that is already in the model loader. If it gives points do:
-http://learnopengl.com/#!Lighting/Lighting-maps
-Light Mapping 0.5 Points
-Use an external tool to bake the static light information of your scene into the diffuse textures of your objects. All static objects combined with all static lights in your scene should use this technique. However, dynamic lights and the lighting of dynamic objects have to be calculated additionally.
-Separate Textures 0.5 Points
-Instead of baking into the diffuse texture the Light Map should be baked into a separate texture and combined at runtime.
-In-Game-Calculation 1 Points
-Instead of baking the Light Map with an external tool, precalculate it in your game engine at startup.
-Let's discuss that
-After "text on screen" is finished I can take a look how complex In-Game-Calculation is, I rather to it before Seperate Textures, texture usage is reciprocal to performance during gaming, (pre) calculation on startup would be better, maybe even with threading.
-
-
 
 
 
 
 Ideas (both):
+
+Roof revision:
+- roof with stairs up to it and door on top
+- handrails to not to fall down
+- roofgarden
 
 If a charater is camping giv an NPC the position and let him walk to that position to detect him
 
