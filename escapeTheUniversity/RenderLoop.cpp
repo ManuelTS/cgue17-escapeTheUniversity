@@ -286,8 +286,9 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		// Stencil pass
 		deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // During drawing of the stencil pass no color or depth values are written, but the depth is read
-		//glEnable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
+		glStencilMask(0xff);
 		glClear(GL_STENCIL_BUFFER_BIT);
 		glStencilFunc(GL_ALWAYS, 0, 0);
 		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
@@ -304,11 +305,12 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 
 		// Point light pass
 		gBuffer->bindForLightPass();//Setup stencil to determine drawn pixels and enable blending to fuse multiple lights
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glDisable(GL_DEPTH_TEST);
 		glStencilFunc(GL_NOTEQUAL, 0, 0xFF); 
 		glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		//glEnable(GL_DEPTH_TEST);
-		//glDepthFunc(GL_LEQUAL);
+		//glEnable(GL_DEPTH_TEST); // You can do depth testing. Test for greater or equal to see if the backface is behind or on a geometry, therefore intersects with the surface of the geometry. http://stackoverflow.com/a/14418862
+		//glDepthFunc(GL_GEQUAL);
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_ONE, GL_ONE);
@@ -331,16 +333,15 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		
 		glCullFace(GL_BACK);
 		glDisable(GL_BLEND);
-
-		// http://stackoverflow.com/questions/14413094/how-to-draw-from-the-inside-of-the-light-geometry-in-deferred-shading/14419722#14419722
+		//glDisable(GL_DEPTH_TEST);
 	}
 
 	glDisable(GL_STENCIL_TEST);
+	glDisable(GL_DEPTH_TEST);
 
 	// Now would come the directional light pass without sphere
 	deferredShader->useProgram();
 	gBuffer->bindForLightPass();
-	glDisable(GL_DEPTH_TEST);
 	/*glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_ONE, GL_ONE);

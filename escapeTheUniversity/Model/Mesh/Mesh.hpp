@@ -48,7 +48,7 @@ private:
 	std::vector<glm::vec4> materials; // Materials, rbg material values, a shininess
 
 	int maxTextureUnits = 0;
-	const unsigned int positionsLocation = 0; // In gBuffer.vert
+	const unsigned int positionsLocation = 0; // In gBuffer.vert and stencil.vert
 	const unsigned int normalsLocation = 1; // In gBuffer.vert
 	const unsigned int uvLocation = 2; // UVs, In gBuffer.vert
 	const unsigned int materialLocation = 3; // In gBuffer.vert

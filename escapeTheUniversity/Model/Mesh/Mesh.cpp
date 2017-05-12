@@ -79,9 +79,6 @@ void Mesh::draw()
 			}*/
 		}	
 
-		// use multiple FBOs ONLY for sphere, than make own draw call, trickle down from name
-		// on stencil draw call, no textures are needed
-
 		glBindVertexArray(VAO);
 
 		if (rl->fps)

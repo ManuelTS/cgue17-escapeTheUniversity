@@ -7,6 +7,7 @@ class Initialization;
 class Shader;
 class Camera;
 class Node;
+class ModelNode;
 class ModelLoader;
 class GBuffer;
 

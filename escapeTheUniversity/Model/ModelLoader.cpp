@@ -62,7 +62,8 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 		ModelNode* current = new ModelNode();
 
 		current->name = name;
-		if (string::npos != name.find(LIGHT_VOLUME_SPHERE_NAME)) { // Sphere used in light volume calculation
+		if (string::npos != name.find(LIGHT_VOLUME_SPHERE_NAME)) 
+		{ // Sphere used in light volume calculation
 			current->render = false;
 			current->stencil = true;
 			lightSphere = current;

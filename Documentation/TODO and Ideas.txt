@@ -2,8 +2,6 @@ All ordered by priority!
 
 Programming (Manuel):
 
-todo: make own stencil draw only with the needed data
-
 make bounding volumes with threads (with vhacd)
 for(boundingBoxIndex)
 {
