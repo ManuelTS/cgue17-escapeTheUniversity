@@ -15,8 +15,6 @@ private:
 	const int positionAndShininessTexLocation = 2; // Used in deferredShading.frag
 
 	const int deferredShadingColorTextureCount = 3; // Texture count used in this gBuffer
-
-	const unsigned int attachments[3] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 }; // See init method for the attachment usage
 public:
 	unsigned int handle;
 	const int viewLocation = 4; // Used in deferredShadingStencil.vert

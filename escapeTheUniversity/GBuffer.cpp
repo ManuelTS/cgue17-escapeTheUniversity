@@ -15,33 +15,36 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32UI, MAX_WIDTH, MAX_HEIGHT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, attachments[0], GL_TEXTURE_2D, positionNormalColorHandles[0], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, positionNormalColorHandles[0], 0);
 
 	// World space coords and specular color in gBuffer.frag and deferredShading.frag
 	glBindTexture(GL_TEXTURE_2D, positionNormalColorHandles[1]);
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, MAX_WIDTH, MAX_HEIGHT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, attachments[1], GL_TEXTURE_2D, positionNormalColorHandles[1], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, positionNormalColorHandles[1], 0);
 
-	/* Final, the one rendered first and blitted. This is a good place to discuss why we added an intermediate color buffer in 
+	/* Final, the one rendered first and blitted. This is a good place to discuss why we added an intermediate color buffer in
 	the G Buffer instead of rendering directly to the screen. The thing is that our G Buffer combines as a target the buffers
 	for the attributes with the depth/stencil buffer. When we run the point light pass we setup the stencil stuff and we need
 	to use the values from the depth buffer. Here we have a problem - if we render into the default FBO we won't have access
-	to the depth buffer from the G Buffer. But the G Buffer must have its own depth buffer because when we render into its 
-	FBO we don't have access to the depth buffer from the default FBO. Therefore, the solution is to add to the G Buffer FBO 
+	to the depth buffer from the G Buffer. But the G Buffer must have its own depth buffer because when we render into its
+	FBO we don't have access to the depth buffer from the default FBO. Therefore, the solution is to add to the G Buffer FBO
 	a color buffer to render into and in the final pass blit it to the default FBO color buffer.*/
 	glBindTexture(GL_TEXTURE_2D, positionNormalColorHandles[2]);
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16, MAX_WIDTH, MAX_HEIGHT);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, attachments[2], GL_TEXTURE_2D, positionNormalColorHandles[2], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, positionNormalColorHandles[2], 0);
 
 	// Depth and stencil buffer
 	glBindTexture(GL_TEXTURE_2D, positionNormalColorHandles[3]);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH32F_STENCIL8,	MAX_WIDTH, MAX_HEIGHT);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH32F_STENCIL8, MAX_WIDTH, MAX_HEIGHT);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, positionNormalColorHandles[3], 0);
 
 	Debugger::getInstance()->checkWholeFramebufferCompleteness();
 
+	const unsigned int attachments[3] = {GL_COLOR_ATTACHMENT0, 
+										 GL_COLOR_ATTACHMENT1, 
+										 GL_COLOR_ATTACHMENT2};
 	glDrawBuffers(deferredShadingColorTextureCount, attachments);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -50,16 +53,10 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 	glBindVertexArray(0);
 }
 
-/*The pure geometry pass uses all attachments except the last one.*/
-void GBuffer::bindForGeometryPass() {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
-	glDrawBuffers(2, attachments);
-}
-
 /*Binds the textures for usage in the shader to render into the frame buffer.*/
 void GBuffer::bindForLightPass()
 {
-	glDrawBuffer(attachments[2]);
+	glDrawBuffer(GL_COLOR_ATTACHMENT2);
 
 	for (int i = 0; i < deferredShadingColorTextureCount - 1; i++)
 	{
@@ -69,10 +66,18 @@ void GBuffer::bindForLightPass()
 	}
 }
 
+/*The pure geometry pass uses all attachments except the last one.*/
+void GBuffer::bindForGeometryPass() {
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
+	const unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, 
+										 GL_COLOR_ATTACHMENT1};
+	glDrawBuffers(2, attachments);
+}
+
 /*At the start of each frame we need to clear the final texture which is attached to attachment point number 2.*/
 void GBuffer::startFrame() {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
-	glDrawBuffer(attachments[2]);
+	glDrawBuffer(GL_COLOR_ATTACHMENT2);
 }
 
 /* When we get to the final pass our final buffer is populated with the final image. Here we set things up for the blitting that takes place in the main application code. The default FBO is the target and the G Buffer FBO is the source.*/
@@ -80,7 +85,7 @@ void GBuffer::bindForFinalPass()
 {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, handle);
-	glReadBuffer(attachments[2]);
+	glReadBuffer(GL_COLOR_ATTACHMENT2);
 }
 
 // RenderQuad() Renders a 1x1 quad in NDC, best used for framebuffer color targets and post-processing effects.
