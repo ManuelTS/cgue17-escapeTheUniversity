@@ -225,7 +225,7 @@ void Text::fps(const double pastTime, const double deltaTime, const unsigned int
 }
 
 void Text::wireframe() {
-	write("Wireframe mode", -0.9f, 0.9f, 0.5f, 0.0f);
+	write("Wireframe mode", 0.0f, 0.9f, 0.5f, 0.0f);
 }
 
 void Text::loadingScreenInfo() {

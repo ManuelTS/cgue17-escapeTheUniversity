@@ -16,7 +16,7 @@ void Frustum::setCamInternals(float angle, int width, int height)
 
 	sphereFactorY = 1.0 / cos(angle);
 	// compute half of the the horizontal field of view and sphereFactorX
-	float anglex = atan(tang * ratio);
+	const float anglex = atan(tang * ratio);
 	sphereFactorX = 1.0 / cos(anglex);
 }
 
@@ -31,18 +31,18 @@ void Frustum::setCamDef(glm::vec3 camPos, glm::vec3 front, glm::vec3 up) {
 int Frustum::pointInFrustum(glm::vec3 p)
 {
 	glm::vec3 fromCam2P = p - camPos;// compute vector from camera position to p
-	float frontDistance = glm::dot(front, fromCam2P); // compute and test the front coordinate
+	const float frontDistance = glm::dot(front, fromCam2P); // compute and test the front coordinate
 
 	if (frontDistance < nearD || frontDistance > farD)
 		return -1;
 
-	float upperLine = glm::dot(up, fromCam2P); // compute and test the up coordinate
+	const float upperLine = glm::dot(up, fromCam2P); // compute and test the up coordinate
 	float border = frontDistance * tang; // Calculate the upper border
 
 	if (upperLine < -border || upperLine > border)
 		return -1;
 
-	float rightLine = glm::dot(right, fromCam2P);// compute and test the right coordinate
+	const float rightLine = glm::dot(right, fromCam2P);// compute and test the right coordinate
 	border = border * ratio; // Calculate the side border
 
 	if (rightLine < -border || rightLine > border)

@@ -259,6 +259,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	if (fps)
 		drawnTriangles = 0;
 
+	Frustum* frustum = Frustum::getInstance();
+
 	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
 	gBuffer->startFrame();
 	gBuffer->bindForGeometryPass();
@@ -269,10 +271,11 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glm::mat4 projectionMatrix = glm::perspective((float)camera->zoom, (float)width / (float)height, 0.1f, 100.0f);
+	const float* projectionMatrixP = glm::value_ptr(glm::perspective((float)camera->zoom, (float)width / (float)height, frustum->nearD, frustum->farD));
+	const float* viewMatrixP = glm::value_ptr(camera->getViewMatrix());
 	gBufferShader->useProgram();
-	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
+	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, projectionMatrixP);
+	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
 	draw(ml->root); // Draw all nodes except light ones
 	glDepthMask(GL_FALSE);
 
@@ -283,64 +286,68 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	for (unsigned int i = 0; i < ml->lights.size(); i++)
 	{
 		LightNode* ln = ml->lights.at(i);
-		
-		// Stencil pass
-		if (stencil)
+		const float sphereRadius = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
+
+		if(frustum->sphereInFrustum(vec3(ln->light.position), sphereRadius) != -1) // Only render light if its sphere is inside the frustum, TODO BUGGY: lets all light through
 		{
-			deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
-			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // During drawing of the stencil pass no color or depth values are written, but the depth is read
-			glDisable(GL_CULL_FACE);
-			glStencilMask(0xff); // Allow stencil buffer to write to all bits
-			glClear(GL_STENCIL_BUFFER_BIT); // Clear buffer
-			glStencilFunc(GL_ALWAYS, 0, 0xFF); // The function always passes all bits
-			glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
-		}
+			// Stencil pass
+			if (stencil)
+			{
+				deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
+				glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // During drawing of the stencil pass no color or depth values are written, but the depth is read
+				glDisable(GL_CULL_FACE);
+				glStencilMask(0xff); // Allow stencil buffer to write to all bits
+				glClear(GL_STENCIL_BUFFER_BIT); // Clear buffer
+				glStencilFunc(GL_ALWAYS, 0, 0xFF); // The function always passes all bits
+				glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
+			}
 		
-		vec3 distance = vec3(ln->light.position) - ml->lightSphere->position; // Calculate distance between the light and sphere points
-		mat4 m = glm::scale(glm::translate(mat4(), distance), vec3(gBuffer->calcPointLightBSphere(ln))); // Translate and then scale the sphere to the light
-		ml->lightSphere->setModelMatrix(&m); // Set new model matrix
+			vec3 distance = vec3(ln->light.position) - ml->lightSphere->position; // Calculate distance between the light and sphere points
+			mat4 m = glm::scale(glm::translate(mat4(), distance), vec3(sphereRadius)); // Translate and then scale the sphere to the light
+			ml->lightSphere->setModelMatrix(&m); // Set new model matrix
+
+			if (stencil)
+			{
+				glUniformMatrix4fv(gBuffer->projectionLocation, 1, GL_FALSE, projectionMatrixP);
+				glUniformMatrix4fv(gBuffer->viewLocation, 1, GL_FALSE, viewMatrixP);
+				// Model is set in the following draw call
+				stencilDraw(ml->lightSphere); // Render sphere into stencil buffer
+				glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+				glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
+				glStencilFunc(GL_NOTEQUAL, 0, 0xFF); // Render in the point light pass all pixels which are not zero
+			}
 		
-		if (stencil)
-		{
-			glUniformMatrix4fv(gBuffer->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-			glUniformMatrix4fv(gBuffer->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
+			// Point light pass
+			deferredShader->useProgram();
+			gBuffer->bindForLightPass(); 
+			// Here the depth testing can be turned off and after the pass on again. But: You can do depth testing. Test for greater or equal to see if the backface is behind or on a geometry, therefore intersects with the surface of the geometry. http://stackoverflow.com/a/14418862
+			if (blending)
+			{ 
+				glEnable(GL_BLEND);
+				glBlendEquation(GL_FUNC_ADD);
+				glBlendFunc(GL_ONE, GL_ONE);
+			}
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_FRONT); // The camera may be inside the light volume and if we do back face culling as we normally do we will not see the light until we exit its volume
+
+			// Set light parameters
+			glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
+			glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
+			glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
+			glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ln->light), &ln->light);
+			glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+			gBufferShader->useProgram(); // Prepare and then render light geometry
+			glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, projectionMatrixP);
+			glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
 			// Model is set in the following draw call
-			stencilDraw(ml->lightSphere); // Render sphere into stencil buffer
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-			glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
-			glStencilFunc(GL_NOTEQUAL, 0, 0xFF); // Render in the point light pass all pixels which are not zero
-		}
+			pureDraw(ml->lightSphere);
 		
-		// Point light pass
-		deferredShader->useProgram();
-		gBuffer->bindForLightPass(); 
-		// Here the depth testing can be turned off and after the pass on again. But: You can do depth testing. Test for greater or equal to see if the backface is behind or on a geometry, therefore intersects with the surface of the geometry. http://stackoverflow.com/a/14418862
-		if (blending)
-		{ 
-			glEnable(GL_BLEND);
-			glBlendEquation(GL_FUNC_ADD);
-			glBlendFunc(GL_ONE, GL_ONE);
+			glCullFace(GL_BACK);
+
+			if (blending)
+				glDisable(GL_BLEND);
 		}
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT); // The camera may be inside the light volume and if we do back face culling as we normally do we will not see the light until we exit its volume
-
-		// Set light parameters
-		glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
-		glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
-		glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
-		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ln->light), &ln->light);
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-		gBufferShader->useProgram(); // Prepare and then render light geometry
-		glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-		glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
-		// Model is set in the following draw call
-		pureDraw(ml->lightSphere);
-		
-		glCullFace(GL_BACK);
-
-		if (blending)
-			glDisable(GL_BLEND);
 	}
 
 	if (stencil)
@@ -351,8 +358,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	deferredShader->useProgram();
 	gBuffer->bindForLightPass();
 	
-	/*
-	if (blending)
+	/*if (blending)
 	{
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
@@ -377,13 +383,14 @@ void RenderLoop::draw(Node* current)
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
-		//TODO AABBs frustum culling, the used point one is inefficient but works
-		// TODO frustum not working, too much triangles drawn
-		//frustum || dynamic_cast<TransformationNode*>(current) != nullptr || Frustum::getInstance()->pointInFrustum(mn->position) != -1)
-		if (mn != nullptr) // If Model Node
+		if (mn != nullptr) // Leave if structure this way!
 		{
-			if (mn->render) // ... render only when the model node schould be rendered, example the lightSphere node is not rendered used here
+			// If model node and (no frustum or transformationNode or modelNode inside frustum):
+			// ... render only when the model node schould be rendered, example the lightSphere node is not rendered used here
+			if(mn->render && (frustum || dynamic_cast<TransformationNode*>(current) != nullptr || Frustum::getInstance()->pointInFrustum(mn->position) != -1))
 				pureDraw(current);
+			// TODO AABBs frustum culling, the used point one is inefficient but works
+			// TODO frustum not working, too much triangles drawn
 		}
 		else // If no model node render anyway
 			pureDraw(current);

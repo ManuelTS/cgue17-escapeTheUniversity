@@ -13,6 +13,7 @@ for(boundingBoxIndex)
    continue
   ...
 }
+and each volume becomes a sphere too for frustum culling (most fastest due to one center vertex and radius check)
 
 One of this for bullet timestep:
 http://gafferongames.com/game-physics/fix-your-timestep/
