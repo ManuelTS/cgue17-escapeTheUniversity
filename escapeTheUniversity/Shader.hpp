@@ -7,8 +7,8 @@ class Shader
 {
 public:
 	// gBufferShader location constants
-	const int viewLocation = 8; // gBuffer.vert
-	const int projectionLocation = 12; // gBuffer.vert
+	const int viewLocation = 8; // Matrix, gBuffer.vert
+	const int projectionLocation = 12; // Matrix, gBuffer.vert
 	// deferredShader location constants
 	const int viewPositionLocation = 0; // defferredShader.frag
 
@@ -96,7 +96,6 @@ private:
 	layout (location = 8)  uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading()
 	layout (location = 12) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading()
 
-	// This four must be the same as DEFERRED_SHADING_STENCIL_VERT
 	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link();
 	layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
 	layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
@@ -241,12 +240,11 @@ private:
 	const char* DEFERRED_SHADING_STENCIL_VERT = R"glsl(
 	#version 430 core
 
-	// This four must be the same as in GBUFFER_VERT
 	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link(); // Of a point of the light sphere, used in .cpp, w is unused and must be one
 
-	layout (location = 0) uniform mat4 model;	      // Usage in: ModelNode.hpp#draw(), translated, scaled sphere model of a light, used in gBuffer.hpp
-	layout (location = 4) uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading(), of the camera, used in gBuffer.hpp
-	layout (location = 8) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading(), to see what is on the screen, used in gBuffer.hpp
+	layout (location = 0) uniform mat4 model;	   // Usage in: ModelNode.hpp#draw(), translated, scaled sphere model of a light, used in gBuffer.hpp
+	layout (location = 4) uniform mat4 view;       // Usage in: RenderLoop.cpp#doDeferredShading(), of the camera, used in gBuffer.hpp
+	layout (location = 8) uniform mat4 projection; // Usage in: RenderLoop.cpp#doDeferredShading(), to see what is on the screen, used in gBuffer.hpp
 
 	void main()
 	{          
@@ -255,7 +253,9 @@ private:
 	const char* DEFERRED_SHADING_STENCIL_FRAG = R"glsl(
 	#version 430 core
 
-	void main()	{})glsl";
+	void main()	{}
+
+	)glsl";
 	const char* DEPTH_VERT = R"glsl(
 	#version 430 core
 

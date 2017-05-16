@@ -1,5 +1,3 @@
-Static attachments, projection- and viewMatrixPointer usage.
-
 All ordered by priority!
 
 Programming (Manuel):

@@ -54,5 +54,4 @@ private:
 	const unsigned int materialLocation = 3; // In gBuffer.vert
 
 	RenderLoop* rl = RenderLoop::getInstance(); // to set the drawn trianlges
-	void partitialSetup(unsigned int currentVAO, unsigned int currentVBO); // Sets up partitially an VAO to share code for normal VAO and stencil one
 };
