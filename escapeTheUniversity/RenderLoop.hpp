@@ -44,7 +44,9 @@ class RenderLoop{
 		bool wireFrameMode = false; // True if the wireframe mode is activated, false if not, standard false
 		bool render = true; // Stop or start rendering with a key, standard true
 		bool frustum = false; // Toggle frustum culling, standard false
-		bool fullscreen = false; // Toogle fullscreen mode
+		bool blending = true; // Toggle usage of blending, default true
+		bool stencil = true; // Toogle usage of the stencil buffer, default true
+		bool fullscreen = false; // Toogle fullscreen mode, default false
 		
 		double deltaTime; // Difference of variable timeNew and timeOld in nano seconds
 

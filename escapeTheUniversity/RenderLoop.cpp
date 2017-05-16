@@ -68,9 +68,9 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 				cout << "enabled." << endl;
 		}
 		else if (key == GLFW_KEY_F9)
-			cout << "TODO: Blending on/off" << endl; // TODO
+			rl->blending = !rl->blending;
 		else if (key == GLFW_KEY_F10)
-			cout << "TODO:" << endl; // TODO
+			rl->stencil = !rl->stencil;
 		else if (key == GLFW_KEY_F11)
 			rl->toggleFullscreen();
 		else if (key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT || key == GLFW_KEY_RIGHT_BRACKET || key == GLFW_KEY_KP_ADD)
@@ -277,43 +277,50 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glDepthMask(GL_FALSE);
 
 	// Deferred Shading: Stencil and point light pass for point lights the gBuffer must be bound, reading from depth buffer is allowed, writing to it not, only stencil buffer is updated
-	glEnable(GL_STENCIL_TEST);
+	if (stencil)
+		glEnable(GL_STENCIL_TEST);
 
 	for (unsigned int i = 0; i < ml->lights.size(); i++)
 	{
 		LightNode* ln = ml->lights.at(i);
 		
 		// Stencil pass
-		deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
-		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // During drawing of the stencil pass no color or depth values are written, but the depth is read
-		glEnable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
-		glStencilMask(0xff); // Allow stencil buffer to write to all bits
-		glClear(GL_STENCIL_BUFFER_BIT); // Clear buffer
-		glStencilFunc(GL_ALWAYS, 0, 0xFF); // The function always passes all bits
-		glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
+		if (stencil)
+		{
+			deferredShaderStencil->useProgram(); // Preperations for rendering only into stencil buffer
+			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // During drawing of the stencil pass no color or depth values are written, but the depth is read
+			glDisable(GL_CULL_FACE);
+			glStencilMask(0xff); // Allow stencil buffer to write to all bits
+			glClear(GL_STENCIL_BUFFER_BIT); // Clear buffer
+			glStencilFunc(GL_ALWAYS, 0, 0xFF); // The function always passes all bits
+			glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
+		}
 		
 		vec3 distance = vec3(ln->light.position) - ml->lightSphere->position; // Calculate distance between the light and sphere points
 		mat4 m = glm::scale(glm::translate(mat4(), distance), vec3(gBuffer->calcPointLightBSphere(ln))); // Translate and then scale the sphere to the light
 		ml->lightSphere->setModelMatrix(&m); // Set new model matrix
 		
-		glUniformMatrix4fv(gBuffer->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-		glUniformMatrix4fv(gBuffer->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
-		// Model is set in the following draw call
-		stencilDraw(ml->lightSphere); // Render sphere into stencil buffer
-		glDisable(GL_DEPTH_TEST);
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
+		if (stencil)
+		{
+			glUniformMatrix4fv(gBuffer->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+			glUniformMatrix4fv(gBuffer->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
+			// Model is set in the following draw call
+			stencilDraw(ml->lightSphere); // Render sphere into stencil buffer
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+			glStencilMask(0x00); // Write nothing to the stencil buffer, only read from it
+			glStencilFunc(GL_NOTEQUAL, 0, 0xFF); // Render in the point light pass all pixels which are not zero
+		}
 		
 		// Point light pass
 		deferredShader->useProgram();
 		gBuffer->bindForLightPass(); 
-		glStencilFunc(GL_NOTEQUAL, 0, 0xFF); // Render all pixels which are not zero
-		//glEnable(GL_DEPTH_TEST); // You can do depth testing. Test for greater or equal to see if the backface is behind or on a geometry, therefore intersects with the surface of the geometry. http://stackoverflow.com/a/14418862
-		//glDepthFunc(GL_GEQUAL);
-		glEnable(GL_BLEND);
-		glBlendEquation(GL_FUNC_ADD);
-		glBlendFunc(GL_ONE, GL_ONE);
+		// Here the depth testing can be turned off and after the pass on again. But: You can do depth testing. Test for greater or equal to see if the backface is behind or on a geometry, therefore intersects with the surface of the geometry. http://stackoverflow.com/a/14418862
+		if (blending)
+		{ 
+			glEnable(GL_BLEND);
+			glBlendEquation(GL_FUNC_ADD);
+			glBlendFunc(GL_ONE, GL_ONE);
+		}
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT); // The camera may be inside the light volume and if we do back face culling as we normally do we will not see the light until we exit its volume
 
@@ -331,22 +338,28 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		pureDraw(ml->lightSphere);
 		
 		glCullFace(GL_BACK);
-		glDisable(GL_BLEND);
-		//glDisable(GL_DEPTH_TEST);
+
+		if (blending)
+			glDisable(GL_BLEND);
 	}
 
-	//glDisable(GL_STENCIL_TEST);
+	if (stencil)
+		glDisable(GL_STENCIL_TEST);
 	glDisable(GL_DEPTH_TEST);
 
 	// Now would come the directional light pass
 	deferredShader->useProgram();
 	gBuffer->bindForLightPass();
 	
-	/*glEnable(GL_BLEND);
-	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_ONE, GL_ONE);
-	// Render direciontal light
-	glDisable(GL_BLEND);*/
+	/*
+	if (blending)
+	{
+		glEnable(GL_BLEND);
+		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_ONE, GL_ONE);
+		// Render direciontal light
+		glDisable(GL_BLEND);
+	}*/
 	
 	if (wireFrameMode) // Right past geometry pass?
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

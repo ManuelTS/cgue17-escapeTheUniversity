@@ -97,15 +97,20 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 
 	vector<float>* vertices = new vector<float>;
 	float cursor = 0.0f, row = 0.0f;
-	const float advance = scale * charSize / (float)RenderLoop::getInstance()->width;
+	const RenderLoop* rl = RenderLoop::getInstance();
+	const float advance = scale * charSize / (float)rl->width;
 	x /= scale;
 	y /= scale;
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, characterTextureHandle);
 	glBindVertexArray(VAO);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	if (rl->blending)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
 
 	for (const char* p = text; *p; p++, cursor += advance)
 	{
@@ -141,7 +146,9 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 	writeVertices(vertices);
 	delete vertices;
 
-	glDisable(GL_BLEND);
+	if (rl->blending)
+		glDisable(GL_BLEND);
+
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -308,7 +315,7 @@ void Text::help()
 	i = copyInBuffer(help, i, (const unsigned char*) " F7= Toggle pause game", true);
 	i = copyInBuffer(help, i, (const unsigned char*) " F8= Toggle view frustum culling", true);
 	i = copyInBuffer(help, i, (const unsigned char*) " F9= Toggle blending", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "F10= ?", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "F10= Toggle stenicl buffer usage", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "F11= Fullscreen", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Escape/End = Close game", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "W/Upper arrow = Move forwards", true);
