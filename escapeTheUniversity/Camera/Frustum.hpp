@@ -28,8 +28,7 @@ public:
 	void setCamInternals(float angle, int width, int height);
 	void setCamDef(glm::vec3 camPos, glm::vec3 front, glm::vec3 right);
 	int pointInFrustum(glm::vec3 p); // Returns -1 if the point is on the outside, 0 if on the frustum borders, and 1 if in the frustum
-	int sphereInFrustum(glm::vec3 p, float radius); // Returns -1 if the sphere is on the outside, 0 if on the frustum borders, and 1 if in the frustum
-	int boxInFrustum(); // Returns -1 if the box is on the outside, 0 if on the frustum borders, and 1 if in the frustum
+	int sphereInFrustum(const glm::vec3 sphereCenter, const float radius); // Returns -1 if the sphere is on the outside, 0 if on the frustum borders, and 1 if in the frustum
 };
 
 

@@ -19,12 +19,12 @@ void TransformationNode::switchState()
 	transform = !transform;
 }
 
-float TransformationNode::change(bool plus) {
-	double deltaTime = 1.0f / RenderLoop::getInstance()->deltaTime;
-	float newAngle = glm::radians(ANGLE*deltaTime);
+float TransformationNode::change(bool plus)
+{
+	float newRadiant = RADIANT * RenderLoop::getInstance()->deltaTime;
 	
 	if (!plus)
-		newAngle = -newAngle;
+		newRadiant = -newRadiant;
 
 	for (Node* child : children)
 	{
@@ -32,20 +32,20 @@ float TransformationNode::change(bool plus) {
 
 		if (mn != nullptr)
 		{
-			mn->modelMatrix = glm::translate(mn->modelMatrix, -mn->position);
-			mn->modelMatrix = glm::rotate(mn->modelMatrix, newAngle, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it
-			mn->modelMatrix = glm::translate(mn->modelMatrix, mn->position);
+			mn->modelMatrix = glm::translate(mn->modelMatrix, -mn->position); // Translate to origin to rotate there
+			mn->modelMatrix = glm::rotate(mn->modelMatrix, newRadiant, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it only on y axis
+			mn->modelMatrix = glm::translate(mn->modelMatrix, mn->position); // Translate rotated matrix bock to position
 			mn->inverseModelMatrix = glm::inverseTranspose(mn->modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
 		}
 	}
 
-	return newAngle;
+	return newRadiant;
 }
 
 void TransformationNode::draw()
 {
-	if (transform &&  currentRotation < MAX_ROTATION)
-		currentRotation += change(true);
-	else if (!transform && currentRotation > 0)
-		currentRotation += change(false);
+	if (transform && currentRotationRadiant < MAX_ROTATION_RADIANT)
+		currentRotationRadiant += change(true);
+	else if (!transform && currentRotationRadiant > 0)
+		currentRotationRadiant += change(false);
 }

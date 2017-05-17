@@ -201,14 +201,14 @@ void RenderLoop::start()
 	sm->playSound();
 
 	initVar = new Initialization();
-	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
-
-	initGLFWandGLEW();
 
 	width = initVar->width;
 	height = initVar->height;
 	glViewport(0, 0, width, height);
 
+	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
+
+	initGLFWandGLEW();
 	displayLoadingScreen(ml);
 
 	Shader* gBufferShader = new Shader("gBuffer");
@@ -288,7 +288,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		LightNode* ln = ml->lights.at(i);
 		const float sphereRadius = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
 
-		if(frustum->sphereInFrustum(vec3(ln->light.position), sphereRadius) != -1) // Only render light if its sphere is inside the frustum, TODO BUGGY: lets all light through
+		if (frustum->sphereInFrustum(vec3(ln->light.position), sphereRadius) != -1) // Only render light if its sphere is inside the frustum, TODO BUGGY: lets all light through
 		{
 			// Stencil pass
 			if (stencil)
