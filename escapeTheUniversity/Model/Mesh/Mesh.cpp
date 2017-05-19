@@ -12,7 +12,7 @@ Mesh::~Mesh(){
 }
 
 /*Links the VBOs, indices, positions, normals, textCoords (UVs), textureIds, -names and -paths together in one VAO.*/
-Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _data, vector<Texture> _textures, vector<glm::vec4> _materials, bool generateStencilVAO) : indices(_indices), data(_data), textures(_textures), materials(_materials)
+Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _data, vector<Texture> _textures, vector<glm::vec4> _materials) : indices(_indices), data(_data), textures(_textures), materials(_materials)
 {
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
 	//Link
@@ -42,31 +42,6 @@ Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _data, vector<Texture> 
 	glBindVertexArray(0); // Unbind VAO first!
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	if (generateStencilVAO)
-	{
-		glGenVertexArrays(1, &stencilVAO); // Generate VAO and VBO
-		glGenBuffers(1, &stencilVBO);
-		
-		glBindVertexArray(stencilVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, stencilVBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-		vector<glm::vec3> positions;
-
-		for (Vertex v : data)
-			positions.push_back(v.position);
-
-		glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(glm::vec3), &positions[0], GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(positionsLocation);
-		glVertexAttribPointer(positionsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
-
-		glBindVertexArray(0); // Unbind VAO first!
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
-
 }
 
 /*Draws this mesh*/
@@ -100,11 +75,4 @@ void Mesh::draw()
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
-}
-
-void Mesh::stencilDraw()
-{
-	glBindVertexArray(stencilVAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
 }

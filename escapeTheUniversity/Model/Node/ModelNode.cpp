@@ -33,17 +33,3 @@ void ModelNode::draw()
 			meshes[i]->draw();
 	}
 }
-
-void ModelNode::stencilDraw() {
-	unsigned int size = meshes.size();
-
-	if (size > 0)
-	{
-		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-		for (unsigned int i = 0; i < size; i++)
-			meshes[i]->stencilDraw();
-	}
-}
-
-

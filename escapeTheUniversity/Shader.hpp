@@ -163,21 +163,22 @@ private:
 
 	struct LightStruct 
 	{ // Same as LightNode.hpp#Light
-		vec4 position;     // w unused
+		vec4 position;     // xyz = world coord position of light, w = flag if it should be drawn or not 1.0 = true = yes, otherwise false = no.
 		vec4 diffuse;      // rgb = diffuse light, a = ambient coefficient
 		vec4 specular;     // w unused
 		vec4 shiConLinQua; // x = shininess, y = constant attentuation, z = linear attentuation, w = quadratic attentuation value
 	};
 
+	const int LIGHT_NUMBER = 10; // Correlates with ModelLoader.hpp#LIGHT_NUMBER
 	layout (std140, binding = 2, index = 0) uniform LightBlock 
 	{
-		LightStruct light;
+		LightStruct light[LIGHT_NUMBER];
 	} l; // Workaround, direct struct blockbinding only in openGL 4.5
 
 	const float RIM_POWER = 10.0f; // Rim light power
 
 	// Calculate Rim Light
-	vec3 calculateRim(vec3 normal, vec3 viewDirection)
+	vec3 calculateRim(LightStruct light, vec3 normal, vec3 viewDirection)
 	{
 		// Calculate the rim factor
 		float rimFactor = 1.0 - dot(normal, viewDirection);
@@ -189,29 +190,29 @@ private:
 		rimFactor = pow(rimFactor, RIM_POWER);
 
 		// Finally, multiply it by the rim color which is here simply the light diffuse color
-		return rimFactor * l.light.diffuse.rgb;
+		return rimFactor * light.diffuse.rgb;
 	}
 
 	// Blinn Phong light
-	vec3 calculateLight(vec3 diffuse, float specular, vec3 norm, vec3 fragmentPosition, vec3 viewDirection)
+	vec3 calculateLight(LightStruct light, vec3 diffuse, float specular, vec3 norm, vec3 fragmentPosition, vec3 viewDirection)
 	{
 		//  Calculate ambientColor
-		vec3 ambientColor = diffuse * l.light.diffuse.a;
+		vec3 ambientColor = diffuse * light.diffuse.a;
 
 		// Calculate diffuseColor 
-		vec3 lightPosition = l.light.position.xyz;
+		vec3 lightPosition = light.position.xyz;
 		vec3 lightDirection= normalize(lightPosition - fragmentPosition);
 		float diffuseImpact = max(dot(norm, lightDirection), 0.0); // Max for no negative values
-		vec3 diffuseColor = l.light.diffuse.rgb * (diffuseImpact * diffuse);
+		vec3 diffuseColor = light.diffuse.rgb * (diffuseImpact * diffuse);
 
 		// Calculate spectralColor
 		vec3 halfwayDir = normalize(lightDirection + viewDirection); // Blinn Phong
-		float spec = pow(max(dot(norm, halfwayDir), 0.0), l.light.shiConLinQua.x);
-		vec3 specularColor = l.light.specular.rgb * (spec * specular);
+		float spec = pow(max(dot(norm, halfwayDir), 0.0), light.shiConLinQua.x);
+		vec3 specularColor = light.specular.rgb * (spec * specular);
 
 		//Calculate attenuation
 		float lightFragDist = length(lightPosition - fragmentPosition);
-		float attenuation = 1.0 / (l.light.shiConLinQua.y + l.light.shiConLinQua.z * lightFragDist + l.light.shiConLinQua.w * (lightFragDist * lightFragDist));
+		float attenuation = 1.0 / (light.shiConLinQua.y + light.shiConLinQua.z * lightFragDist + light.shiConLinQua.w * (lightFragDist * lightFragDist));
 
 		diffuseColor *= attenuation;
 		specularColor *= attenuation;
@@ -234,28 +235,14 @@ private:
 		vec3 viewDirection = normalize(viewPosition - fragmentPosition);
 
 		//Calculate light
-		vec3 color = calculateLight(diffuse, specular, norm, fragmentPosition, viewDirection);
+		vec3 color = vec3(0.0f);
+
+		for(int i = 0; i < LIGHT_NUMBER; i++)
+			if(l.light[i].position.w == 1.0f)
+				color += calculateLight(l.light[i], diffuse, specular, norm, fragmentPosition, viewDirection);
+
 		gl_FragColor = vec4(color, 1.0f);
 	})glsl";
-	const char* DEFERRED_SHADING_STENCIL_VERT = R"glsl(
-	#version 430 core
-
-	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link(); // Of a point of the light sphere, used in .cpp, w is unused and must be one
-
-	layout (location = 0) uniform mat4 model;	   // Usage in: ModelNode.hpp#draw(), translated, scaled sphere model of a light, used in gBuffer.hpp
-	layout (location = 4) uniform mat4 view;       // Usage in: RenderLoop.cpp#doDeferredShading(), of the camera, used in gBuffer.hpp
-	layout (location = 8) uniform mat4 projection; // Usage in: RenderLoop.cpp#doDeferredShading(), to see what is on the screen, used in gBuffer.hpp
-
-	void main()
-	{          
-		gl_Position = projection * view * model * vec4(position, 1.0f); // model * position = worldPosition
-	})glsl";
-	const char* DEFERRED_SHADING_STENCIL_FRAG = R"glsl(
-	#version 430 core
-
-	void main()	{}
-
-	)glsl";
 	const char* DEPTH_VERT = R"glsl(
 	#version 430 core
 

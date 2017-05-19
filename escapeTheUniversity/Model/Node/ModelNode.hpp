@@ -24,7 +24,6 @@ public:
 	~ModelNode();
 
 	void draw() override;
-	void stencilDraw(); // Draws this nodes position only to the stencil buffer
 	void setModelMatrix(glm::mat4* m); // Sets the model matrix and computes the inverse one too
 
 protected:

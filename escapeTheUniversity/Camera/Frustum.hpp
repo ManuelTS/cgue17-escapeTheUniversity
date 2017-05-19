@@ -16,7 +16,7 @@ private:
 	void operator=(Frustum const&); // Private constructor to prevent assignments
 public:
 	const float nearD = 0.01f; // Distance from the camera to the near plane
-	const float farD = 50.0f; // Distance from the camera to the far plane
+	const float farD = 80.0f; // Distance from the camera to the far plane
 	~Frustum();
    /*Returns the pointer to the unique instance of the render loop class.*/
 	static Frustum* Frustum::getInstance()
@@ -26,7 +26,7 @@ public:
 	}
 
 	void setCamInternals(float angle, int width, int height);
-	void setCamDef(glm::vec3 camPos, glm::vec3 front, glm::vec3 right);
+	void setCamDef(glm::vec3 camPos, glm::vec3 front, glm::vec3 up);
 	int pointInFrustum(glm::vec3 p); // Returns -1 if the point is on the outside, 0 if on the frustum borders, and 1 if in the frustum
 	int sphereInFrustum(const glm::vec3 sphereCenter, const float radius); // Returns -1 if the sphere is on the outside, 0 if on the frustum borders, and 1 if in the frustum
 };

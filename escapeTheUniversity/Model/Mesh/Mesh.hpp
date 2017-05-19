@@ -27,11 +27,10 @@ public:
 	};
 
 	Mesh() {};
-	Mesh(std::vector<unsigned int>_indices, std::vector<Vertex> _data, std::vector<Texture> _textures, std::vector<glm::vec4> _materials, bool generateStencilVAO);
+	Mesh(std::vector<unsigned int>_indices, std::vector<Vertex> _data, std::vector<Texture> _textures, std::vector<glm::vec4> _materials);
 	~Mesh();
 	
 	void draw();
-	void stencilDraw(); // Uses the stencil VAO, won't work if modelNode#stencil is set to false
 private:
 	// Shared handles
 	unsigned int EBO;
@@ -39,9 +38,6 @@ private:
 	unsigned int VAO;
 	unsigned int VBO;
 	unsigned int materialVBO;
-	// Stenicl handles
-	unsigned int stencilVAO;
-	unsigned int stencilVBO;
 
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures; // Textures

@@ -45,7 +45,7 @@ void ModelLoader::linkLightUBO()
 {
 		glGenBuffers(1, &lightUBO);
 		glBindBuffer(GL_UNIFORM_BUFFER, lightUBO);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(LightNode::Light), NULL, GL_DYNAMIC_DRAW); // Play with last param 4 performance
+		glBufferData(GL_UNIFORM_BUFFER, LIGHT_NUMBER * sizeof(LightNode::Light), NULL, GL_DYNAMIC_DRAW); // Play with last param 4 performance
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		//glUniformBlockBinding(shader->programHandle, xxx,xxx); // done by index attribute in shader
 }
@@ -62,12 +62,6 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 		ModelNode* current = new ModelNode();
 
 		current->name = name;
-		if (string::npos != name.find(LIGHT_VOLUME_SPHERE_NAME)) 
-		{ // Sphere used in light volume calculation
-			current->render = false;
-			current->stencil = true;
-			lightSphere = current;
-		}
 
 		processMeshesAndChildren(current, node, scene);
 
@@ -110,7 +104,7 @@ void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const ai
 		// The scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 		
 		if (mn != 0)
-			mn->meshes.push_back(processMesh(mesh, scene, mn->stencil));
+			mn->meshes.push_back(processMesh(mesh, scene));
 	}
 
 	// After we've processed all of the meshes (if any) we then recursively process each of the children nodes
@@ -168,6 +162,10 @@ LightNode* ModelLoader::processLightNode(string* name, Node* parent, aiNode* nod
 		Debugger::getInstance()->pauseExit("Malfunction: Light node " + *name + " not found.");
 
 	lights.push_back(ln);
+
+	if(lights.size() > LIGHT_NUMBER)
+		Debugger::getInstance()->pauseExit("Malfunction: Too much lights in .dae file, game has less lights defined.");
+
 	return ln;
 }
 
@@ -208,7 +206,7 @@ std::string ModelLoader::lightSourceTypeToString(aiLightSourceType type)
 		return "Unknown light enum type";
 }
 
-Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene, bool generateStencilVBO)
+Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene)
 {
 	// Data to fill, Vertex data
 	vector<Mesh::Vertex> data;
@@ -267,7 +265,7 @@ Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene, bool generate
 		text.clear();
 	}
 	
-	return new Mesh(indices, data, textures, materials, generateStencilVBO);
+	return new Mesh(indices, data, textures, materials);
 }
 
 // Checks all material textures of a given type and loads the textures if they're not loaded yet.
