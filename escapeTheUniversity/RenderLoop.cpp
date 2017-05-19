@@ -58,21 +58,30 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			cout << "TODO: Visualizing the depth buffer." << endl; // TODO Visualizing the depth buffer http://learnopengl.com/#!Advanced-OpenGL/Depth-testing, swith shaders to depth ones
 		else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE)
 			rl->render = !rl->render;
-		else if (key == GLFW_KEY_F8) {
+		else if (key == GLFW_KEY_F8)
+		{
 			rl->frustum = !rl->frustum;
 			cout << "Switching Frustum Culling to ";
-			if (rl->frustum == 1)
+			if (rl->frustum)
 				cout << "disabled." << endl;
 			else
 				cout << "enabled." << endl;
-
 		}
 		else if (key == GLFW_KEY_F9)
-			cout << "TODO: Blending on/off" << endl; // TODO
+			rl->blending = !rl->blending;
 		else if (key == GLFW_KEY_F10)
-			cout << "TODO:" << endl; // TODO
+			rl->stencil = !rl->stencil;
 		else if (key == GLFW_KEY_F11)
 			rl->toggleFullscreen();
+		else if (key == GLFW_KEY_F12)
+			cout << "TODO show bounding volumes." << endl;
+		else if (key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT || key == GLFW_KEY_RIGHT_BRACKET || key == GLFW_KEY_KP_ADD)
+		{ // slash is german minus and right bracket is german plus on a german keyboard
+			bool minus = key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT; // In- or decrease ambient light coefficient
+
+			for (LightNode* ln : ModelLoader::getInstance()->lights)
+					ln->light.diffuse.a += minus ? -0.01f : 0.01f;
+		}
 		else if (key == GLFW_KEY_E)
 		{
 			for (Node* n : ModelLoader::getInstance()->getAllNodes())
@@ -88,13 +97,13 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			// TODO
 		}
 		else if (key == GLFW_KEY_O) {
-			Text::getInstance()->setDisplayTime(4000);
-			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.wav");
+			Text::getInstance()->addText2Display(Text::GAME_OVER);
+			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
 		}
+		else if (key == GLFW_KEY_B)
+			SoundManager::getInstance()->playSound("Dialog\\burp.mp3");
 		else if (key == GLFW_KEY_PRINT_SCREEN)
-		{
-			cout << "Hope you don't do anything bad with that screeny, sweetie." << endl;
-		}
+			Text::getInstance()->addText2Display(Text::SCREENY);
 	}
 }
 
@@ -121,12 +130,12 @@ void scrollCallback(GLFWwindow* window, double xpos, double ypos) // this method
 	if (instance->yScroll < 0)
 		instance->yScroll = 0;
 
-	//instance->camera->processMouseScroll(instance->yScroll); // TODO ?
+	//instance->camera->processMouseScroll(instance->yScroll); // TODO the zoom?
 }
 
 void mouseCallback(GLFWwindow* window, double x, double y)
 {
-	RenderLoop::getInstance()->camera->processMouseMovement(x,y);
+	RenderLoop::getInstance()->camera->processMouseMovement(x, y);
 }
 
 void errorCallback(int error, const char* description)
@@ -135,11 +144,14 @@ void errorCallback(int error, const char* description)
 }
 
 // Initializes GLFW and GLEW
-void RenderLoop::initGLFWandGLEW(){
+void RenderLoop::initGLFWandGLEW() {
 	if (!glfwInit())
 		Debugger::getInstance()->pauseExit("Could not init GLFW.");
 
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_FALSE);
+	#if _DEBUG
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+	#endif
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // Using OpenGL version 4.3, 4.4 could be used if necessary
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -159,7 +171,6 @@ void RenderLoop::initGLFWandGLEW(){
 	glGetError(); // Error 1280 after glewInit() internet says this one call can be ignored
 
 	#if _DEBUG
-		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 		InitMemoryTracker();
 		Debugger* d = Debugger::getInstance();
 		d->setDebugContext();
@@ -192,14 +203,14 @@ void RenderLoop::start()
 	sm->playSound();
 
 	initVar = new Initialization();
-	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
-
-	initGLFWandGLEW();
 
 	width = initVar->width;
 	height = initVar->height;
 	glViewport(0, 0, width, height);
 
+	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
+
+	initGLFWandGLEW();
 	displayLoadingScreen(ml);
 
 	Shader* gBufferShader = new Shader("gBuffer");
@@ -207,9 +218,7 @@ void RenderLoop::start()
 
 	ml->load("Playground.dae");
 	vec4 pos = ml->lights[9]->light.position;
-	//pos.y -= 12.0f;
-	//pos.z -= 70.0f;
-    camera->position = glm::vec3(pos); // Set position of camera to the first light
+	camera->position = glm::vec3(pos); // Set position of camera to the first light
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
@@ -243,85 +252,111 @@ void RenderLoop::start()
 	glfwTerminate();
 }
 
-void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, ModelLoader* ml) 
+void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, ModelLoader* ml)
 {
 	if (wireFrameMode)
-	{
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	}
 
 	if (fps)
 		drawnTriangles = 0;
 
+	Frustum* frustum = Frustum::getInstance();
+
 	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->handle); // Must be first!
 	glViewport(0, 0, width, height);
-	glDepthMask(GL_TRUE); // Must be before glClear()!
 	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE); // Must be before glClearColor, otherwise it remains untouched
 	glDepthFunc(GL_LEQUAL);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glm::mat4 projectionMatrix = glm::perspective((float)camera->zoom, (float)width / (float)height, 0.1f, 100.0f);
+	const float* projectionMatrixP = glm::value_ptr(glm::perspective((float)camera->zoom, (float)width / (float)height, frustum->nearD, frustum->farD));
+	const float* viewMatrixP = glm::value_ptr(camera->getViewMatrix());
 	gBufferShader->useProgram();
-	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, glm::value_ptr(camera->getViewMatrix()));
+	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, projectionMatrixP);
+	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
 	draw(ml->root); // Draw all nodes except light ones
-	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDisable(GL_DEPTH_TEST);
+	
 
-	// Deferred Shading: Light Pass
+	// Light pass, point lights:
 	deferredShader->useProgram();
 	gBuffer->bindTextures();
-	// TODO: Performance optimization, only set one specific light if its position or light properties have changed, otherwise set all only once!
-	// Bind buffer and fill all light node data in there
-	vector<LightNode::Light> lights;
 
-	for (LightNode* ln : ml->lights)
-		lights.push_back(ln->light);
-	
+	vector<LightNode::Light> temp;
+
+	for (unsigned int i = 0; i < ml->lights.size(); i++)
+	{
+		LightNode* ln = ml->lights.at(i);
+		const float sphereRadius = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
+		const bool drawLight = frustum->sphereInFrustum(vec3(ln->light.position), sphereRadius) != -1;
+
+		ln->light.position.w = drawLight ? 1.0f : 0.0f; // See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
+		temp.push_back(ln->light);
+	}
+
+	// Set light parameters
+
+	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
 	glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
 	glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, lights.size() * sizeof(lights[0]), &lights[0]);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, temp.size() * sizeof(temp[0]), &temp[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
 
+	// Now would come the directional light pass
+	
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	
-	// Render 2D quad
-	gBuffer->renderQuad();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	gBuffer->renderQuad(); // Render 2D quad to screen
+	temp.clear();
 }
 
 void RenderLoop::draw(Node* current)
 {
-	if (dynamic_cast<LightNode*>(current) == nullptr) // No light node, draw
+	if (current != nullptr && dynamic_cast<LightNode*>(current) == nullptr) // Don't draw light nodes or empty ones
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
-		//TODO AABBs frustum culling, the used point one is inefficient but works
-		//if (frustum || dynamic_cast<TransformationNode*>(current) != nullptr || mn != nullptr && Frustum::getInstance()->pointInFrustum(mn->position) != -1)
-		//{ // TODO frustum not working, too much triangles drawn
-			current->draw();
-
-			for (Node* child : current->children)
-				draw(child);
-		//}
+		if (mn != nullptr) // Leave if structure this way!
+		{
+			// If model node and (no frustum or transformationNode or modelNode inside frustum):
+			// ... render only when the model node schould be rendered, example the lightSphere node is not rendered used here
+			if(mn->render && (frustum || dynamic_cast<TransformationNode*>(current) != nullptr || Frustum::getInstance()->pointInFrustum(mn->position) != -1))
+				pureDraw(current);
+			// TODO AABBs frustum culling, the used point one is inefficient but works
+			// TODO frustum not working, too much triangles drawn
+		}
+		else // If no model node render anyway
+			pureDraw(current);
 	}
 }
 
-void RenderLoop::renderText() 
+void RenderLoop::pureDraw(Node* current) {
+	current->draw();
+
+	for (Node* child : current->children)
+		draw(child);
+}
+
+void RenderLoop::renderText()
 { // It is important to leave the if else structure here as it is
-	if(fps)
+	if (fps)
 		Text::getInstance()->fps(timeNow, deltaTime, drawnTriangles);
+
+	if (wireFrameMode)
+		Text::getInstance()->wireframe();
 
 	if (help)
 		Text::getInstance()->help();
-	else if(!render)
+	else if (!render)
 		Text::getInstance()->pause();
-	else if (Text::getInstance()->hasTimeLeft()) // Watch out, if more text becomes time dependent make an enum with the single times in it to set and render
-		Text::getInstance()->gameOver(deltaTime);
+	else if (Text::getInstance()->hasTimeLeft())
+		Text::getInstance()->removeTime(deltaTime);
+
 }
 
 // Calculates the delta time, e.g. the time between frames
@@ -347,7 +382,7 @@ void RenderLoop::doMovement(double timeDelta)
 }
 
 // Displays the ETU loading screen with music, source https://open.gl/textures
-void RenderLoop::displayLoadingScreen(ModelLoader* ml){
+void RenderLoop::displayLoadingScreen(ModelLoader* ml) {
 	GLuint vao;// Create Vertex Array Object
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);

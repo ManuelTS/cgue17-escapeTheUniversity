@@ -14,6 +14,7 @@ Text::~Text() {
 	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteVertexArrays(1, &VAO);
+	displayTime.clear();
 }
 
 void Text::init() {
@@ -96,15 +97,20 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 
 	vector<float>* vertices = new vector<float>;
 	float cursor = 0.0f, row = 0.0f;
-	const float advance = scale * charSize / (float)RenderLoop::getInstance()->width;
+	const RenderLoop* rl = RenderLoop::getInstance();
+	const float advance = scale * charSize / (float)rl->width;
 	x /= scale;
 	y /= scale;
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, characterTextureHandle);
 	glBindVertexArray(VAO);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	if (rl->blending)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
 
 	for (const char* p = text; *p; p++, cursor += advance)
 	{
@@ -140,7 +146,9 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 	writeVertices(vertices);
 	delete vertices;
 
-	glDisable(GL_BLEND);
+	if (rl->blending)
+		glDisable(GL_BLEND);
+
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -161,17 +169,45 @@ void Text::writeVertices(vector<float>*vertices)
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, size / 4); //Each vertex has two xy and two uv entries, ergo divide by four for correct vertex amount	
 }
 
-void Text::setDisplayTime(const double miliSeconds = 0) {
-	displayTime = miliSeconds;
+void Text::addText2Display(const int toAdd) {
+	displayTime.push_back(toAdd);
+	displayTime.push_back(toAdd);
 }
 
-bool Text::hasTimeLeft() {
-	return displayTime > 0;
+bool Text::hasTimeLeft(const unsigned int i, const double deltaTime) {
+
+	if(i == 0 && deltaTime == 0)
+		return displayTime.size() > 0;
+	else {
+		if ((displayTime[i + 1] -= (int)(deltaTime * 1000)) < 0) // Convert it to seconds and calculate new remaining display time on screen, truncation is okay here
+			displayTime.erase(displayTime.begin() + i, displayTime.begin() + i + 2); // If below zero earase entries
+		return true;
+	}
 }
 
-void Text::gameOver(const double deltaTime)
+void Text::removeTime(const double deltaTime)
 {
-	displayTime -= deltaTime*1000;
+	for (unsigned int i = 0; i < displayTime.size(); i += 2)
+		switch (displayTime.at(i))
+		{
+			case SCREENY:
+				screeny();
+				hasTimeLeft(i, deltaTime);
+				break;
+			case GAME_OVER:
+				gameOver();
+				hasTimeLeft(i, deltaTime);
+				break;
+		}
+}
+
+void Text::screeny()
+{
+	write("Hope you don't do anything bad\nwith that screeny, sweetie.", -0.9f, 0.0f, 0.5f, 0.0f);
+}
+
+void Text::gameOver()
+{
 	color = glm::vec3(1.0f, 0.0f, 0.0f);
 	write("Exmatriculated", -1.05f, -0.1f, 1.0f, -45.0f);
 	color = DEFAULT_COLOR; // Restet original color for other possible text draws
@@ -186,6 +222,10 @@ void Text::fps(const double pastTime, const double deltaTime, const unsigned int
 	}
 
 	write(fpsBuffer, -0.9f, 0.9f, 0.5f, 0.0f);
+}
+
+void Text::wireframe() {
+	write("Wireframe mode", 0.0f, 0.9f, 0.5f, 0.0f);
 }
 
 void Text::loadingScreenInfo() {
@@ -208,7 +248,7 @@ void Text::loadingScreenInfo() {
 	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &param);
 	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal texture image units: ", false);
-	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) std::to_string(param).c_str(), true);
 	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &param);
 	i = copyInBuffer(infoText, i, (const unsigned char*) "Maximal uniform buffer binding points: ", false);
 	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
@@ -232,6 +272,16 @@ void Text::loadingScreenInfo() {
 	i = copyInBuffer(infoText, i, (const unsigned char*)std::to_string(param).c_str(), true);
 	//int m_viewport[4]; // 0=x, 1=y, 2=w, 3=h
 	//glGetIntegerv(GL_VIEWPORT, m_viewport);
+
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "", true);
+	i = copyInBuffer(infoText, i, (const unsigned char*) "format c: /x /fs:exFAT", true);
 
 	write(infoText, -1.0f, 1.0f, 0.45f, 0.0f);
 }
@@ -265,8 +315,9 @@ void Text::help()
 	i = copyInBuffer(help, i, (const unsigned char*) " F7= Toggle pause game", true);
 	i = copyInBuffer(help, i, (const unsigned char*) " F8= Toggle view frustum culling", true);
 	i = copyInBuffer(help, i, (const unsigned char*) " F9= Toggle blending", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "F10= ?", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "F10= Toggle stenicl buffer usage", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "F11= Fullscreen", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "F12= Toogle bounding volume triangles", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Escape/End = Close game", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "W/Upper arrow = Move forwards", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "S/Lower arrow = Move backwards", true);
@@ -275,6 +326,7 @@ void Text::help()
 	i = copyInBuffer(help, i, (const unsigned char*) "Left click = interaction", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Right click = ?", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Print = Screenshot", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "All other keys have surprises for you.", true);
 
 	write(help, -1.0, 0.8, 0.5, 0.0f);
 }

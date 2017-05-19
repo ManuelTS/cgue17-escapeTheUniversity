@@ -12,12 +12,24 @@ ModelNode::ModelNode()
 }
 ModelNode::~ModelNode(){}
 
+void ModelNode::setModelMatrix(glm::mat4* m)
+{
+	modelMatrix = *m;
+	inverseModelMatrix = glm::inverseTranspose(*m); // Transpose and inverse on the CPU because it is very costly on the GPU
+}
+
 /*Draws all the involved meshes by looping over them and call their draw functions.*/
 void ModelNode::draw()
 {
-	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-	glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseModelMatrix));
+	unsigned int size = meshes.size();
 
-	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i]->draw();
+	if (size > 0)
+	{
+
+		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseModelMatrix));
+
+		for (unsigned int i = 0; i < size; i++)
+			meshes[i]->draw();
+	}
 }

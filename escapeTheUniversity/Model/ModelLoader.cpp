@@ -1,13 +1,13 @@
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
+#include <assimp\Importer.hpp>
+#include <assimp\postprocess.h>
 #include "ModelLoader.hpp"
-#include "Node/Node.hpp"
-#include "Node/ModelNode.hpp"
-#include "Node/LightNode.hpp"
-#include "Node/TransformationNode.hpp"
-#include "Mesh.hpp"
-#include <IL/il.h>
-#include <IL/ilu.h>  // for image creation and manipulation funcs.
+#include "Node\Node.hpp"
+#include "Node\ModelNode.hpp"
+#include "Node\LightNode.hpp"
+#include "Node\TransformationNode.hpp"
+#include "Mesh\Mesh.hpp"
+#include <IL\il.h>
+#include <IL\ilu.h>  // for image creation and manipulation funcs.
 #include "..\Debug\Debugger.hpp"
 
 using namespace std;
@@ -41,10 +41,11 @@ void ModelLoader::load(string path)
 	}
 }
 
-void ModelLoader::linkLightUBO(){
+void ModelLoader::linkLightUBO()
+{
 		glGenBuffers(1, &lightUBO);
 		glBindBuffer(GL_UNIFORM_BUFFER, lightUBO);
-		glBufferData(GL_UNIFORM_BUFFER, MAX_LIGHTS * sizeof(LightNode::Light), NULL, GL_DYNAMIC_DRAW); // Play with last param 4 performance
+		glBufferData(GL_UNIFORM_BUFFER, LIGHT_NUMBER * sizeof(LightNode::Light), NULL, GL_DYNAMIC_DRAW); // Play with last param 4 performance
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		//glUniformBlockBinding(shader->programHandle, xxx,xxx); // done by index attribute in shader
 }
@@ -54,13 +55,14 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 {
 	string name = node->mName.C_Str();
 
-	if (string::npos != name.find(LIGHT_SUFFIX)) //Light node
+    if (string::npos != name.find(LIGHT_SUFFIX)) //Light node
 		return processLightNode(&name, parent, node, scene);
 	else // Normal node and transformation processing
 	{
 		ModelNode* current = new ModelNode();
 
 		current->name = name;
+
 		processMeshesAndChildren(current, node, scene);
 
 		if (string::npos != name.find(DOOR_PREFIX)) // Door Model, Door Node
@@ -71,7 +73,7 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 				((ModelNode*)current)->pivot = getTransformationVec(&aiParent->mTransformation);
 
 			TransformationNode* interpolation = new TransformationNode();
-			
+
 			interpolation->parent = parent;
 			current->parent = interpolation;
 			interpolation->children.push_back(current);
@@ -87,10 +89,13 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 
 }
 
-/*Processes Meshes and Child nodes recursively.*/
+/*Processes Meshes and Child nodes recursively in depth traversal.*/
 void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const aiScene* scene)
 {
 	ModelNode* mn = (ModelNode*)current;
+
+	if (mn != 0)
+		mn->position = getTransformationVec(&node->mTransformation);
 
 	for (GLuint i = 0; i < node->mNumMeshes; i++)// Process each mesh located at the current node
 	{
@@ -99,10 +104,7 @@ void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const ai
 		// The scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 		
 		if (mn != 0)
-		{
-			mn->position = getTransformationVec(&node->mTransformation);
 			mn->meshes.push_back(processMesh(mesh, scene));
-		}
 	}
 
 	// After we've processed all of the meshes (if any) we then recursively process each of the children nodes
@@ -129,18 +131,25 @@ LightNode* ModelLoader::processLightNode(string* name, Node* parent, aiNode* nod
 		{
 			ln = new LightNode(lightUBO, i); // vec4 in method signature causes __declspec(align('16')) won't be aligned
 
-			if (i >= MAX_LIGHTS)
-				Debugger::getInstance()->pauseExit("Malformed shader: More lights, " + to_string(i) + ", found in the model than specifed in shader.");
 			// Get light node information
-			ln->light.position = glm::vec4(lightNode->mPosition.x, lightNode->mPosition.y, lightNode->mPosition.z, 1.0f); // 1.0f = Point light
+			float lightType = 0.0f;// w=0 point light, w=1 directional light in mesh.frag
+
+			if (lightNode->mType == aiLightSourceType::aiLightSource_POINT)
+				lightType = 0.0f;
+			else if (lightNode->mType == aiLightSourceType::aiLightSource_DIRECTIONAL)
+				lightType = 1.0f;
+			else
+				Debugger::getInstance()->pauseExit("Malformed light type " + lightSourceTypeToString(lightNode->mType) + " found in light with name " + *name + ".");
+			
+			ln->light.position = glm::vec4(lightNode->mPosition.x, lightNode->mPosition.y, lightNode->mPosition.z, lightType); 
 
 			if (ln->light.position.x == 0.0f && ln->light.position.y == 0.0f && ln->light.position.z == 0.0f) // Position in light node often not set, but in the normal node representation it is...
 				ln->light.position = glm::vec4(getTransformationVec(&node->mTransformation), ln->light.position.w);
 
-			ln->light.ambient = glm::vec4(lightNode->mColorAmbient.r, lightNode->mColorAmbient.g, lightNode->mColorAmbient.b, 1.0f); // W unused
-			ln->light.diffuse = glm::vec4(lightNode->mColorDiffuse.r, lightNode->mColorDiffuse.g, lightNode->mColorDiffuse.b, 1.0f); // W unused
+			// Ambient light is in the shader ambient = diffuse.rbg * diffuse.a where .a is a simple coefficient
+			ln->light.diffuse = glm::vec4(lightNode->mColorDiffuse.r, lightNode->mColorDiffuse.g, lightNode->mColorDiffuse.b, 0.01f);
 			ln->light.specular = glm::vec4(lightNode->mColorSpecular.r, lightNode->mColorSpecular.g, lightNode->mColorSpecular.b, 1.0f); // w unused
-			//ln->light.shiConLinQua = glm::vec4(64.0f, lightNode->mAttenuationConstant, lightNode->mAttenuationLinear, lightNode->mAttenuationQuadratic);
+			ln->light.shiConLinQua = glm::vec4(64.0f, lightNode->mAttenuationConstant, lightNode->mAttenuationLinear, lightNode->mAttenuationQuadratic);
 			// Shin,Lin, Qua values with distance: http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Point+Light+Attenuation
 
 			ln->name = *name;
@@ -152,9 +161,49 @@ LightNode* ModelLoader::processLightNode(string* name, Node* parent, aiNode* nod
 	if (ln == nullptr)
 		Debugger::getInstance()->pauseExit("Malfunction: Light node " + *name + " not found.");
 
-	processMeshesAndChildren(ln, node, scene);
 	lights.push_back(ln);
+
+	if(lights.size() > LIGHT_NUMBER)
+		Debugger::getInstance()->pauseExit("Malfunction: Too much lights in .dae file, game has less lights defined.");
+
 	return ln;
+}
+
+std::string ModelLoader::lightSourceTypeToString(aiLightSourceType type)
+{
+	// Undefined light type
+	if (type == aiLightSourceType::aiLightSource_UNDEFINED)
+		return "aiLightSource_UNDEFINED";
+	//! A directional light source has a well-defined direction
+	//! but is infinitely far away. That's quite a good
+	//! approximation for sun light.
+	else if (type == aiLightSourceType::aiLightSource_DIRECTIONAL)
+		return "aiLightSource_DIRECTIONAL";
+	//! A point light source has a well-defined position
+	//! in space but no direction - it emits light in all
+	//! directions. A normal bulb is a point light.
+	else if (type == aiLightSourceType::aiLightSource_POINT)
+		return "aiLightSource_POINT";
+	//! A spot light source emits light in a specific
+	//! angle. It has a position and a direction it is pointing to.
+	//! A good example for a spot light is a light spot in
+	//! sport arenas.
+	else if (type == aiLightSourceType::aiLightSource_SPOT)
+		return "aiLightSource_SPOT";
+	//! The generic light level of the world, including the bounces
+	//! of all other light sources.
+	//! Typically, there's at most one ambient light in a scene.
+	//! This light type doesn't have a valid position, direction, or
+	//! other properties, just a color.
+	else if (type == aiLightSourceType::aiLightSource_AMBIENT)
+		return "aiLightSource_AMBIENT";
+	//! An area light is a rectangle with predefined size that uniformly
+	//! emits light from one of its sides. The position is center of the
+	//! rectangle and direction is its normal vector.
+	else if (type == aiLightSourceType::aiLightSource_AREA)
+		return "aiLightSource_AREA";
+	else
+		return "Unknown light enum type";
 }
 
 Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene)
@@ -215,8 +264,7 @@ Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene)
 		textures.insert(textures.end(), text.begin(), text.end());
 		text.clear();
 	}
-
-	// Return a mesh object created from the extracted mesh data
+	
 	return new Mesh(indices, data, textures, materials);
 }
 

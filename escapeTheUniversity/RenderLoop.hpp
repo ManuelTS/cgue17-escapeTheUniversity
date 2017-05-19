@@ -7,6 +7,7 @@ class Initialization;
 class Shader;
 class Camera;
 class Node;
+class ModelNode;
 class ModelLoader;
 class GBuffer;
 
@@ -15,8 +16,8 @@ class RenderLoop{
 	private:
 		GLFWwindow* window;
 		// Time
-		double timePast; // Last, past time  in nano seconds
-		double timeNow; // New, current time in nano seconds
+		double timePast; // Last, past time  in milliseconds
+		double timeNow; // New, current time in milliseconds
 	
 		RenderLoop(void){}; // Private constructor to allow only one instance
 		RenderLoop(RenderLoop const&); // Private constructor to prevent copies
@@ -25,7 +26,8 @@ class RenderLoop{
 		void doMovement(double timeDelta);
 		void doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, ModelLoader* ml); // Does the deferred shading gemetry and lighning pass and draws the screen quad afterwards
 		void calculateDeltaTime(); // Calculates the delta time, e.g. the time between frames
-		void draw(Node* current); // Draws all lights except light nodes
+		void draw(Node* current); // Draws all lights which checking their dependencies and condition (no Light Node drawing, frustum culling, flag setting)
+		void pureDraw(Node* current); // Draws the argument node without any checks and calls draw for its children again
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
 	public:
 		Camera* camera;
@@ -41,7 +43,9 @@ class RenderLoop{
 		bool wireFrameMode = false; // True if the wireframe mode is activated, false if not, standard false
 		bool render = true; // Stop or start rendering with a key, standard true
 		bool frustum = false; // Toggle frustum culling, standard false
-		bool fullscreen = false; // Toogle fullscreen mode
+		bool blending = true; // Toggle usage of blending, default true
+		bool stencil = true; // Toogle usage of the stencil buffer, default true
+		bool fullscreen = false; // Toogle fullscreen mode, default false
 		
 		double deltaTime; // Difference of variable timeNew and timeOld in nano seconds
 

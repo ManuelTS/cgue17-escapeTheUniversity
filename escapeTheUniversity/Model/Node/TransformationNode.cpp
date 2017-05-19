@@ -19,28 +19,33 @@ void TransformationNode::switchState()
 	transform = !transform;
 }
 
-void TransformationNode::draw()
+float TransformationNode::change(bool plus)
 {
-	double deltaTime = 1.0f/RenderLoop::getInstance()->deltaTime;
-	float newAngle = glm::radians(ANGLE*deltaTime);
-	if (transform &&  currentRotation < MAX_ROTATION)
-		currentRotation += newAngle;
-	else if (!transform && currentRotation > 0)
-		currentRotation -= newAngle;
+	float newRadiant = RADIANT * RenderLoop::getInstance()->deltaTime;
+	
+	if (!plus)
+		newRadiant = -newRadiant;
 
-	if (!transform && currentRotation > 0 || transform && currentRotation <= MAX_ROTATION)
+	for (Node* child : children)
 	{
-		for (Node* child : children)
-		{
-			ModelNode* mn = dynamic_cast<ModelNode*>(child);
+		ModelNode* mn = dynamic_cast<ModelNode*>(child);
 
-			if (mn != nullptr)
-			{
-				mn->modelMatrix = glm::translate(mn->modelMatrix, -mn->position);
-				mn->modelMatrix = glm::rotate(mn->modelMatrix, transform ? newAngle : -newAngle, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it
-				mn->modelMatrix = glm::translate(mn->modelMatrix, mn->position);
-				mn->inverseModelMatrix = glm::inverseTranspose(mn->modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
-			}
+		if (mn != nullptr)
+		{
+			mn->modelMatrix = glm::translate(mn->modelMatrix, -mn->position); // Translate to origin to rotate there
+			mn->modelMatrix = glm::rotate(mn->modelMatrix, newRadiant, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it only on y axis
+			mn->modelMatrix = glm::translate(mn->modelMatrix, mn->position); // Translate rotated matrix bock to position
+			mn->inverseModelMatrix = glm::inverseTranspose(mn->modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
 		}
 	}
+
+	return newRadiant;
+}
+
+void TransformationNode::draw()
+{
+	if (transform && currentRotationRadiant < MAX_ROTATION_RADIANT)
+		currentRotationRadiant += change(true);
+	else if (!transform && currentRotationRadiant > 0)
+		currentRotationRadiant += change(false);
 }
