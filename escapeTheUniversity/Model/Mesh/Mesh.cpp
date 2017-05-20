@@ -1,6 +1,6 @@
 #include "Mesh.hpp"
-#include "../Shader.hpp"
-#include "../Debug/MemoryLeakTracker.h"
+#include "..\..\Shader.hpp"
+#include "..\..\Debug\MemoryLeakTracker.h"
 #include <iostream>
 
 using namespace std;
@@ -12,20 +12,20 @@ Mesh::~Mesh(){
 }
 
 /*Links the VBOs, indices, positions, normals, textCoords (UVs), textureIds, -names and -paths together in one VAO.*/
-Mesh::Mesh(vector<GLuint> _indices, vector<Vertex> _data, vector<Texture> _textures, vector<glm::vec4> _materials) : indices(_indices), data(_data), textures(_textures), materials(_materials)
+Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _data, vector<Texture> _textures, vector<glm::vec4> _materials) : indices(_indices), data(_data), textures(_textures), materials(_materials)
 {
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
 	//Link
-	glGenVertexArrays(1, &VAO); // Bind
+	glGenVertexArrays(1, &VAO); // Generate and setup normal VAO and VBO
 	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	glGenBuffers(1, &EBO); // Multiple VAOS can refer to the same element buffer
 
 	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(Vertex), &data[0], GL_STATIC_DRAW);
-
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(GLuint), &this->indices[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(Vertex), &data[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(positionsLocation);
 	glVertexAttribPointer(positionsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
@@ -40,9 +40,8 @@ Mesh::Mesh(vector<GLuint> _indices, vector<Vertex> _data, vector<Texture> _textu
 	glVertexAttribPointer(materialLocation, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 
 	glBindVertexArray(0); // Unbind VAO first!
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 /*Draws this mesh*/

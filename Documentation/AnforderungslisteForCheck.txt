@@ -75,11 +75,11 @@
 				[ ] F6 - Enable/Disable effect (if necessary, see Effects)
 				[ ] F7 - Enable/Disable effect (if necessary, see Effects)
 				[x] F8 - Viewfrustum-Culling on/off
-				[ ] F9 - Blending on/off
+				[x] F9 - Blending on/off
 		[ ] Experimenting with OpenGL (Blending, Texture Sampling, MipMapping Quality)
 				This means, that advanced functionality of OpenGL should be implement and tested. Those functionalities are:
-				[ ]Buffer-Objects: FBO (Frame Buffer Object) or UBO (Uniform Buffer Object)
-				[ ]Blending: Use hardware blending (glBlend*) somewhere in your code. Make sure it can be toggled on/off
+				[x]Buffer-Objects: FBO (Frame Buffer Object) or UBO (Uniform Buffer Object)
+				[x]Blending: Use hardware blending (glBlend*) somewhere in your code. Make sure it can be toggled on/off
 				[ ]Mip Mapping (on/off)
 				[ ]Textur-Sampling-Quality (Bi/Trilinear Filtering)
 	-----------------------------------

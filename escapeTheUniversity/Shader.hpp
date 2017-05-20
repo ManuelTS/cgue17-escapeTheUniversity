@@ -7,8 +7,8 @@ class Shader
 {
 public:
 	// gBufferShader location constants
-	const int viewLocation = 8; // gBuffer.vert
-	const int projectionLocation = 12; // gBuffer.vert
+	const int viewLocation = 8; // Matrix, gBuffer.vert
+	const int projectionLocation = 12; // Matrix, gBuffer.vert
 	// deferredShader location constants
 	const int viewPositionLocation = 0; // defferredShader.frag
 
@@ -26,7 +26,7 @@ private:
 	void link();
 	void check(unsigned int handle, const std::string& name);
 
-	const char* TEXT_VERT = R"(
+	const char* TEXT_VERT = R"glsl(
 	#version 430 core
 
 	layout (location = 0) in vec4 positionAndTC; // screen position.xy and texture coordinates.zw, usage in text.cpp
@@ -39,8 +39,8 @@ private:
 	{
 	  gl_Position = transform * vec4(positionAndTC.xy, 0.0, 1.0);
 	  texCoord = positionAndTC.zw;
-	})";
-	const char* TEXT_FRAG = R"(
+	})glsl";
+	const char* TEXT_FRAG = R"glsl(
 	#version 430 core
 
 	layout(location = 0) in vec2 texCoord; // Usage in text.vert
@@ -58,8 +58,9 @@ private:
 		const float distance2Outline = texture(ourTexture, texCoord).a;
 		const float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance2Outline);
 		gl_FragColor = vec4(colorScale.rgb, alpha);
-	})";
-	const char* IMAGE_VERT = R"(
+	})glsl";
+
+	const char* IMAGE_VERT = R"glsl(
 	#version 430 core
 
 	layout (location = 0) in vec2 position;// Usage in: RenderLoop.cpp displayLoadingScreen();
@@ -74,8 +75,8 @@ private:
 		fragmentColor = color;
 		fragmentTexCoord = texCoord;
 		gl_Position = vec4(position, 0.0, 1.0);
-	})";
-	const char* IMAGE_FRAG = R"(
+	})glsl";
+	const char* IMAGE_FRAG = R"glsl(
 	#version 430 core
 
 	layout (location = 0) in vec3 color;
@@ -86,14 +87,14 @@ private:
 	void main()
 	{
 		gl_FragColor  = texture(tex, texCoord) * vec4(color, 1.0);
-	})";
-	const char* GBUFFER_VERT = R"(
+	})glsl";
+	const char* GBUFFER_VERT = R"glsl(
 	#version 430 core
 
-	layout (location = 0)  uniform mat4 model;	      // Usage in: Node.hpp
-	layout (location = 4)  uniform mat4 inverseModel; // Usage in: Node.hpp
-	layout (location = 8)  uniform mat4 view;	      // Usage in: RenderLoop.cpp init(); before loop
-	layout (location = 12) uniform mat4 projection;   // Usage in: RenderLoop.cpp init(); before loop
+	layout (location = 0)  uniform mat4 model;	      // Usage in: ModelNode.hpp#draw()
+	layout (location = 4)  uniform mat4 inverseModel; // Usage in: ModelNode.hpp#draw()
+	layout (location = 8)  uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading()
+	layout (location = 12) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading()
 
 	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link();
 	layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
@@ -110,13 +111,12 @@ private:
 		vec4 worldPosition = vec4(model * vec4(position, 1.0));
 		fragmentPosition = worldPosition.xyz;
 		gl_Position = projection * view * worldPosition;
-		texCoords.x = tc.x; // Forward uv texel coordinates to the fragment shader
-		texCoords.y = 1 - tc.y; // Forward uv texel coordinates to the fragment shader, TODO finde cause and solution to this flipped y coords wordaround
+		texCoords.x = tc.x;                         // Forward uv texel coordinates to the fragment shader
+		texCoords.y = 1 - tc.y;                     // Forward uv texel coordinates to the fragment shader, TODO finde cause and solution to this flipped y coords wordaround
 		normalVector = mat3(inverseModel) * normal; // Forward normals to fragment shader
-		materialDiffuseShininess = material; // rgb unused
-	})";
-
-	const char* GBUFFER_FRAG = R"(
+		materialDiffuseShininess = material;        // rgb unused
+	})glsl";
+	const char* GBUFFER_FRAG = R"glsl(
 	#version 430 core
 
 	layout (binding = 0) uniform sampler2D textureDiffuse; // Usage in: Mesh.cpp draw();
@@ -140,9 +140,9 @@ private:
 		//gColorNormal.w = uint(0.0); // Unused
 
 		gPositionAndShininess.xyz = fragmentPosition;
-		gPositionAndShininess.w = materialDiffuseShininess.a; //texture(textureSpecular, texCoords).r; // Specular texture NOT IMPLEMENTED, // materialDiffuseShininess.rgb is unused!
-	})";
-	const char* DEFERRED_SHADING_VERT = R"(
+		gPositionAndShininess.w = materialDiffuseShininess.a; // Specular texture NOT IMPLEMENTED, // materialDiffuseShininess.rgb is unused!
+	})glsl";
+	const char* DEFERRED_SHADING_VERT = R"glsl(
 	#version 430 core
 	const vec4 verts[4] = vec4[4](vec4(-1.0, -1.0, 0.5, 1.0), 
 								  vec4( 1.0, -1.0, 0.5, 1.0),
@@ -152,61 +152,73 @@ private:
 	void main(void)
 	{
 		gl_Position = verts[gl_VertexID];
-	})";
-	const char* DEFERRED_SHADING_FRAG = R"(
+	})glsl";
+	const char* DEFERRED_SHADING_FRAG = R"glsl(
 	#version 430 core
 
 	layout (location = 0) uniform vec3 viewPosition; // from RenderLoop.cpp#renderloop
+
 	layout (binding = 0) uniform usampler2D colorAndNormalTex;      // From gBuffer.frag, attachment0
-	layout (binding = 1) uniform sampler2D positionAndShininessTex; // From gBuffer.frag, attachment1#
+	layout (binding = 1) uniform sampler2D positionAndShininessTex; // From gBuffer.frag, attachment1
 
-	// Deeply understand location, binding, and index of sampler2D
-
-	struct Light
+	struct LightStruct 
 	{ // Same as LightNode.hpp#Light
-		vec4 position; 
-		vec4 ambient; 
-		vec4 diffuse; 
-		vec4 specular;
+		vec4 position;     // xyz = world coord position of light, w = flag if it should be drawn or not 1.0 = true = yes, otherwise false = no.
+		vec4 diffuse;      // rgb = diffuse light, a = ambient coefficient
+		vec4 specular;     // w unused
 		vec4 shiConLinQua; // x = shininess, y = constant attentuation, z = linear attentuation, w = quadratic attentuation value
 	};
 
-	const int MAX_LIGHTS = 10; // Correlates with ModelLoader.hpp#MAX_LIGHTS
-	layout (std140, binding = 2, index = 0) uniform LightBlock  // Used in RendererLoop#drawLights
+	const int LIGHT_NUMBER = 10; // Correlates with ModelLoader.hpp#LIGHT_NUMBER
+	layout (std140, binding = 2, index = 0) uniform LightBlock 
 	{
-		Light light[MAX_LIGHTS];
-	}lights;
+		LightStruct light[LIGHT_NUMBER];
+	} l; // Workaround, direct struct blockbinding only in openGL 4.5
 
-	vec3 calculateLight(Light currentLight, vec3 diffuse, float specular, vec3 norm, vec3 fragmentPosition, vec3 viewDirection)
+	const float RIM_POWER = 10.0f; // Rim light power
+
+	// Calculate Rim Light
+	vec3 calculateRim(LightStruct light, vec3 normal, vec3 viewDirection)
+	{
+		// Calculate the rim factor
+		float rimFactor = 1.0 - dot(normal, viewDirection);
+
+		// Constrain it to the range 0 to 1 using a smoothstep function
+		rimFactor = smoothstep(0.0, 1.0, rimFactor);
+
+		// Raise it to the rim exponent
+		rimFactor = pow(rimFactor, RIM_POWER);
+
+		// Finally, multiply it by the rim color which is here simply the light diffuse color
+		return rimFactor * light.diffuse.rgb;
+	}
+
+	// Blinn Phong light
+	vec3 calculateLight(LightStruct light, vec3 diffuse, float specular, vec3 norm, vec3 fragmentPosition, vec3 viewDirection)
 	{
 		//  Calculate ambientColor
-		vec3 ambientColor = diffuse * 0.01;
+		vec3 ambientColor = diffuse * light.diffuse.a;
 
 		// Calculate diffuseColor 
-		vec3 lightPosition = currentLight.position.rgb;
+		vec3 lightPosition = light.position.xyz;
 		vec3 lightDirection= normalize(lightPosition - fragmentPosition);
 		float diffuseImpact = max(dot(norm, lightDirection), 0.0); // Max for no negative values
-		vec3 diffuseColor = currentLight.diffuse.rgb * (diffuseImpact * diffuse);
+		vec3 diffuseColor = light.diffuse.rgb * (diffuseImpact * diffuse);
 
 		// Calculate spectralColor
 		vec3 halfwayDir = normalize(lightDirection + viewDirection); // Blinn Phong
-		float spec = pow(max(dot(norm, halfwayDir), 0.0), currentLight.shiConLinQua.x);
-		vec3 specularColor = currentLight.specular.rgb * (spec * specular);
+		float spec = pow(max(dot(norm, halfwayDir), 0.0), light.shiConLinQua.x);
+		vec3 specularColor = light.specular.rgb * (spec * specular);
 
-		if(currentLight.position.w == 0.0) // Point light
-		{  //Nothing in here, it is okay
-		}
-		else if(currentLight.position.w == 1.0) // Directional light
-		{   //Calculate attenuation
-			float lightFragDist = length(lightPosition - fragmentPosition);
-			float attenuation = 1.0 / (currentLight.shiConLinQua.y + currentLight.shiConLinQua.z * lightFragDist + currentLight.shiConLinQua.w * (lightFragDist * lightFragDist));
+		//Calculate attenuation
+		float lightFragDist = length(lightPosition - fragmentPosition);
+		float attenuation = 1.0 / (light.shiConLinQua.y + light.shiConLinQua.z * lightFragDist + light.shiConLinQua.w * (lightFragDist * lightFragDist));
 
-			diffuseColor *= attenuation;
-			specularColor *= attenuation;
-		}
+		diffuseColor *= attenuation;
+		specularColor *= attenuation;
 
 		// Calculate Final color	
-		return ambientColor + diffuseColor + specularColor;
+		return ambientColor + diffuseColor + specularColor;// + calculateRim(norm, viewDirection);
 	}
 
 	void main()
@@ -222,34 +234,32 @@ private:
 		vec3 fragmentPosition = gPositionAndShininess.xyz;
 		vec3 viewDirection = normalize(viewPosition - fragmentPosition);
 
-		// Calculate lights
-		vec3 color = vec3(0.0, 0.0, 0.0);
+		//Calculate light
+		vec3 color = vec3(0.0f);
 
-		// Point Light
-		// ... maybe will come
-		// Directional Light
-		for(int i = 0; i < lights.light.length(); i++)
-			if(lights.light[i].diffuse.x > 0.0 || lights.light[i].diffuse.y > 0.0 || lights.light[i].diffuse.z > 0.0) // Draw only non-empty lights
-				color += calculateLight(lights.light[i], diffuse, specular, norm, fragmentPosition, viewDirection);
-		// Spot Light
-		// ... maybe will come
+		for(int i = 0; i < LIGHT_NUMBER; i++)
+			if(l.light[i].position.w == 1.0f)
+				color += calculateLight(l.light[i], diffuse, specular, norm, fragmentPosition, viewDirection);
 
-		gl_FragColor = vec4(color, 1.0);
-	})";
-	const char* DEPTH_VERT = R"(
+		gl_FragColor = vec4(color, 1.0f);
+	})glsl";
+	const char* DEPTH_VERT = R"glsl(
 	#version 430 core
 
-	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link();
+	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link(); // Of a point of the light sphere, used in .cpp, w is unused and must be one
+	layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
+	layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
+	layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, rgb unused
 
-	layout (location = 0)  uniform mat4 model;	      // Usage in: Node.hpp
-	layout (location = 4)  uniform mat4 view;	      // Usage in: RenderLoop.cpp init(); before loop
+	layout (location = 0)  uniform mat4 model;	     // Usage in: Node.hpp
+	layout (location = 4)  uniform mat4 view;	     // Usage in: RenderLoop.cpp init(); before loop
 	layout (location = 8) uniform mat4 projection;   // Usage in: RenderLoop.cpp init(); before loop
 
 	void main()
 	{
 		gl_Position = projection * view * model * vec4(position, 1.0f);
-	})";
-	const char* DEPTH_FRAG = R"(
+	})glsl";
+	const char* DEPTH_FRAG = R"glsl(
 	#version 430 core
 
 	const float near = 1.0; 
@@ -265,5 +275,5 @@ private:
 	{             
 		const float depth = linearizeDepth(gl_FragCoord.z) / far; // divide by far for demonstration
 		gl_FragColor = vec4(vec3(depth), 1.0f);
-	})";
+	})glsl";
 };

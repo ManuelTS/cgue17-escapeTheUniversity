@@ -13,16 +13,18 @@ for(boundingBoxIndex)
    continue
   ...
 }
+and each volume becomes a sphere too for frustum culling (most fastest due to one center vertex and radius check)
 
 One of this for bullet timestep:
 http://gafferongames.com/game-physics/fix-your-timestep/
 or
 http://www.gamasutra.com/blogs/BramStolk/20160408/269988/Fixing_your_time_step_the_easy_way_with_the_golden_48537_ms.php
 update in bullet only each second or x frame if the deltaTime gets too low since bullet can get nummerical instable. for example if frames are above 60 fps only each second or x frame...
+visualize the bounding boxes
 
 Transform feedback: https://open.gl/feedback
 
-Rim lighting openGL super Bibile page 634
+DONE: Rim lighting openGL super Bibile page 634, but only if object is lit from the back
 
 Skymap, with a beautiful night sky von NASA deep field image full of stars in OGLSB as cube map on page 640. Before doing that check "seamless cube map / sky box2".
 
@@ -32,13 +34,31 @@ Fade for sound
 
 check vertical sync impact on the game
 
+Omnidirectional shadows
+
+in stencil and gbuffer vertex shader combine this parameters with using only vec4 s
+layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link(); // Of a point of the light sphere, used in .cpp, w is unused and must be one
+layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
+layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
+layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, rgb unused
+
+in the gBuffer try to reduce the single GL_** bit attachments from GL_DEPTH32F_STENCIL8 to GL_DEPTH24F_STENCIL8 for example
+
+Visualize depth: https://learnopengl.com/#!Advanced-OpenGL/Depth-testing
+
+make an camera transition intro
+
 Optimization:
+Transform feedback: https://open.gl/feedback
 Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines
 
 
 
 
 Textures (Stefan):
+
+Hang up Poster_002 and our game design poster in a aisle.
+Our real life pictures somewhere in an office on the wall as framed pictures.
 
 University interriors,
 - Furnitures, books, bookshelfs, pc, monitors, bakets
@@ -47,19 +67,19 @@ University interriors,
 - Pictures and graffitty on the walls, but only few
 - lecture hall, black board, projector, overhead projector, chairs
 - laterns
+- All those elements everywhere to make the university realistic
 
 Critical books, use only critical literature about the following topics:
-- 9/11
-- Bank System
+- Bank and money System
 - Book cover from: https://www.amazon.com/Bluebird-Deliberate-Creation-Personality-Psychiatrists/dp/0970452519/ref=sr_1_1?ie=UTF8&qid=1494384682&sr=8-1&keywords=bluebird+deliberate+creation+of+multiple+personality+by++psychiatrists
 - Biocybernetics
-- Money system
 - Impfen: http://www.dr.loibner.net/bilder/cover2.jpg
 - 8 Todsünden der Zivilisierten Menschheit: http://www.langelieder.de/lit-pics/lorenz73.jpg
-- books from danielle ganser: https://www.danieleganser.ch/monografien.html
+- a lot of books from danielle ganser: https://www.danieleganser.ch/monografien.html
+- HAARP
+- chemtrails
+- Books from Ulrich Mohr
 ...
-
-Our real life pictures somewhere in an office on the wall as framed pictures.
 
 Perspective Room from https://youtu.be/xleyq2oJt_8?t=30m53s as art installation in a room with a sign beside the door which says "There is only a perspective seeing, only a perspective "knowing"". - Friedrich Nietzsche 1844 - 1900
 
@@ -72,7 +92,7 @@ Why are there pre- and suffixes in the first place, why not only one?
 Why is german mixed with englisch?
 Unification is needed.
 
-Elevator, from the basement up to to roof top, must be dirty with typical elevator music.
+Elevator, from the basement up to to roof top, must be with typical elevator music.
 
 
 
@@ -86,8 +106,6 @@ Roof revision:
 - roofgarden
 
 If a charater is camping giv an NPC the position and let him walk to that position to detect him
-
-Add if time Omnischadows to the shadow maps
 
 SSAO as alternative to vertex skinning
 
