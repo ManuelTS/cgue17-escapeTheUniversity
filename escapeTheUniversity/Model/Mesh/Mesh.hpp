@@ -18,6 +18,7 @@ public:
 	};
 	
 	std::vector<Vertex> data;
+	std::vector<unsigned int> indices;
 
 	/*Contains all texture ids, names, and paths.*/
 	struct Texture{
@@ -39,7 +40,6 @@ private:
 	unsigned int VBO;
 	unsigned int materialVBO;
 
-	std::vector<unsigned int> indices;
 	std::vector<Texture> textures; // Textures
 	std::vector<glm::vec4> materials; // Materials, rbg material values, a shininess
 

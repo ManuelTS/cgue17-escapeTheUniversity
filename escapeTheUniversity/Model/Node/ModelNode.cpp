@@ -33,3 +33,25 @@ void ModelNode::draw()
 			meshes[i]->draw();
 	}
 }
+
+int* ModelNode::getAllIndices() {
+	unsigned int size = meshes.size();
+
+	if (size > 0)
+	{
+		vector<int> allIndices;
+
+		for (unsigned int i = 0; i < size; i++) // Go through all meshes
+			for (unsigned int j = 0; j < meshes[i]->indices.size(); j++) // Go through all mesh vertices
+			{
+				unsigned int uint = meshes[i]->indices[j];
+				int castInt = uint;
+				int cast2Int = static_cast<int>(uint);
+				allIndices.push_back(meshes[i]->indices[j]); // cast unsigned int to int because of vhacd method signature
+			}
+
+		return allIndices.data();
+	}
+
+	return nullptr;
+}

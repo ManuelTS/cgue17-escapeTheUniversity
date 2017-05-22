@@ -3,6 +3,11 @@
 
 using namespace std;
 
+void BVG::calculateBoundingShapes(Node* current)
+{
+	//ModelNode*
+}
+
 void BVG::calculateVHACD()
 {
 	int * triangles; // array of indexes
@@ -20,7 +25,7 @@ void BVG::calculateVHACD()
 		params.m_callback = &callback;
 	#endif
 	
-		int nPoints = 0, nTriangles = 0; // TODO just values to overcome errors
+	int nPoints = 0, nTriangles = 0; // TODO just values to overcome errors
 
 	bool res = interfaceVHACD->Compute(points, 3, nPoints, triangles, 3, nTriangles, params); // compute approximate convex decomposition
 

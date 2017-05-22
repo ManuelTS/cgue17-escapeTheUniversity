@@ -25,6 +25,8 @@ public:
 
 	void draw() override;
 	void setModelMatrix(glm::mat4* m); // Sets the model matrix and computes the inverse one too
+	int* getAllIndices(); // Returns a pointer to all vertex indices of all meshes in this node
+	float* getAllVertices(); // Returns a pointer to all vertices of all meshes in this node
 
 protected:
 	const GLint modelLocation = 0; // gBuffer.vert
