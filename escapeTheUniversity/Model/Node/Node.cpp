@@ -23,7 +23,7 @@ vector<Node*> Node::getAllNodesDepthFirst(Node* current)
 {
 	vector<Node*> children;
 
-	for (unsigned int i = 0; current != nullptr && i < current->children.size(); i++)
+	for (unsigned int i = 0; current && i < current->children.size(); i++)
 	{
 		Node* child = current->children[i];
 		children.push_back(child);

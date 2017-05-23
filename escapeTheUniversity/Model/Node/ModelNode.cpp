@@ -14,8 +14,24 @@ ModelNode::~ModelNode(){}
 
 void ModelNode::setModelMatrix(glm::mat4* m)
 {
-	modelMatrix = *m;
-	inverseModelMatrix = glm::inverseTranspose(*m); // Transpose and inverse on the CPU because it is very costly on the GPU
+	modelMatrix = glm::translate(*m, position);
+	inverseModelMatrix = glm::inverseTranspose(modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
+	hirachicalModelMatrix = getModelMatrix();
+	inverseHirachicalModelMatrix = glm::inverseTranspose(hirachicalModelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
+}
+
+glm::mat4 ModelNode::getModelMatrix() {
+	glm::mat4 calculated = modelMatrix;
+
+	if(parent)
+	{
+		ModelNode* p = dynamic_cast<ModelNode*>(parent);
+
+		if (p)
+			calculated *= p->getModelMatrix();
+	}
+
+	return calculated;
 }
 
 /*Draws all the involved meshes by looping over them and call their draw functions.*/
@@ -26,8 +42,8 @@ void ModelNode::draw()
 	if (size > 0)
 	{
 
-		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-		glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseModelMatrix));
+		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(hirachicalModelMatrix)); // Only use the hirachical MMs here? TODO
+		glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseHirachicalModelMatrix));
 
 		for (unsigned int i = 0; i < size; i++)
 			meshes[i]->draw();

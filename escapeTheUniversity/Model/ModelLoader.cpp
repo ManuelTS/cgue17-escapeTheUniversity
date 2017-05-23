@@ -63,7 +63,6 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 
 		current->name = name;
 
-		processMeshesAndChildren(current, node, scene);
 
 		if (string::npos != name.find(DOOR_PREFIX)) // Door Model, Door Node
 		{
@@ -77,12 +76,15 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 			interpolation->parent = parent;
 			current->parent = interpolation;
 			interpolation->children.push_back(current);
+	
+			processMeshesAndChildren(current, node, scene);
 
 			return dynamic_cast<Node*>(interpolation);
 		}
 		else
 		{
 			current->parent = parent;
+			processMeshesAndChildren(current, node, scene);
 			return current;
 		}
 	}
@@ -95,7 +97,10 @@ void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const ai
 	ModelNode* mn = (ModelNode*)current;
 
 	if (mn != 0)
+	{
 		mn->position = getTransformationVec(&node->mTransformation);
+		mn->setModelMatrix(&mn->modelMatrix); // Already translate modelMatrix
+	}
 
 	for (GLuint i = 0; i < node->mNumMeshes; i++)// Process each mesh located at the current node
 	{
