@@ -5,30 +5,30 @@
 
 ModelNode::ModelNode()
 {
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+	//modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
 	//modelMatrix = glm::rotate(modelMatrix,0.0f, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it
 	//modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));	// It's a bit too big for our scene, so scale it down
 	inverseModelMatrix = glm::inverseTranspose(modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
 }
 ModelNode::~ModelNode(){}
 
-void ModelNode::setModelMatrix(glm::mat4* m)
+void ModelNode::setModelMatrix()
 {
-	modelMatrix = glm::translate(*m, position);
+	modelMatrix = glm::translate(glm::mat4(), position);
 	inverseModelMatrix = glm::inverseTranspose(modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
-	hirachicalModelMatrix = getModelMatrix();
+	hirachicalModelMatrix = glm::translate(glm::mat4(), getWorldPosition()); // Don't use the MM here only *m!
 	inverseHirachicalModelMatrix = glm::inverseTranspose(hirachicalModelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
 }
 
-glm::mat4 ModelNode::getModelMatrix() {
-	glm::mat4 calculated = modelMatrix;
+glm::vec3 ModelNode::getWorldPosition() {
+	glm::vec3 calculated = position;
 
 	if(parent)
 	{
 		ModelNode* p = dynamic_cast<ModelNode*>(parent);
 
 		if (p)
-			calculated *= p->getModelMatrix();
+			calculated += p->getWorldPosition();
 	}
 
 	return calculated;

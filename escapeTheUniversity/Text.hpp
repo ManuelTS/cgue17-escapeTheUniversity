@@ -5,6 +5,7 @@
 #include <vector>
 
 class Shader;
+class Camera;
 
 /*Renders text to the screen with signed distance field character map. This class has the singelton design pattern implemented.*/
 class Text{
@@ -39,6 +40,7 @@ public:
 	bool hasTimeLeft(const unsigned int i = 0, const double deltaTime = 0); // Returns true if there is displayTime left, otherwise false when no arguments are specified. If the two arguments are specified the deltaTime on index i + 1 in the displayTime array is subtracted and the index is deleted if zero is undershot
 	void removeTime(const double deltaTime); // Checks if in the displayTime array is still some text left to display and removes the entries if necessary
 	void wireframe(); // Displays wireframe text on screen
+	void showCamCoords(Camera* camera); // Displays the camera coords on the screen
 private:
 	// Image path and name
 	const std::string loadingImagePath = "characters-df.png";

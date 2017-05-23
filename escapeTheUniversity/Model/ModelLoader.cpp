@@ -63,6 +63,8 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 
 		current->name = name;
 
+		if (current->name.compare("Flowerpot2") == 0)
+			int i = 0;
 
 		if (string::npos != name.find(DOOR_PREFIX)) // Door Model, Door Node
 		{
@@ -99,7 +101,7 @@ void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const ai
 	if (mn != 0)
 	{
 		mn->position = getTransformationVec(&node->mTransformation);
-		mn->setModelMatrix(&mn->modelMatrix); // Already translate modelMatrix
+		mn->setModelMatrix(); // Already translate modelMatrix
 	}
 
 	for (GLuint i = 0; i < node->mNumMeshes; i++)// Process each mesh located at the current node

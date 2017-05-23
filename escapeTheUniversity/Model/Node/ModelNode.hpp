@@ -10,7 +10,7 @@ class ModelNode : public Node
 {
 public:
 	std::vector<Mesh*> meshes; // Contains all meshes of this node.
-	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f); // Position of this node, is any vertex of the node, standard value if unset is a zero vector. In object space
+	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f); // Position the nodes center, in world coords relative to the parent.
 	glm::vec3 pivot = glm::vec3(0.0f, 0.0f, 0.0f); // Pivot of this node, standard value if unset is a zero vector.
 	
 	glm::mat4 modelMatrix; // Object space MM of this node
@@ -26,8 +26,8 @@ public:
 	~ModelNode();
 
 	void draw() override;
-	void setModelMatrix(glm::mat4* m); // Sets the model matrix and computes the inverse one too, translates it with the position and calculates the world space position too
-	glm::mat4 getModelMatrix(); // Returns the hirachical model matrix, e.g. world coords
+	void setModelMatrix(); // Sets the model matrix and computes the inverse one too, translates it with the position and calculates the world space position too
+	glm::vec3 getWorldPosition(); // Returns the world coords of this node
 
 protected:
 	const GLint modelLocation = 0; // gBuffer.vert

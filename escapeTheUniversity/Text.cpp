@@ -2,6 +2,7 @@
 #include "Model/ModelLoader.hpp"
 #include "Shader.hpp"
 #include "RenderLoop.hpp"
+#include "Camera\Camera.hpp"
 #include "Debug\Debugger.hpp"
 #include <algorithm>
 #include <glm/gtc/matrix_transform.hpp>
@@ -228,6 +229,16 @@ void Text::wireframe() {
 	write("Wireframe mode", 0.0f, 0.9f, 0.5f, 0.0f);
 }
 
+void Text::showCamCoords(Camera* camera) {
+	const vec3 position = camera->position;
+	const vec3 front = camera->front;
+	const vec3 right = camera->right;
+	const vec3 up = camera->up;
+	char text[138]; 
+	sprintf(text, "Cam pos/front/right/up in world space:\nx:%4.3f/%4.3f/%4.3f/%4.3f\ny:%4.3f/%4.3f/%4.3f/%4.3f\nz:%4.3f/%4.3f/%4.3f/%4.3f", position.x, front.x, right.x, up.x, position.y, front.y, right.y, up.y, position.z, front.z, right.z, up.z);
+	write(text, -0.95f, -0.8f, 0.5f, 0.0f);
+}
+
 void Text::loadingScreenInfo() {
 	char infoText[1024] = "Working on:\n";
 	unsigned int i;
@@ -326,6 +337,7 @@ void Text::help()
 	i = copyInBuffer(help, i, (const unsigned char*) "Left click = interaction", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Right click = ?", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Print = Screenshot", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "# = Toggle cam pos/front/right/up values", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "All other keys have surprises for you.", true);
 
 	write(help, -1.0, 0.8, 0.5, 0.0f);
