@@ -328,12 +328,10 @@ void RenderLoop::draw(Node* current)
 
 		if (mn) // Leave if structure this way!
 		{
-			// If model node and (no frustum or transformationNode or modelNode inside frustum):
-			// ... render only when the model node schould be rendered, example the lightSphere node is not rendered used here
-			if(mn->render && (frustum || dynamic_cast<TransformationNode*>(current) || Frustum::getInstance()->pointInFrustum(mn->getWorldPosition()) != -1))
+			// If model node and (no frustum or transformationNode or modelNode bounding frustum sphere (modelNode center, radius) inside frustum):
+			// ... render only when the model node schould be rendered
+			if (mn->render && (frustum || dynamic_cast<TransformationNode*>(current) || Frustum::getInstance()->sphereInFrustum(mn->getWorldPosition(), mn->radius) != -1))
 				pureDraw(current);
-			// TODO AABBs frustum culling, the used point one is inefficient but works
-			// TODO frustum not working, too much triangles drawn
 		}
 		else // If no model node render anyway
 			pureDraw(current);
