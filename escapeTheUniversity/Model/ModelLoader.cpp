@@ -104,18 +104,19 @@ void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const ai
 		mn->setModelMatrix(); // Already translate modelMatrix
 	}
 
-	for (GLuint i = 0; i < node->mNumMeshes; i++)// Process each mesh located at the current node
+	for (unsigned int i = 0; i < node->mNumMeshes; i++)// Process each mesh located at the current node
 	{
 		// The node object only contains indices to index the actual objects in the scene. 
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		// The scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 		
-		if (mn != 0)
-			mn->meshes.push_back(processMesh(mesh, scene));
+		if (mn != 0) {
+			mn->meshes.push_back(processMesh(mesh, scene, mn));
+		}
 	}
 
 	// After we've processed all of the meshes (if any) we then recursively process each of the children nodes
-	for (GLuint i = 0; i < node->mNumChildren; i++)
+	for (unsigned int i = 0; i < node->mNumChildren; i++)
 		current->children.push_back(processNode(current, node->mChildren[i], scene));
 }
 
@@ -213,7 +214,7 @@ std::string ModelLoader::lightSourceTypeToString(aiLightSourceType type)
 		return "Unknown light enum type";
 }
 
-Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene)
+Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene, ModelNode* modelNode)
 {
 	// Data to fill, Vertex data
 	vector<Mesh::Vertex> data;
@@ -226,6 +227,14 @@ Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene)
 		vertex.position.x = mesh->mVertices[i].x;
 		vertex.position.y = mesh->mVertices[i].y;
 		vertex.position.z = mesh->mVertices[i].z;
+
+		if (fabs(vertex.position.x) > modelNode->radius)
+			modelNode->radius = fabs(vertex.position.x);
+		else if (fabs(vertex.position.y) > modelNode->radius)
+			modelNode->radius = fabs(vertex.position.y);
+		else if (fabs(vertex.position.z) > modelNode->radius)
+			modelNode->radius = fabs(vertex.position.z);
+
 		// Normals
 		vertex.normal.x = mesh->mNormals[i].x;
 		vertex.normal.y = mesh->mNormals[i].y;
