@@ -4,55 +4,6 @@
 
 using namespace std;
 
-void BVG::calculateBoundingShapes(Node* current)
-{
-	if (true &&concurentThreadsSupported == 0) // Hyperthreading unsupported, calculate normally
-	{
-		ModelNode* mn = dynamic_cast<ModelNode*>(current);
-
-		if (mn && mn->bounding && mn->meshes.size() > 0)
-			calculateVHACD(mn);
-
-		for (Node* child : current->children)
-			calculateBoundingShapes(child);
-	}
-	else  // Hyperthreaded bounding volume generation
-	{
-		vector<Node*> nodes = current->getAllNodesDepthFirst(current);
-		vector<future<bool>>* threads = new vector<future<bool>>();
-
-		for (Node* child : nodes)
-		{
-			ModelNode* mn = dynamic_cast<ModelNode*>(child);
-
-			if (mn && mn->bounding && mn->meshes.size() > 0)
-			{ // Leave if structure like this
-				if (threads->size() < concurentThreadsSupported) // If the system thread maximum is not reached, create a thread and calc bounding volume
-					threads->push_back(async(launch::async, &BVG::calculateVHACD, this, mn));
-				else // All threads busy, wait for one to finish and if so remove him
-					while (threads->size() >= concurentThreadsSupported)
-						removeFinished(threads);
-			}
-		}
-
-		while (threads->size() > 0) // Wait until all remaining threads are finished and remove them
-			removeFinished(threads);
-
-		nodes.clear();
-		delete threads;
-	}
-}
-
-void BVG::removeFinished(vector<future<bool>>* threads)
-{
-	for(std::vector<future<bool>>::iterator i = threads->begin(); i != threads->end(); i++) // algorithm::remove_if caused problems
-		if (i->valid() && i->get()) // Valid checks if the future has a shared state , get gets true ergo thread finished, delete it 
-		{
-			threads->erase(i);
-			break;
-		}
-}
-
 bool BVG::calculateVHACD(ModelNode* modelNode)
 {
 	vector<int>* triangles = modelNode->getAllIndices(); // Array of vertex indexes (similar to an EBO)
@@ -96,9 +47,6 @@ bool BVG::calculateVHACD(ModelNode* modelNode)
 	delete triangles;
 	delete points;
 
-	// TODO Put the ConvexHull in bullet::btCompoundShape or btConvexHullShape
-	// test hulls with http://www.bulletphysics.org/mediawiki-1.5.8/index.php/BtShapeHull_vertex_reduction_utility
-	// TODO link hull pointer with node
 	return true;
 }
 

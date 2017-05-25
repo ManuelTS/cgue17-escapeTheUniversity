@@ -6,7 +6,7 @@
 #include "Node\LightNode.hpp"
 #include "Node\TransformationNode.hpp"
 #include "Mesh\Mesh.hpp"
-#include "Physic\BVG.hpp"
+#include "Physic\Bullet.hpp"
 #include <IL\il.h>
 #include <IL\ilu.h>  // for image creation and manipulation funcs.
 #include "..\Debug\Debugger.hpp"
@@ -41,9 +41,10 @@ void ModelLoader::load(string path)
 		loadedMaterials.clear();
 		
 		// Calculate bouding volumes
-		BVG* bvg = new BVG(); 
-		bvg->calculateBoundingShapes(root);
-		delete bvg;
+		Bullet* b = Bullet::getInstance();
+		b->init();
+		b->createAndAddBoundingObjects(root);
+		delete b;
 	}
 }
 

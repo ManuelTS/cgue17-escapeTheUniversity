@@ -2,26 +2,14 @@ All ordered by priority!
 
 Programming (Manuel):
 
-make bounding volumes with threads (with vhacd)
-for(boundingBoxIndex)
-{
-  threat1.free
-    do boundingBoxIndex
-    continue
-  thread2.free
-   do boundingBoxIndex
-   continue
-  ...
-}
-
-Transform feedback: https://open.gl/feedback
-
 One of this for bullet timestep:
 http://gafferongames.com/game-physics/fix-your-timestep/
 or
 http://www.gamasutra.com/blogs/BramStolk/20160408/269988/Fixing_your_time_step_the_easy_way_with_the_golden_48537_ms.php
 update in bullet only each second or x frame if the deltaTime gets too low since bullet can get nummerical instable. for example if frames are above 60 fps only each second or x frame...
 visualize the bounding boxes
+
+Use the VHACD only on complex objects "_vhacd", otherwise use the standard bounding sphere "_bounding"
 
 Skymap, with a beautiful night sky von NASA deep field image full of stars in OGLSB as cube map on page 640. Before doing that check "seamless cube map / sky box2".
 

@@ -15,10 +15,10 @@ class DoorNode;
 class ModelLoader
 {
 private:
+	const std::string DOOR_SUFFIX = "_door"; // Door xxx names
 	const std::string ANGLE_SUFFIX = "_angle";
-	const std::string DOOR_SUFFIX = "_door";
-	const std::string LIGHT_SUFFIX = "_light";
-	const std::string BOUNDING_SUFFIX = "_bounding";
+	const std::string LIGHT_SUFFIX = "_light"; // Light nodes
+	const std::string BOUNDING_SUFFIX = "_bounding"; // Suffix to calculate bounding volumes for
 
 	bool loadModels = true; // Set this variable only once!
 	std::string directory;// Relative path to all models
@@ -39,6 +39,7 @@ private:
 	std::vector<Mesh::Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::vector<glm::vec4>* materials);// Loads all materials and the textures
 	void linkLightUBO(); // Generates the Light UBO handle
 public:
+	const std::string FLOOR_NAME = "Floor"; // Name of all Floorxxxx
 	Node* root; // Root node of the scene graph
 
 	// Resource top folder directories
