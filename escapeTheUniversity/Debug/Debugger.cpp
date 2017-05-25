@@ -209,7 +209,7 @@ void Debugger::pauseExit(string msg)
 /*Prints the msg if not nullptr, pauses the System and exits afterwards.*/
 void Debugger::pause(const char* msg)
 {
-	if (msg != nullptr)
+	if (msg)
 		cerr << msg << endl;
 
 	system("PAUSE");
@@ -218,7 +218,7 @@ void Debugger::pause(const char* msg)
 /*Prints the msg if not nullptr, pauses the System and exits afterwards.*/
 void Debugger::pauseExit(const char* msg)
 {
-	if (msg != nullptr)
+	if (msg)
 		cerr << "Malfunction: " << msg << endl;
 
 	system("PAUSE");

@@ -5,17 +5,33 @@
 
 ModelNode::ModelNode()
 {
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+	//modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
 	//modelMatrix = glm::rotate(modelMatrix,0.0f, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it
 	//modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));	// It's a bit too big for our scene, so scale it down
 	inverseModelMatrix = glm::inverseTranspose(modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
 }
 ModelNode::~ModelNode(){}
 
-void ModelNode::setModelMatrix(glm::mat4* m)
+void ModelNode::setModelMatrix()
 {
-	modelMatrix = *m;
-	inverseModelMatrix = glm::inverseTranspose(*m); // Transpose and inverse on the CPU because it is very costly on the GPU
+	modelMatrix = glm::translate(glm::mat4(), position);
+	inverseModelMatrix = glm::inverseTranspose(modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
+	hirachicalModelMatrix = glm::translate(glm::mat4(), getWorldPosition()); // Don't use the MM here only *m!
+	inverseHirachicalModelMatrix = glm::inverseTranspose(hirachicalModelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
+}
+
+glm::vec3 ModelNode::getWorldPosition() {
+	glm::vec3 calculated = position;
+
+	if(parent)
+	{
+		ModelNode* p = dynamic_cast<ModelNode*>(parent);
+
+		if (p)
+			calculated += p->getWorldPosition();
+	}
+
+	return calculated;
 }
 
 /*Draws all the involved meshes by looping over them and call their draw functions.*/
@@ -26,31 +42,53 @@ void ModelNode::draw()
 	if (size > 0)
 	{
 
-		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-		glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseModelMatrix));
+		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(hirachicalModelMatrix)); // Only use the hirachical MMs here? TODO
+		glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseHirachicalModelMatrix));
 
 		for (unsigned int i = 0; i < size; i++)
 			meshes[i]->draw();
 	}
 }
 
-int* ModelNode::getAllIndices() {
+vector<int>* ModelNode::getAllIndices()
+{
 	unsigned int size = meshes.size();
 
 	if (size > 0)
 	{
-		vector<int> allIndices;
+		vector<int>* allIndices = new vector<int>(); // Needs to be deleted else where
+		
+		for (unsigned int i = 0, vertexOffset = 0; i < size; i++) // Go through all meshes
+		{
+			vertexOffset = allIndices->size();// The indices for different meshes start all at one but are needed to be continous (from the last mesh only !) since all vertices read are continous too
+
+			for (unsigned int j = 0; j < meshes[i]->indices.size(); j++) // Go through all mesh vertices
+				allIndices->push_back(vertexOffset + meshes[i]->indices[j]); // cast unsigned int to int because of vhacd method signature
+		}
+
+		return allIndices;
+	}
+
+	return nullptr;
+}
+
+vector<float>* ModelNode::getAllVertices() {
+	unsigned int size = meshes.size();
+
+	if (size > 0)
+	{
+		vector<float>* allVertices = new vector<float>();
 
 		for (unsigned int i = 0; i < size; i++) // Go through all meshes
-			for (unsigned int j = 0; j < meshes[i]->indices.size(); j++) // Go through all mesh vertices
+			for (unsigned int j = 0; j < meshes[i]->data.size(); j++) // Go through all mesh vertices
 			{
-				unsigned int uint = meshes[i]->indices[j];
-				int castInt = uint;
-				int cast2Int = static_cast<int>(uint);
-				allIndices.push_back(meshes[i]->indices[j]); // cast unsigned int to int because of vhacd method signature
+				const glm::vec3 position = meshes[i]->data[j].position; // Get all the vertices
+				allVertices->push_back(position.x);
+				allVertices->push_back(position.y);
+				allVertices->push_back(position.z);
 			}
 
-		return allIndices.data();
+		return allVertices;
 	}
 
 	return nullptr;

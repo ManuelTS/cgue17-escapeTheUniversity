@@ -46,6 +46,7 @@ class RenderLoop{
 		bool blending = true; // Toggle usage of blending, default true
 		bool stencil = true; // Toogle usage of the stencil buffer, default true
 		bool fullscreen = false; // Toogle fullscreen mode, default false
+		bool showCamCoords = false; // Toggle the rendering of the camera coords on the screen, default false
 		
 		double deltaTime; // Difference of variable timeNew and timeOld in nano seconds
 

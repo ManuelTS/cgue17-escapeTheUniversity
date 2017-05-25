@@ -4,6 +4,7 @@
 #include "..\Node\ModelNode.hpp"
 #include <string>
 #include <fstream>
+#include <future>
 
 using namespace VHACD;
 
@@ -13,7 +14,10 @@ class Node;
 class BVG {
 private:
 	const std::string LOG_FILE_PATH = "Setting\vhacd.log";
-	void calculateVHACD(); // Calculates an V-Hierarchical Approximate Convex Decomposition (V-HACD) bounding volume
+	const unsigned int concurentThreadsSupported = std::thread::hardware_concurrency(); // Get number of hardware thread contexts (on most systems its CPU count which is != to possible thread count) but who cares? we just want a simple speedup
+
+	bool calculateVHACD(ModelNode* modelNode); // Calculates an V-Hierarchical Approximate Convex Decomposition (V-HACD) bounding volume, true is only retured because threads need a state to check or wait for
+	void removeFinished(vector<future<bool>>* threads); // Removes all finished threads from the argument vector
 public:
 	void calculateBoundingShapes(Node* current);
 };

@@ -5,9 +5,9 @@
 class Node
 {
 public:
-	Node* parent; //Root node has pointer as parent it iself
+	Node* parent = nullptr; //Root node has pointer as parent it iself
 	std::vector<Node*>children; // Children of this node
-	std::string name;
+	std::string name; // of the node
 
 	Node();
 	~Node();

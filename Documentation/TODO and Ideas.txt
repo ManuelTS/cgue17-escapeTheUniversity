@@ -13,7 +13,8 @@ for(boundingBoxIndex)
    continue
   ...
 }
-and each volume becomes a sphere too for frustum culling (most fastest due to one center vertex and radius check)
+
+Transform feedback: https://open.gl/feedback
 
 One of this for bullet timestep:
 http://gafferongames.com/game-physics/fix-your-timestep/
@@ -21,10 +22,6 @@ or
 http://www.gamasutra.com/blogs/BramStolk/20160408/269988/Fixing_your_time_step_the_easy_way_with_the_golden_48537_ms.php
 update in bullet only each second or x frame if the deltaTime gets too low since bullet can get nummerical instable. for example if frames are above 60 fps only each second or x frame...
 visualize the bounding boxes
-
-Transform feedback: https://open.gl/feedback
-
-DONE: Rim lighting openGL super Bibile page 634, but only if object is lit from the back
 
 Skymap, with a beautiful night sky von NASA deep field image full of stars in OGLSB as cube map on page 640. Before doing that check "seamless cube map / sky box2".
 
@@ -44,12 +41,13 @@ layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, rgb unuse
 
 in the gBuffer try to reduce the single GL_** bit attachments from GL_DEPTH32F_STENCIL8 to GL_DEPTH24F_STENCIL8 for example
 
+DONE: Rim lighting openGL super Bibile page 634, but only if object is lit from the back, now only use it
+
 Visualize depth: https://learnopengl.com/#!Advanced-OpenGL/Depth-testing
 
 make an camera transition intro
 
 Optimization:
-Transform feedback: https://open.gl/feedback
 Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines
 
 
@@ -57,8 +55,10 @@ Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-
 
 Textures (Stefan):
 
-Hang up Poster_002 and our game design poster in a aisle.
+Hang up Poster_002 and our game design poster in a aisle and our game design poster too.
 Our real life pictures somewhere in an office on the wall as framed pictures.
+
+if you exit the left wing to the right wing through the door and you look right, place a NPC on the roof looking at you.
 
 University interriors,
 - Furnitures, books, bookshelfs, pc, monitors, bakets

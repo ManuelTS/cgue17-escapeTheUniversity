@@ -1,17 +1,32 @@
+Why the developers of the Microsoft Virtual Studios are bad and should feel bad.
+
+All this points annoyed me when creating a 3D OpenGL stealth third person game for a course on my university.
+
 Shit in VS 13:
-- Shortcuts nicht exportierbar, keine eigene Shortcutprofilerstellung
-- Serach next (F3) & and replace next (alt + R) have completley unrelated shortcuts
-- Shortcut characters are not underlined
+- No in- or exportable shortcut profiles
+- Search next (F3) & and replace next (alt + R) have completely unrelated shortcuts
+- Not all shortcut characters are not underlined
 - Refresh folder structure with standard short cut F5 or right click impossible, weak HCI
-- Simple Copy & Paste in the Solution Explorer impossible
+- Simple Copy & Paste in the Solution Explorer impossible because after deleting also the clipboard content gets deleted
 - Adding a new file in the folder structure, refresh, clean, rebuild do not show the new added file, a restart of VS does it
 - Special and blank characters are ignored on Ctrl + Shift + Arrow Key
-- No recent opend list
-- All this with 8 GB disc space
+- No recent opened list
+- All this with 8+ GB disc space
 
 Shit in VS 15:
-- VS 15 had no clear statement to find on google about the new project structure
+- Special and blank characters are ignored on Ctrl + Shift + Arrow Key
+- Unintuitive short cut for "comment" which is Strg + k + c
+- Not always single line comments but also multiple line comments used depending if a line is selected completely or not
+- Errors appear only in the error view if a program fails to start or a file containing errors is opened
+- No in- or exportable shortcut profiles
+- On a system crash, which happens often with Microsoft, the last opened solution is not loaded on Visual Studio restart after computer reboot
+- VS 15 had no clear statement to find on google about the new project structure, do some SEO on VS please
 - In the build events the "inherit from parent or project defaults" the entered content
+- Not all shortcut characters are not underlined
 - Some of the shortcuts work, some don't http://visualstudioshortcuts.com/2015/
 - The solution explorer shows only the files inside the project name folder inside the solution folder, but not the overall solution folder
-- Right click on a sub folder in the solution dir and adding new cpp and hpp files with the contex menu adds the new files in the solution folder, but not in the selected oneb
+- Right click on a sub folder in the solution dir and adding new cpp and hpp files with the context menu adds the new files in the solution folder, but not in the selected folder
+- No recent opened list
+- The view "Show diagnostics tools" is not under View/Debug/... as most other views, no, rather under Debug/Windows
+- The "navigate to" shortcut strg + , has no option to only show entries of the current file
+- All this with 8+ GB disc space

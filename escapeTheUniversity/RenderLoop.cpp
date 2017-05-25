@@ -80,7 +80,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			bool minus = key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT; // In- or decrease ambient light coefficient
 
 			for (LightNode* ln : ModelLoader::getInstance()->lights)
-					ln->light.diffuse.a += minus ? -0.01f : 0.01f;
+				ln->light.diffuse.a += minus ? -0.01f : 0.01f;
 		}
 		else if (key == GLFW_KEY_E)
 		{
@@ -88,7 +88,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			{
 				TransformationNode* dn = dynamic_cast<TransformationNode*>(n);
 
-				if (dn != nullptr)
+				if (dn)
 					dn->switchState();
 			}
 		}
@@ -104,6 +104,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			SoundManager::getInstance()->playSound("Dialog\\burp.mp3");
 		else if (key == GLFW_KEY_PRINT_SCREEN)
 			Text::getInstance()->addText2Display(Text::SCREENY);
+		else if (key == GLFW_KEY_BACKSLASH)
+			rl->showCamCoords = !rl->showCamCoords;
 	}
 }
 
@@ -236,7 +238,10 @@ void RenderLoop::start()
 			doDeferredShading(gBuffer, gBufferShader, deferredShader, ml);
 		}
 		else
+		{
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
 
 		renderText();
 		glfwGetWindowSize(window, &width, &height);
@@ -317,18 +322,16 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 
 void RenderLoop::draw(Node* current)
 {
-	if (current != nullptr && dynamic_cast<LightNode*>(current) == nullptr) // Don't draw light nodes or empty ones
+	if (current && !dynamic_cast<LightNode*>(current)) // Don't draw light nodes
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
-		if (mn != nullptr) // Leave if structure this way!
+		if (mn) // Leave if structure this way!
 		{
-			// If model node and (no frustum or transformationNode or modelNode inside frustum):
-			// ... render only when the model node schould be rendered, example the lightSphere node is not rendered used here
-			if(mn->render && (frustum || dynamic_cast<TransformationNode*>(current) != nullptr || Frustum::getInstance()->pointInFrustum(mn->position) != -1))
+			// If model node and (no frustum or transformationNode or modelNode bounding frustum sphere (modelNode center, radius) inside frustum):
+			// ... render only when the model node schould be rendered
+			if (mn->render && (frustum || dynamic_cast<TransformationNode*>(current) || Frustum::getInstance()->sphereInFrustum(mn->getWorldPosition(), mn->radius) != -1))
 				pureDraw(current);
-			// TODO AABBs frustum culling, the used point one is inefficient but works
-			// TODO frustum not working, too much triangles drawn
 		}
 		else // If no model node render anyway
 			pureDraw(current);
@@ -349,6 +352,9 @@ void RenderLoop::renderText()
 
 	if (wireFrameMode)
 		Text::getInstance()->wireframe();
+
+	if (showCamCoords)
+		Text::getInstance()->showCamCoords(camera);
 
 	if (help)
 		Text::getInstance()->help();

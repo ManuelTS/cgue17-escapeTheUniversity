@@ -36,7 +36,7 @@ DESTRUCTOR
 *****************************/
 SoundManager::~SoundManager()
 {
-	if (currentSound != nullptr) //should stop playing sounds
+	if (currentSound) //should stop playing sounds
 	{
 		currentSound->stop();
 		currentSound->drop();
