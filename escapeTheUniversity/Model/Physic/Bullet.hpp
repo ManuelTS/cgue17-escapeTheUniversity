@@ -5,6 +5,11 @@
 class Bullet
 {
 private:
+	bool initialized = false;
+	Bullet(void) {}; // Private constructor to allow only one instance
+	Bullet(Bullet const&); // Private constructor to prevent copies
+	void operator=(Bullet const&); // Private constructor to prevent assignments
+
 	///collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.
 	btDefaultCollisionConfiguration* collisionConfiguration;
 	///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher(see Extras / BulletMultiThreaded)
@@ -15,8 +20,16 @@ private:
 	btSequentialImpulseConstraintSolver* solver;
 	btDiscreteDynamicsWorld* dynamicsWorld;
 	btAlignedObjectArray<btCollisionShape*> shapes;
+
+
 public:
-	Bullet();
+	/*Returns the pointer to the unique instance of this class.*/
+	static Bullet* Bullet::getInstance()
+	{
+		static Bullet instance;// lazy singleton, instantiated on first use
+		return &instance;
+	}
+	~Bullet();
 	~Bullet();
 
 	void step();

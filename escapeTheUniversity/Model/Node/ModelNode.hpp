@@ -21,6 +21,7 @@ public:
 
 	bool render = true; // True if this node should be rendered false if not, default: true
 	bool stencil = false; // True if an extra stencil FBO for this node VAO should be generated in the mesh constructor, false if not. Default: false
+	bool bounding = false; // True if an bounding VHACD should be generated, false if not. Default: false
 
 	/*This is the default node containing information about a model.*/
 	ModelNode();

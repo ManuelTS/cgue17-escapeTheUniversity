@@ -43,6 +43,7 @@ void ModelLoader::load(string path)
 		// Calculate bouding volumes
 		BVG* bvg = new BVG(); 
 		bvg->calculateBoundingShapes(root);
+		delete bvg;
 	}
 }
 
@@ -68,8 +69,8 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 
 		current->name = name;
 
-		if (current->name.compare("FlowerPot2") == 0)
-			int i = 0;
+		if (string::npos != name.find(BOUNDING_SUFFIX))
+			current->bounding = true;
 
 		if (string::npos != name.find(DOOR_SUFFIX)) // Door Model, Door Node
 		{

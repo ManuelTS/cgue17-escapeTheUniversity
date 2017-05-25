@@ -1,14 +1,11 @@
 #pragma once
 #include "v-hacd\public\VHACD.h"
-#include "..\Node\Node.hpp"
 #include "..\Node\ModelNode.hpp"
 #include <string>
 #include <fstream>
 #include <future>
 
 using namespace VHACD;
-
-class Node;
 
 // Bounding Volume Generation with V-Hierarchical Approximate Convex Decomposition (V-HACD)
 class BVG {

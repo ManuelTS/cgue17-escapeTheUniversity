@@ -1,28 +1,24 @@
 #include "Bullet.hpp"
 
-
 Bullet::Bullet()
 {
-	///collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.
-	collisionConfiguration = new
-		btDefaultCollisionConfiguration();
-	///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher(see Extras / BulletMultiThreaded)
-	dispatcher = new btCollisionDispatcher(collisionConfiguration);
-	///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.
-	overlappingPairCache = new btDbvtBroadphase();
-	///the default constraint solver. For parallel processing you can use a different solver(see Extras / BulletMultiThreaded)
-	solver = new btSequentialImpulseConstraintSolver;
-	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+	if (!initialized) // Flag for singelton, init bullet world only once
+	{
+		//collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.
+		collisionConfiguration = new btDefaultCollisionConfiguration();
+		//use the default collision dispatcher. For parallel processing you can use a diffent dispatcher(see Extras / BulletMultiThreaded)
+		dispatcher = new btCollisionDispatcher(collisionConfiguration);
+		//btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.
+		overlappingPairCache = new btDbvtBroadphase();
+		//the default constraint solver. For parallel processing you can use a different solver(see Extras / BulletMultiThreaded)
+		solver = new btSequentialImpulseConstraintSolver;
+		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 
-	dynamicsWorld->setGravity(btVector3(0, -10, 0));
+		dynamicsWorld->setGravity(btVector3(0, -10, 0));
+		initialized = !initialized;
+	}
 
-
-	// 
 	// On position update of object do http://www.bulletphysics.org/mediawiki-1.5.8/index.php?title=Collision_Detection&action=edit
-	// Collision triggers: http://www.bulletphysics.org/mediawiki-1.5.8/index.php?title=Collision_Callbacks_and_Triggers&action=edit
-	// Collision filtering, what object can collide with another one: http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Collision_Filtering
-	// Broadphase: Use Sweep and prune due to fixed world size: http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Broadphase
-	// Little about rigit bodies: http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Rigid_Bodies
 }
 
 /*

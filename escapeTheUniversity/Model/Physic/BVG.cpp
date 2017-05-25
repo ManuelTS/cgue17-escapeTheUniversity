@@ -1,6 +1,5 @@
 #include "BVG.hpp"
 #include <iostream>
-#include <chrono>
 #include "../../Debug/MemoryLeakTracker.h"
 
 using namespace std;
@@ -11,7 +10,7 @@ void BVG::calculateBoundingShapes(Node* current)
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
-		if (mn && mn->meshes.size() > 0)
+		if (mn && mn->bounding && mn->meshes.size() > 0)
 			calculateVHACD(mn);
 
 		for (Node* child : current->children)
@@ -26,7 +25,7 @@ void BVG::calculateBoundingShapes(Node* current)
 		{
 			ModelNode* mn = dynamic_cast<ModelNode*>(child);
 
-			if (mn && mn->meshes.size() > 0)
+			if (mn && mn->bounding && mn->meshes.size() > 0)
 			{ // Leave if structure like this
 				if (threads->size() < concurentThreadsSupported) // If the system thread maximum is not reached, create a thread and calc bounding volume
 					threads->push_back(async(launch::async, &BVG::calculateVHACD, this, mn));
@@ -59,15 +58,15 @@ bool BVG::calculateVHACD(ModelNode* modelNode)
 	vector<int>* triangles = modelNode->getAllIndices(); // Array of vertex indexes (similar to an EBO)
 	vector<float>* points = modelNode->getAllVertices();  // Array of coordinates, the vertices of the node or rather model
 
-	IVHACD::Parameters    params; // V-HACD parameters
+	IVHACD::Parameters    params; // V-HACD parameters: https://kmamou.blogspot.co.at/2014/12/v-hacd-20-parameters-description.html or in our own development source folder
 	IVHACD* interfaceVHACD = CreateVHACD(); // create interface
 
-	#if _DEBUG
+	/*#if _DEBUG
 		Callback callback;
 		Logger   logger(LOG_FILE_PATH);
 		params.m_logger = &logger;
 		params.m_callback = &callback;
-	#endif
+	#endif*/
 
 	const unsigned int triangleStride = 3; // one index points to a vertex, 3 indices to a triangle
 	const unsigned int pointStride = 3; // One vertex is ordered in this array as xyz, one trianle has 3 vertices which are equal to 9 entries in this array as xyzxyzxyz 

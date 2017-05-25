@@ -219,8 +219,6 @@ void RenderLoop::start()
 	Shader* deferredShader = new Shader("deferredShading");
 
 	ml->load("Playground.dae");
-	vec4 pos = ml->lights[9]->light.position;
-	camera->position = glm::vec3(pos); // Set position of camera to the first light
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 

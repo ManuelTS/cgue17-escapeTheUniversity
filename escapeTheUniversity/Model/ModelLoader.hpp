@@ -18,6 +18,7 @@ private:
 	const std::string ANGLE_SUFFIX = "_angle";
 	const std::string DOOR_SUFFIX = "_door";
 	const std::string LIGHT_SUFFIX = "_light";
+	const std::string BOUNDING_SUFFIX = "_bounding";
 
 	bool loadModels = true; // Set this variable only once!
 	std::string directory;// Relative path to all models
