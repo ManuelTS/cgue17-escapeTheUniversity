@@ -83,15 +83,6 @@ Critical books, use only critical literature about the following topics:
 
 Perspective Room from https://youtu.be/xleyq2oJt_8?t=30m53s as art installation in a room with a sign beside the door which says "There is only a perspective seeing, only a perspective "knowing"". - Friedrich Nietzsche 1844 - 1900
 
-Uniform Texture Pre- and Suffixes:
-const std::string ANGLE_SUFFIX = "Angle";
-const std::string DOOR_PREFIX = "Door";
-const std::string LIGHT_SUFFIX = "_Licht";
-Questions:
-Why are there pre- and suffixes in the first place, why not only one?
-Why is german mixed with englisch?
-Unification is needed.
-
 Elevator, from the basement up to to roof top, must be with typical elevator music.
 
 
