@@ -15,9 +15,9 @@ class DoorNode;
 class ModelLoader
 {
 private:
-	const std::string ANGLE_SUFFIX = "_Angle";
-	const std::string DOOR_PREFIX = "Door_";
-	const std::string LIGHT_SUFFIX = "_Licht";
+	const std::string ANGLE_SUFFIX = "_angle";
+	const std::string DOOR_SUFFIX = "_door";
+	const std::string LIGHT_SUFFIX = "_light";
 
 	bool loadModels = true; // Set this variable only once!
 	std::string directory;// Relative path to all models

@@ -68,10 +68,10 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 
 		current->name = name;
 
-		if (current->name.compare("Flowerpot2") == 0)
+		if (current->name.compare("FlowerPot2") == 0)
 			int i = 0;
 
-		if (string::npos != name.find(DOOR_PREFIX)) // Door Model, Door Node
+		if (string::npos != name.find(DOOR_SUFFIX)) // Door Model, Door Node
 		{
 			aiNode* aiParent = node->mParent;
 
