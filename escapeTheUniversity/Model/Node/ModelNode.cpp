@@ -41,7 +41,6 @@ void ModelNode::draw()
 
 	if (size > 0)
 	{
-
 		if(bounding)
 		{
 			btTransform trans;

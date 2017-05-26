@@ -6,7 +6,6 @@
 #include "Node\LightNode.hpp"
 #include "Node\TransformationNode.hpp"
 #include "Mesh\Mesh.hpp"
-#include "Physic\Bullet.hpp"
 #include <IL\il.h>
 #include <IL\ilu.h>  // for image creation and manipulation funcs.
 #include "..\Debug\Debugger.hpp"
@@ -39,11 +38,6 @@ void ModelLoader::load(string path)
 		
 		loadedTextures.clear();
 		loadedMaterials.clear();
-		
-		// Calculate bouding volumes
-		Bullet* b = Bullet::getInstance(); // No deletion since it is a singelton!
-		b->init();
-		b->createAndAddBoundingObjects(root);
 	}
 }
 

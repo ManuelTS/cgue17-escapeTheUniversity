@@ -31,6 +31,7 @@ using namespace std;
 RenderLoop::~RenderLoop()
 {
 	delete initVar;
+	delete camera;
 	//delete window; window = nullptr; // Done by glTerminateWindow
 }
 
@@ -202,7 +203,7 @@ void RenderLoop::start()
 { // Init all
 	ModelLoader* ml = ModelLoader::getInstance();
 	SoundManager* sm = SoundManager::getInstance();
-	sm->initFileName("Music\\Jahzzar_-_01_-_The_last_ones.mp3"); // Init SM with music file to play
+	sm->initFileName("Music\\Jahzzar_-_01_-_The_last_ones.mp3"); // Init SM with music file to play while loading
 	sm->playSound();
 
 	initVar = new Initialization();
@@ -216,10 +217,15 @@ void RenderLoop::start()
 	initGLFWandGLEW();
 	displayLoadingScreen(ml);
 
-	Shader* gBufferShader = new Shader("gBuffer");
+	Shader* gBufferShader = new Shader("gBuffer"); // Set up schaders
 	Shader* deferredShader = new Shader("deferredShading");
 
-	ml->load("Playground.dae");
+	ml->load("Playground.dae"); // Load Models
+
+	Bullet* b = Bullet::getInstance(); // Calculate bouding volumes, no pointer deletion since it is a singelton!
+	b->init();
+	b->createAndAddBoundingObjects(ml->root); // Sets pointers of rigitBodies in all nodes of the scene graph
+	b->createCamera(camera);
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
@@ -238,6 +244,7 @@ void RenderLoop::start()
 		}
 		else
 		{
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
@@ -283,7 +290,6 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	draw(ml->root); // Draw all nodes except light ones
 	glDepthMask(GL_FALSE);
 	glDisable(GL_DEPTH_TEST);
-	
 
 	// Light pass, point lights:
 	deferredShader->useProgram();
@@ -377,6 +383,10 @@ void RenderLoop::calculateDeltaTime()
 /*Listens for user input.*/
 void RenderLoop::doMovement(double timeDelta)
 {
+	//Set camera postion after the physics from the last frame were calculated
+	const btVector3 newCamPos = camera->rigitBody->getWorldTransform().getOrigin();
+	camera->position = vec3(newCamPos.getX(), newCamPos.getY(), newCamPos.getZ());
+
 	// Camera controls
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		camera->processKeyboard(camera->FORWARD, timeDelta);

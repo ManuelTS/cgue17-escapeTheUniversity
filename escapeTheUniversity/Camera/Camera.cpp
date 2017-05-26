@@ -32,6 +32,10 @@ void Camera::processKeyboard(Camera_Movement direction, double deltaTime)
 	if (direction == RIGHT)
 		position += glm::normalize(glm::cross(front, up)) * velocity;
 
+	btTransform t = rigitBody->getCenterOfMassTransform();
+	t.setOrigin(btVector3(position.x, position.y, position.z));
+	rigitBody->setCenterOfMassTransform(t);
+
 	Frustum::getInstance()->setCamDef(position, front, up);
 }
 

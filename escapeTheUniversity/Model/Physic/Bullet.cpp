@@ -1,6 +1,7 @@
 #include "Bullet.hpp"
 #include "BVG.hpp"
 #include "../ModelLoader.hpp"
+#include "../../Camera/Camera.hpp"
 //#include "../../Debug/MemoryLeakTracker.h" // Not possible in here because of "solver = new btSequentialImpulseConstraintSolver;"
 
 void Bullet::init()
@@ -58,6 +59,7 @@ void Bullet::createAndAddBoundingObjects(Node* current)
 		nodes.clear();
 		delete threads;
 	}
+
 }
 
 bool Bullet::distributeBoundingGeneration(ModelNode* mn)
@@ -82,17 +84,30 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		dynamicsWorld->addRigidBody(mn->rigitBody);
 	}
 	else if (mn->name.find(ModelLoader::getInstance()->FLOOR_NAME) != string::npos)
-		calculatePlane(mn); // use btBvhTriangleMeshShape for the wings and rooms
+		createPlane(mn); // use btBvhTriangleMeshShape for the wings and rooms
 	return true;
 }
 
-void Bullet::calculatePlane(ModelNode* mn) {
+void Bullet::createPlane(ModelNode* mn) {
 	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0,1,0), 1); // btStaticPlaneShape is an infinte plane
 	glm::vec3 pos = mn->getWorldPosition();
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z))); // xyz of origin
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0)); // To construct multiple rigit bodies with same construction info
 	mn->rigitBody = new btRigidBody(groundRigidBodyCI);
 	dynamicsWorld->addRigidBody(mn->rigitBody);
+}
+
+void Bullet::createCamera(Camera* c) 
+{
+	btCollisionShape* shape= new btCylinderShape(btVector3(1, 2, 1)); 
+	const float mass = 80.0;
+	btVector3 localInertia = btVector3(0, 0, 0);
+	shape->calculateLocalInertia(mass, localInertia);
+	glm::vec3 pos = c->position;
+	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z))); // xyz of origin
+	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, shape, btVector3(0, 0, 0)); // To construct multiple rigit bodies with same construction info
+	c->rigitBody = new btRigidBody(groundRigidBodyCI);
+	dynamicsWorld->addRigidBody(c->rigitBody);
 }
 
 void Bullet::removeFinished(vector<future<bool>>* threads)

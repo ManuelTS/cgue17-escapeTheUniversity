@@ -5,6 +5,8 @@
 
 using namespace std;
 
+class Camera;
+
 /*This class is the link to the bullet framework.*/
 class Bullet
 {
@@ -29,7 +31,7 @@ private:
 
 	void removeFinished(vector<future<bool>>* threads); // Removes all finished threads from the argument vector
 	bool distributeBoundingGeneration(ModelNode* mn); // Chooses the correct method to calculate the bounding volume for this model node
-	void calculatePlane(ModelNode* mn); // Plane calculation and adding to node and bullet world
+	void createPlane(ModelNode* mn); // Plane calculation and adding to node and bullet world
 public:
 	/*Returns the pointer to the unique instance of this class.*/
 	static Bullet* Bullet::getInstance()
@@ -41,6 +43,7 @@ public:
 
 	void init(); // Initalizes the bullet world, called only once
 	void createAndAddBoundingObjects(Node* current); // Creates and adds the bounding volumes into the bullet world and to the nodes
+	void createCamera(Camera* camera); // Creates the bounding object for the camera
 	void step(const double deltaTime);
 	btCollisionObject* createBox(float mass); // Creates a bounding box
 };

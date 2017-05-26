@@ -30,4 +30,5 @@ Shit in VS 15:
 - The view "Show diagnostics tools" is not under View/Debug/... as most other views, no, rather under Debug/Windows
 - The "navigate to" shortcut strg + , has no option to only show entries of the current file
 - Autocomplete in a .cpp file of a method name does only insert the method name but not the whole method signature if specified in the .hpp
+- Ctrl + Shift + Left or Right Arrow key selects until an blank character, it is not camel case sensitive.
 - All this with 8+ GB disc space

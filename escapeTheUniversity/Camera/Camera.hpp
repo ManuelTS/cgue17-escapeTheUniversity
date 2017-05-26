@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Bullet/btBulletDynamicsCommon.h"
 
 using namespace glm;
 
@@ -37,6 +38,9 @@ class Camera{
 		double movementSpeed;
 		double mouseSensitivity;
 		double zoom;
+		// Bullet, first person camera rigit body
+		btRigidBody* rigitBody;
+
 
 		Camera(vec3 position, double _zoom, double _movementSpeed, double _mouseSensitivity);
 		~Camera();
