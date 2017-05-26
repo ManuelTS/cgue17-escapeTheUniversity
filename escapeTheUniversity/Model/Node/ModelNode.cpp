@@ -42,8 +42,23 @@ void ModelNode::draw()
 	if (size > 0)
 	{
 
-		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(hirachicalModelMatrix)); // Only use the hirachical MMs here? TODO
-		glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseHirachicalModelMatrix));
+		if(bounding)
+		{
+			btTransform trans;
+			rigitBody->getMotionState()->getWorldTransform(trans);
+			glm::mat4 temp = hirachicalModelMatrix;
+			trans.getOpenGLMatrix(glm::value_ptr(hirachicalModelMatrix));
+
+			if(temp != hirachicalModelMatrix)
+				inverseHirachicalModelMatrix = glm::inverseTranspose(inverseHirachicalModelMatrix);
+			
+			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(hirachicalModelMatrix));
+			glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseHirachicalModelMatrix));
+		}
+		else {
+			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(hirachicalModelMatrix));
+			glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseHirachicalModelMatrix));
+		}
 
 		for (unsigned int i = 0; i < size; i++)
 			meshes[i]->draw();

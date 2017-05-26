@@ -39,4 +39,5 @@ protected:
 	const GLint modelLocation = 0; // gBuffer.vert
 	const GLint inverseModelLocation = 4; // gBuffer.vert
 private:
+	glm::mat4 ModelNode::btScalar2glmMat4(btScalar* matrix);
 };

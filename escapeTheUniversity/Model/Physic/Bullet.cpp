@@ -74,8 +74,9 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		// test hulls with http://www.bulletphysics.org/mediawiki-1.5.8/index.php/BtShapeHull_vertex_reduction_utility
 		const float mass = 5.0;
 		btVector3 localInertia = btVector3(0, 0, 0);
-		shape->calculateLocalInertia(mass, localInertia); 
-		btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(mn->position.x, mn->position.y, mn->position.z)));
+		shape->calculateLocalInertia(mass, localInertia);
+		glm::vec3 pos = mn->getWorldPosition();
+		btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z)));
 		btRigidBody::btRigidBodyConstructionInfo ci(mass, myMotionState, shape, localInertia);
 		mn->rigitBody = new btRigidBody(ci);
 		dynamicsWorld->addRigidBody(mn->rigitBody);
@@ -87,11 +88,11 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 
 void Bullet::calculatePlane(ModelNode* mn) {
 	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0,1,0), 1); // btStaticPlaneShape is an infinte plane
-	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(mn->position.x, mn->position.y, mn->position.z))); // xyz of origin
+	glm::vec3 pos = mn->getWorldPosition();
+	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z))); // xyz of origin
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0)); // To construct multiple rigit bodies with same construction info
 	mn->rigitBody = new btRigidBody(groundRigidBodyCI);
 	dynamicsWorld->addRigidBody(mn->rigitBody);
-//http://bulletphysics.org/mediawiki-1.5.8/index.php/Hello_World#Collision_Shapes
 }
 
 void Bullet::removeFinished(vector<future<bool>>* threads)
