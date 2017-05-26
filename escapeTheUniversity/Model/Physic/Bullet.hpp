@@ -41,7 +41,7 @@ public:
 
 	void init(); // Initalizes the bullet world, called only once
 	void createAndAddBoundingObjects(Node* current); // Creates and adds the bounding volumes into the bullet world and to the nodes
-	void step();
+	void step(const double deltaTime);
 	btCollisionObject* createBox(float mass); // Creates a bounding box
 };
 

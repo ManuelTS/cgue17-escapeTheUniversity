@@ -1,10 +1,10 @@
 #include "BVG.hpp"
 #include <iostream>
-#include "../../Debug/MemoryLeakTracker.h"
+#include "Bullet/btBulletDynamicsCommon.h"
 
 using namespace std;
 
-bool BVG::calculateVHACD(ModelNode* modelNode)
+btConvexHullShape* BVG::calculateVHACD(ModelNode* modelNode)
 {
 	vector<int>* triangles = modelNode->getAllIndices(); // Array of vertex indexes (similar to an EBO)
 	vector<float>* points = modelNode->getAllVertices();  // Array of coordinates, the vertices of the node or rather model
@@ -25,20 +25,12 @@ bool BVG::calculateVHACD(ModelNode* modelNode)
 
 	// read results
 	unsigned int nConvexHulls = interfaceVHACD->GetNConvexHulls(); // Get the number of convex-hulls
-	IVHACD::ConvexHull ch;
+	IVHACD::ConvexHull vhacdConvexHull;
 
 	for (unsigned int p = 0; p < nConvexHulls; ++p)
-	{
-		interfaceVHACD->GetConvexHull(p, ch); // get the p-th convex-hull information
-		
-		/*#if _DEBUG
-			for (unsigned int v = 0, idx = 0; v < ch.m_nPoints; ++v, idx += 3)
-				printf("x=%f, y=%f, z=%f", ch.m_points[idx], ch.m_points[idx + 1], ch.m_points[idx + 2]);
-			for (unsigned int t = 0, idx = 0; t < ch.m_nTriangles; ++t, idx += 3)
-				printf("i=%f, j=%f, k=%f", ch.m_triangles[idx], ch.m_triangles[idx + 1], ch.m_triangles[idx + 2]);
-		#endif*/
-	}
+		interfaceVHACD->GetConvexHull(p, vhacdConvexHull); // get the p-th convex-hull information
 
+	btConvexHullShape* btShape = new btConvexHullShape((const btScalar*) vhacdConvexHull.m_points, vhacdConvexHull.m_nPoints, pointStride);
 	// release memory
 	interfaceVHACD->Clean();
 	interfaceVHACD->Release();
@@ -47,7 +39,7 @@ bool BVG::calculateVHACD(ModelNode* modelNode)
 	delete triangles;
 	delete points;
 
-	return true;
+	return btShape;
 }
 
 Callback::Callback(void) {}

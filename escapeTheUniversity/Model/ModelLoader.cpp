@@ -41,10 +41,9 @@ void ModelLoader::load(string path)
 		loadedMaterials.clear();
 		
 		// Calculate bouding volumes
-		Bullet* b = Bullet::getInstance();
+		Bullet* b = Bullet::getInstance(); // No deletion since it is a singelton!
 		b->init();
 		b->createAndAddBoundingObjects(root);
-		delete b;
 	}
 }
 

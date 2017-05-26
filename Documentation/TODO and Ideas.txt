@@ -2,12 +2,9 @@ All ordered by priority!
 
 Programming (Manuel):
 
-One of this for bullet timestep:
-http://gafferongames.com/game-physics/fix-your-timestep/
-or
-http://www.gamasutra.com/blogs/BramStolk/20160408/269988/Fixing_your_time_step_the_easy_way_with_the_golden_48537_ms.php
-update in bullet only each second or x frame if the deltaTime gets too low since bullet can get nummerical instable. for example if frames are above 60 fps only each second or x frame...
-visualize the bounding boxes
+render generated bounding Shapes:
+m_guiHelper->getRenderInterface();
+Debug Drawing from the manual!
 
 Use the VHACD only on complex objects "_vhacd", otherwise use the standard bounding sphere "_bounding"
 
@@ -34,6 +31,8 @@ DONE: Rim lighting openGL super Bibile page 634, but only if object is lit from 
 Visualize depth: https://learnopengl.com/#!Advanced-OpenGL/Depth-testing
 
 make an camera transition intro
+
+update all external libs
 
 Optimization:
 Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines

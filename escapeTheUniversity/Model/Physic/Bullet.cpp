@@ -1,7 +1,7 @@
 #include "Bullet.hpp"
 #include "BVG.hpp"
 #include "../ModelLoader.hpp"
-#include "../../Debug/MemoryLeakTracker.h"
+//#include "../../Debug/MemoryLeakTracker.h" // Not possible in here because of "solver = new btSequentialImpulseConstraintSolver;"
 
 void Bullet::init()
 {
@@ -16,7 +16,6 @@ void Bullet::init()
 		//the default constraint solver. For parallel processing you can use a different solver(see Extras / BulletMultiThreaded)
 		solver = new btSequentialImpulseConstraintSolver;
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-
 		dynamicsWorld->setGravity(btVector3(0, -10, 0));
 		initialized = !initialized;
 	}
@@ -66,22 +65,33 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 	if (mn->bounding)
 	{
 		BVG* bvg = new BVG();
-		bvg->calculateVHACD(mn); // TODO link to bullet and node
+		// btConvexHullShape: the pointer to the first element of mesh vertices array, the total number of vertices and the stride between two vertices.
+		btConvexHullShape* shape = bvg->calculateVHACD(mn); 
 		delete bvg;
-
-		// TODO Put the ConvexHull in bullet::btCompoundShape or btConvexHullShape
+		// Max 100 vertices
+		// shape->optimizeConvexHull();
+		// shape->initializePolyhedralFeatures();
 		// test hulls with http://www.bulletphysics.org/mediawiki-1.5.8/index.php/BtShapeHull_vertex_reduction_utility
-		// TODO link hull pointer with node
+		const float mass = 5.0;
+		btVector3 localInertia = btVector3(0, 0, 0);
+		shape->calculateLocalInertia(mass, localInertia); 
+		btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(mn->position.x, mn->position.y, mn->position.z)));
+		btRigidBody::btRigidBodyConstructionInfo ci(mass, myMotionState, shape, localInertia);
+		mn->rigitBody = new btRigidBody(ci);
+		dynamicsWorld->addRigidBody(mn->rigitBody);
 	}
 	else if (mn->name.find(ModelLoader::getInstance()->FLOOR_NAME) != string::npos)
-	{
-		calculatePlane(mn);
-	}
+		calculatePlane(mn); // use btBvhTriangleMeshShape for the wings and rooms
 	return true;
 }
 
 void Bullet::calculatePlane(ModelNode* mn) {
-
+	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0,1,0), 1); // btStaticPlaneShape is an infinte plane
+	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(mn->position.x, mn->position.y, mn->position.z))); // xyz of origin
+	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0)); // To construct multiple rigit bodies with same construction info
+	mn->rigitBody = new btRigidBody(groundRigidBodyCI);
+	dynamicsWorld->addRigidBody(mn->rigitBody);
+//http://bulletphysics.org/mediawiki-1.5.8/index.php/Hello_World#Collision_Shapes
 }
 
 void Bullet::removeFinished(vector<future<bool>>* threads)
@@ -94,28 +104,10 @@ void Bullet::removeFinished(vector<future<bool>>* threads)
 		}
 }
 
-void Bullet::step() {
-
-
-	for (int i = 0; i<100; i++)
-		{
-		dynamicsWorld->stepSimulation(1.f / 60.f, 10);
-		
-		//print positions of all objects
-		for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
-		{
-			btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[j];
-			btRigidBody* body = btRigidBody::upcast(obj);
-			btTransform trans;
-
-			if (body && body->getMotionState())
-				body->getMotionState()->getWorldTransform(trans);
-			else
-				trans = obj->getWorldTransform();
-
-		printf("world pos object %d = %f,%f,%f\n", j, float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
-			}
-		}
+void Bullet::step(const double deltaTime)
+{
+	// deltaTime * 1000 is around 0.18
+	dynamicsWorld->stepSimulation(deltaTime * 1000, 1, 0.2f); // Params: deltaTime in seconds, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
 }
 
 Bullet::~Bullet()

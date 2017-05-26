@@ -10,6 +10,7 @@
 #include "GBuffer.hpp"
 #include "Shader.hpp"
 #include "Text.hpp"
+#include "Model\Physic\Bullet.hpp"
 #include "Debug/Debugger.hpp"
 #include "Debug/MemoryLeakTracker.h"
 #include <GL/glew.h>
@@ -369,6 +370,8 @@ void RenderLoop::calculateDeltaTime()
 	timeNow = glfwGetTime();
 	deltaTime = timeNow - timePast;
 	timePast = timeNow;
+
+	Bullet::getInstance()->step(deltaTime);
 }
 
 /*Listens for user input.*/
