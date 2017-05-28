@@ -8,6 +8,8 @@ Debug Drawing from the manual
 
 fix camera ridgitBody
 
+https://tuwel.tuwien.ac.at/mod/forum/discuss.php?d=91157
+
 Use the VHACD only on complex objects "_vhacd", otherwise use the standard bounding sphere "_bounding"
 
 Skymap, with a beautiful night sky von NASA deep field image full of stars in OGLSB as cube map on page 640. Before doing that check "seamless cube map / sky box2".
@@ -38,7 +40,7 @@ update all external libs
 
 Optimization:
 Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines
-
+http://leifnode.com/2015/05/tiled-deferred-shading/
 
 
 

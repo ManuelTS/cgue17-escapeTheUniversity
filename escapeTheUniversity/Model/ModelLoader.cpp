@@ -220,7 +220,7 @@ Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene, ModelNode* mo
 	vector<Mesh::Vertex> data;
 
 	// Loop through each of the mesh's vertices
-	for (GLuint i = 0; i < mesh->mNumVertices; i++)
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		Mesh::Vertex vertex;
 		// Positions
@@ -253,9 +253,9 @@ Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene, ModelNode* mo
 		data.push_back(vertex);
 	}
 	// Now loop through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
-	vector<GLuint> indices;
+	vector<unsigned int> indices;
 
-	for (GLuint i = 0; i < mesh->mNumFaces; i++)
+	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
 		aiFace face = mesh->mFaces[i];
 		// Retrieve all indices of the face and store them in the indices vector

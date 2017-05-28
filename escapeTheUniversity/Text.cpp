@@ -239,6 +239,10 @@ void Text::showCamCoords(Camera* camera) {
 	write(text, -0.95f, -0.8f, 0.5f, 0.0f);
 }
 
+void Text::drawBulletDebug() {
+	write("Showing bounding volumes", 0.0f, 0.9f, 0.5f, 0.0f);
+}
+
 void Text::loadingScreenInfo() {
 	char infoText[1024] = "Working on:\n";
 	unsigned int i;
@@ -328,7 +332,7 @@ void Text::help()
 	i = copyInBuffer(help, i, (const unsigned char*) " F9= Toggle blending", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "F10= Toggle stenicl buffer usage", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "F11= Fullscreen", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "F12= Toogle bounding volume triangles", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "F12= Toogle bounding volume edges", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Escape/End = Close game", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "W/Upper arrow = Move forwards", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "S/Lower arrow = Move backwards", true);

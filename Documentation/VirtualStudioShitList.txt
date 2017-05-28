@@ -31,4 +31,5 @@ Shit in VS 15:
 - The "navigate to" shortcut strg + , has no option to only show entries of the current file
 - Autocomplete in a .cpp file of a method name does only insert the method name but not the whole method signature if specified in the .hpp
 - Ctrl + Shift + Left or Right Arrow key selects until an blank character, it is not camel case sensitive.
+- Right click in the solution menü on a subfolder "Add/Class..." adds a class to the solution folder but not to the right clicked subfolder.
 - All this with 8+ GB disc space

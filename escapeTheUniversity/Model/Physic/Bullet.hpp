@@ -1,6 +1,7 @@
 #pragma once
 #include "../Node/ModelNode.hpp"
 #include "Bullet/btBulletDynamicsCommon.h"
+#include "../../Debug/BulletDebugDrawer.hpp"
 #include <future>
 
 using namespace std;
@@ -24,6 +25,7 @@ private:
 	btSequentialImpulseConstraintSolver* solver;
 	btDiscreteDynamicsWorld* dynamicsWorld;
 	btAlignedObjectArray<btCollisionShape*> shapes;
+	BulletDebugDrawer* debugDrawer; // Own implemented debug drawer
 
 	Bullet(void) {}; // Private constructor to allow only one instance
 	Bullet(Bullet const&); // Private constructor to prevent copies
@@ -44,7 +46,8 @@ public:
 	void init(); // Initalizes the bullet world, called only once
 	void createAndAddBoundingObjects(Node* current); // Creates and adds the bounding volumes into the bullet world and to the nodes
 	void createCamera(Camera* camera); // Creates the bounding object for the camera
-	void step(const double deltaTime);
+	void step(const double deltaTime); // Sets the timing syncronization of bullet physics
+	void Bullet::debugDraw(); // Draws the whole debug world of bullet, see constructor and BulletDebugDraw.cpp and .hpp
 	btCollisionObject* createBox(float mass); // Creates a bounding box
 };
 

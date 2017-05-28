@@ -19,6 +19,7 @@ public:
 	
 	std::vector<Vertex> data;
 	std::vector<unsigned int> indices;
+	std::vector<glm::vec4> materials; // Materials, rbg material values, a shininess
 
 	/*Contains all texture ids, names, and paths.*/
 	struct Texture{
@@ -31,7 +32,7 @@ public:
 	Mesh(std::vector<unsigned int>_indices, std::vector<Vertex> _data, std::vector<Texture> _textures, std::vector<glm::vec4> _materials);
 	~Mesh();
 	
-	void draw();
+	void draw(unsigned int drawMode = GL_TRIANGLES);
 private:
 	// Shared handles
 	unsigned int EBO;
@@ -41,7 +42,6 @@ private:
 	unsigned int materialVBO;
 
 	std::vector<Texture> textures; // Textures
-	std::vector<glm::vec4> materials; // Materials, rbg material values, a shininess
 
 	int maxTextureUnits = 0;
 	const unsigned int positionsLocation = 0; // In gBuffer.vert and stencil.vert

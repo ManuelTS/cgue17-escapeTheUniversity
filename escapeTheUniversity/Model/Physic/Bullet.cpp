@@ -1,4 +1,4 @@
-#include "Bullet.hpp"
+#include	 "Bullet.hpp"
 #include "BVG.hpp"
 #include "../ModelLoader.hpp"
 #include "../../Camera/Camera.hpp"
@@ -18,6 +18,12 @@ void Bullet::init()
 		solver = new btSequentialImpulseConstraintSolver;
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 		dynamicsWorld->setGravity(btVector3(0, -10, 0));
+		#if _DEBUG
+			debugDrawer = new BulletDebugDrawer();
+			debugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+			dynamicsWorld->setDebugDrawer(debugDrawer);
+		#endif
+
 		initialized = !initialized;
 	}
 }
@@ -153,6 +159,11 @@ Bullet::~Bullet()
 	delete dispatcher;//delete dispatcher
 	delete collisionConfiguration;
 	shapes.clear();//next line is optional: it will be cleared by the destructor when the array goes out of scope
+}
+
+void Bullet::debugDraw() {
+	dynamicsWorld->debugDrawWorld(); // Fill debugDrawer with bullet rendering data
+	debugDrawer->draw(); // Draw the receivied rendering data
 }
 
 btCollisionObject* Bullet::createBox(float mass)

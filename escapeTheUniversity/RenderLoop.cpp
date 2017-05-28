@@ -76,7 +76,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		else if (key == GLFW_KEY_F11)
 			rl->toggleFullscreen();
 		else if (key == GLFW_KEY_F12)
-			cout << "TODO show bounding volumes." << endl;
+			rl->drawBulletDebug = !rl->drawBulletDebug;
 		else if (key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT || key == GLFW_KEY_RIGHT_BRACKET || key == GLFW_KEY_KP_ADD)
 		{ // slash is german minus and right bracket is german plus on a german keyboard
 			bool minus = key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT; // In- or decrease ambient light coefficient
@@ -320,6 +320,18 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+	if (drawBulletDebug) // Draw debug world of bullet
+	{
+		glClear(GL_COLOR_BUFFER_BIT);
+		gBufferShader->useProgram();
+		glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, glm::value_ptr(mat4())); // Bullet draws in world coords, no modelMatrix needed, just a placeholder for no translation
+		glUniformMatrix4fv(ModelNode::inverseModelLocation, 1, GL_FALSE, glm::value_ptr(glm::inverseTranspose(mat4())));
+
+		glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, projectionMatrixP);
+		glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
+		Bullet::getInstance()->debugDraw();
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	gBuffer->renderQuad(); // Render 2D quad to screen
 	temp.clear();
@@ -360,6 +372,9 @@ void RenderLoop::renderText()
 
 	if (showCamCoords)
 		Text::getInstance()->showCamCoords(camera);
+
+	if (drawBulletDebug)
+		Text::getInstance()->drawBulletDebug();
 
 	if (help)
 		Text::getInstance()->help();

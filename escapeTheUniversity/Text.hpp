@@ -41,6 +41,7 @@ public:
 	void removeTime(const double deltaTime); // Checks if in the displayTime array is still some text left to display and removes the entries if necessary
 	void wireframe(); // Displays wireframe text on screen
 	void showCamCoords(Camera* camera); // Displays the camera coords on the screen
+	void drawBulletDebug(); // Displays the showing debug context text on screen
 private:
 	// Image path and name
 	const std::string loadingImagePath = "characters-df.png";

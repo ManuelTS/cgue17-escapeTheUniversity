@@ -45,7 +45,7 @@ Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _data, vector<Texture> 
 }
 
 /*Draws this mesh*/
-void Mesh::draw()
+void Mesh::draw(unsigned int drawMode)
 {		
 		for (unsigned int i = 0; i < textures.size() && i < maxTextureUnits; i++)// Bind textures
 		{
@@ -67,7 +67,7 @@ void Mesh::draw()
 		if (rl->fps)
 			rl->drawnTriangles += data.size() / 3;
 
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); // Draw
+		glDrawElements(drawMode, indices.size(), GL_UNSIGNED_INT, 0); // Draw
 		glBindVertexArray(0);
 
 		for (unsigned int i = 0; i < textures.size(); i++)// Unbind textures

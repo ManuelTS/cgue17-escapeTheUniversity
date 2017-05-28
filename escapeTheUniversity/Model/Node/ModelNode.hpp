@@ -35,9 +35,8 @@ public:
 	void setModelMatrix(); // Sets the model matrix and computes the inverse one too, translates it with the position and calculates the world space position too
 	glm::vec3 getWorldPosition(); // Returns the world coords of this node
 
-protected:
-	const GLint modelLocation = 0; // gBuffer.vert
-	const GLint inverseModelLocation = 4; // gBuffer.vert
+	static const unsigned int modelLocation = 0; // gBuffer.vert
+	static const unsigned int inverseModelLocation = 4; // gBuffer.vert
 private:
 	glm::mat4 ModelNode::btScalar2glmMat4(btScalar* matrix);
 };
