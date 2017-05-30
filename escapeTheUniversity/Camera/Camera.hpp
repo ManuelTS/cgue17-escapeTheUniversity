@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "Bullet/btBulletDynamicsCommon.h"
+#include "Bullet/src/btBulletDynamicsCommon.h"
 
 using namespace glm;
 

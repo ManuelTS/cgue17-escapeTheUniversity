@@ -141,8 +141,8 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\External\Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;irrKlang.lib;glfw3.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp-vc140-mt.lib;BulletCollision_vs2010_debug.lib;BulletDynamics_vs2010_debug.lib;LinearMath_vs2010_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <IgnoreSpecificDefaultLibraries>LIBCMTD</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>opengl32.lib;irrKlang.lib;glfw3.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp-vc140-mt.lib;BulletCollision_vs2010_debug.lib;BulletDynamics_vs2010_debug.lib;LinearMath_vs2010_debug.lib;vhacd_vs2010_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>LIBCMTD;MSVCRT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /q /s /e /y "$(SolutionDir)External\DLLs"  "$(SolutionDir)$(Configuration)" 

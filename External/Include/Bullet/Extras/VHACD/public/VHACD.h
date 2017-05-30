@@ -52,7 +52,7 @@ public:
         Parameters(void) { Init(); }
         void Init(void)
         {
-            m_resolution = 100000;
+            m_resolution = 1000000;
             m_depth = 20;
             m_concavity = 0.001;
             m_planeDownsampling = 4;

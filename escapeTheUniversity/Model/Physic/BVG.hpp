@@ -1,6 +1,7 @@
-/*#pragma once
-#include "v-hacd\public\VHACD.h"
+#pragma once
 #include "..\Node\ModelNode.hpp"
+#include "Bullet\Extras\VHACD\public\VHACD.h"
+#include "Bullet\src\btBulletDynamicsCommon.h"
 #include <string>
 #include <fstream>
 
@@ -32,4 +33,4 @@ class Logger : public IVHACD::IUserLogger
 		void OpenFile(const std::string & fileName);
 	private:
 		std::ofstream m_file;
-};*/
+};

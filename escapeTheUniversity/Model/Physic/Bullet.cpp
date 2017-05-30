@@ -1,5 +1,5 @@
 #include "Bullet.hpp"
-//#include "BVG.hpp"
+#include "BVG.hpp"
 #include "../ModelLoader.hpp"
 #include "../../Camera/Camera.hpp"
 //#include "../../Debug/MemoryLeakTracker.h" // Not possible in here because of "solver = new btSequentialImpulseConstraintSolver;"
@@ -75,12 +75,12 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 {
 	if (mn->bounding)
 	{
-		//BVG* bvg = new BVG();
+		BVG* bvg = new BVG();
 		btConvexHullShape* shape = nullptr;//bvg->calculateVHACD(mn); 
-		//delete bvg;
+		delete bvg;
 		// Max 100 vertices
 		// shape->optimizeConvexHull();
-		// shape->initializePolyhedralFeatures();
+		//shape->initializePolyhedralFeatures();
 		// test hulls with http://www.bulletphysics.org/mediawiki-1.5.8/index.php/BtShapeHull_vertex_reduction_utility
 		const float mass = 5.0;
 		btVector3 localInertia = btVector3(0, 0, 0);
@@ -103,13 +103,13 @@ void Bullet::createBuilding(ModelNode* mn) {
 	const unsigned int triangleStride = 3; // one index points to a vertex, 3 indices to a triangle
 	const unsigned int pointStride = 3; // One vertex is ordered in this array as xyz, one trianle has 3 vertices which are equal to 9 entries in this array as xyzxyzxyz 
 
-	btTriangleIndexVertexArray* meshes = new btTriangleIndexVertexArray(triangles->size() / triangleStride, triangles->data(), triangleStride, points->size() / pointStride, points->data(), pointStride);
-	btCollisionShape* groundShape = new btBvhTriangleMeshShape(meshes, true, true);
-	glm::vec3 pos = mn->getWorldPosition();
-	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z))); // mass 0 = fixed object not moveable, xyz of origin
-	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0)); // To construct multiple rigit bodies with same construction info
-	mn->rigitBody = new btRigidBody(groundRigidBodyCI);
-	dynamicsWorld->addRigidBody(mn->rigitBody);
+	//btTriangleIndexVertexArray* meshes = new btTriangleIndexVertexArray(triangles->size() / triangleStride, triangles->data(), triangleStride, points->size() / pointStride, points->data(), pointStride);
+	//btCollisionShape* groundShape = new btBvhTriangleMeshShape(meshes, true, true);
+	//glm::vec3 pos = mn->getWorldPosition();
+	//btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z))); // mass 0 = fixed object not moveable, xyz of origin
+	//btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0)); // To construct multiple rigit bodies with same construction info
+	//mn->rigitBody = new btRigidBody(groundRigidBodyCI);
+	//dynamicsWorld->addRigidBody(mn->rigitBody);
 }
 
 void Bullet::createCamera(Camera* c) 

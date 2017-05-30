@@ -52,7 +52,7 @@
 
 #if defined(WIN32)
 
-#define _WIN32_WINNT 0x400
+//#define _WIN32_WINNT 0x400
 #include <windows.h>
 #pragma comment(lib, "winmm.lib")
 #endif
