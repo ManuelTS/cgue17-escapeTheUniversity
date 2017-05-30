@@ -39,7 +39,8 @@ private:
 	std::vector<Mesh::Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::vector<glm::vec4>* materials);// Loads all materials and the textures
 	void linkLightUBO(); // Generates the Light UBO handle
 public:
-	const std::string FLOOR_NAME = "Floor"; // Name of all Floorxxxx
+	const std::string LEFT_WING = "LeftWing";
+	const std::string RIGHT_WING = "RightWing";
 	Node* root; // Root node of the scene graph
 
 	// Resource top folder directories

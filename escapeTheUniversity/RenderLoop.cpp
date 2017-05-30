@@ -324,7 +324,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 		gBufferShader->useProgram();
-		glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, glm::value_ptr(mat4())); // Bullet draws in world coords, no modelMatrix needed, just a placeholder for no translation
+		glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, glm::value_ptr(mat4())); // Bullet draws in world coords, no modelMatrix needed, just a placeholder for no translation via MM
 		glUniformMatrix4fv(ModelNode::inverseModelLocation, 1, GL_FALSE, glm::value_ptr(glm::inverseTranspose(mat4())));
 
 		glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, projectionMatrixP);

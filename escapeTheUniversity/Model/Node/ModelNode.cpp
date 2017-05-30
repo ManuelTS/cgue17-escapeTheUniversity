@@ -10,7 +10,17 @@ ModelNode::ModelNode()
 	//modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));	// It's a bit too big for our scene, so scale it down
 	inverseModelMatrix = glm::inverseTranspose(modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
 }
-ModelNode::~ModelNode(){}
+ModelNode::~ModelNode()
+{
+	if (indicesVerticesArray && indices != nullptr) {
+		indices->clear();
+		delete indices;
+	}
+	if (indicesVerticesArray && vertices != nullptr) {
+		vertices->clear();
+		delete vertices;
+	}
+}
 
 void ModelNode::setModelMatrix()
 {
@@ -70,17 +80,18 @@ vector<int>* ModelNode::getAllIndices()
 
 	if (size > 0)
 	{
-		vector<int>* allIndices = new vector<int>(); // Needs to be deleted else where
+		indices = new vector<int>(); // Needs to be deleted else where
 		
 		for (unsigned int i = 0, vertexOffset = 0; i < size; i++) // Go through all meshes
 		{
-			vertexOffset = allIndices->size();// The indices for different meshes start all at one but are needed to be continous (from the last mesh only !) since all vertices read are continous too
+			vertexOffset = indices->size();// The indices for different meshes start all at one but are needed to be continous (from the last mesh only !) since all vertices read are continous too
 
 			for (unsigned int j = 0; j < meshes[i]->indices.size(); j++) // Go through all mesh vertices
-				allIndices->push_back(vertexOffset + meshes[i]->indices[j]); // cast unsigned int to int because of vhacd method signature
+				indices->push_back(vertexOffset + meshes[i]->indices[j]); // cast unsigned int to int because of vhacd method signature
 		}
 
-		return allIndices;
+		indicesVerticesArray = true;
+		return indices;
 	}
 
 	return nullptr;
@@ -91,18 +102,19 @@ vector<float>* ModelNode::getAllVertices() {
 
 	if (size > 0)
 	{
-		vector<float>* allVertices = new vector<float>();
+		vertices = new vector<float>();
 
 		for (unsigned int i = 0; i < size; i++) // Go through all meshes
 			for (unsigned int j = 0; j < meshes[i]->data.size(); j++) // Go through all mesh vertices
 			{
 				const glm::vec3 position = meshes[i]->data[j].position; // Get all the vertices
-				allVertices->push_back(position.x);
-				allVertices->push_back(position.y);
-				allVertices->push_back(position.z);
+				vertices->push_back(position.x);
+				vertices->push_back(position.y);
+				vertices->push_back(position.z);
 			}
 
-		return allVertices;
+		indicesVerticesArray = true;
+		return vertices;
 	}
 
 	return nullptr;

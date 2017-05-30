@@ -4,7 +4,7 @@
 #include "..\..\Shader.hpp"
 #include "..\..\RenderLoop.hpp"
 #include "..\Mesh\Mesh.hpp"
-#include "Bullet/btBulletDynamicsCommon.h"
+#include "bullet/btBulletDynamicsCommon.h"
 
 /**This is the default node containing information about a model.*/
 class ModelNode : public Node
@@ -14,6 +14,10 @@ public:
 	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f); // Position the node's center, in world coords relative to the parent.
 	float radius = 0.0f; // Radius of the bounding sphere of this node, it is the biggest mesh value 
 	glm::vec3 pivot = glm::vec3(0.0f, 0.0f, 0.0f); // Pivot of this node, standard value if unset is a zero vector.
+
+	vector<int>* indices; // Pointer to all sequential indices of all vertices in an array of this node, needed for example for btTriangleIndexVertexArray
+	vector<float>* vertices; // Pointer to all sequential vertices in an array of this node, needed for example for btTriangleIndexVertexArray
+	bool indicesVerticesArray = false; // Flag to generate the indices pointer and vertices only once. If true the pointers indices and vertices are set. Default: false
 
 	glm::mat4 modelMatrix; // Object space MM of this node
 	glm::mat4 inverseModelMatrix; // Inverse object space MM
@@ -38,5 +42,4 @@ public:
 	static const unsigned int modelLocation = 0; // gBuffer.vert
 	static const unsigned int inverseModelLocation = 4; // gBuffer.vert
 private:
-	glm::mat4 ModelNode::btScalar2glmMat4(btScalar* matrix);
 };

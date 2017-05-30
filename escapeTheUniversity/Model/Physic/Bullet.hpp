@@ -1,6 +1,6 @@
 #pragma once
 #include "../Node/ModelNode.hpp"
-#include "Bullet/btBulletDynamicsCommon.h"
+#include "bullet/btBulletDynamicsCommon.h"
 #include "../../Debug/BulletDebugDrawer.hpp"
 #include <future>
 
@@ -33,7 +33,7 @@ private:
 
 	void removeFinished(vector<future<bool>>* threads); // Removes all finished threads from the argument vector
 	bool distributeBoundingGeneration(ModelNode* mn); // Chooses the correct method to calculate the bounding volume for this model node
-	void createPlane(ModelNode* mn); // Plane calculation and adding to node and bullet world
+	void Bullet::createBuilding(ModelNode* mn); // Creates a big static btBvhTriangleMeshShape 
 public:
 	/*Returns the pointer to the unique instance of this class.*/
 	static Bullet* Bullet::getInstance()

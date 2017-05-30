@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 #include "v-hacd\public\VHACD.h"
 #include "..\Node\ModelNode.hpp"
 #include <string>
@@ -32,4 +32,4 @@ class Logger : public IVHACD::IUserLogger
 		void OpenFile(const std::string & fileName);
 	private:
 		std::ofstream m_file;
-};
+};*/

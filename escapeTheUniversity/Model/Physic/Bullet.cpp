@@ -1,5 +1,5 @@
-#include	 "Bullet.hpp"
-#include "BVG.hpp"
+#include "Bullet.hpp"
+//#include "BVG.hpp"
 #include "../ModelLoader.hpp"
 #include "../../Camera/Camera.hpp"
 //#include "../../Debug/MemoryLeakTracker.h" // Not possible in here because of "solver = new btSequentialImpulseConstraintSolver;"
@@ -49,6 +49,9 @@ void Bullet::createAndAddBoundingObjects(Node* current)
 		{
 			ModelNode* mn = dynamic_cast<ModelNode*>(child);
 
+			if (mn && mn->name.find("_bounding") != string::npos)
+				int i = 0;
+
 			if (mn && mn->meshes.size() > 0)
 			{ // Leave if structure like this
 				if (threads->size() < concurentThreadsSupported) // If the system thread maximum is not reached, create a thread and calc bounding volume
@@ -72,10 +75,9 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 {
 	if (mn->bounding)
 	{
-		BVG* bvg = new BVG();
-		// btConvexHullShape: the pointer to the first element of mesh vertices array, the total number of vertices and the stride between two vertices.
-		btConvexHullShape* shape = bvg->calculateVHACD(mn); 
-		delete bvg;
+		//BVG* bvg = new BVG();
+		btConvexHullShape* shape = nullptr;//bvg->calculateVHACD(mn); 
+		//delete bvg;
 		// Max 100 vertices
 		// shape->optimizeConvexHull();
 		// shape->initializePolyhedralFeatures();
@@ -89,15 +91,22 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		mn->rigitBody = new btRigidBody(ci);
 		dynamicsWorld->addRigidBody(mn->rigitBody);
 	}
-	else if (mn->name.find(ModelLoader::getInstance()->FLOOR_NAME) != string::npos)
-		createPlane(mn); // use btBvhTriangleMeshShape for the wings and rooms
+	else if (mn->name.find(ModelLoader::getInstance()->LEFT_WING) != string::npos || mn->name.find(ModelLoader::getInstance()->RIGHT_WING) != string::npos)
+		createBuilding(mn); 
+	// TODO use btBvhTriangleMeshShape for the wings and rooms
 	return true;
 }
 
-void Bullet::createPlane(ModelNode* mn) {
-	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0,1,0), 1); // btStaticPlaneShape is an infinte plane
+void Bullet::createBuilding(ModelNode* mn) {
+	vector<int>* triangles = mn->getAllIndices(); // Array of vertex indexes (similar to an EBO)
+	vector<float>* points = mn->getAllVertices();  // Array of coordinates, the vertices of the node or rather model
+	const unsigned int triangleStride = 3; // one index points to a vertex, 3 indices to a triangle
+	const unsigned int pointStride = 3; // One vertex is ordered in this array as xyz, one trianle has 3 vertices which are equal to 9 entries in this array as xyzxyzxyz 
+
+	btTriangleIndexVertexArray* meshes = new btTriangleIndexVertexArray(triangles->size() / triangleStride, triangles->data(), triangleStride, points->size() / pointStride, points->data(), pointStride);
+	btCollisionShape* groundShape = new btBvhTriangleMeshShape(meshes, true, true);
 	glm::vec3 pos = mn->getWorldPosition();
-	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z))); // xyz of origin
+	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z))); // mass 0 = fixed object not moveable, xyz of origin
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0)); // To construct multiple rigit bodies with same construction info
 	mn->rigitBody = new btRigidBody(groundRigidBodyCI);
 	dynamicsWorld->addRigidBody(mn->rigitBody);
