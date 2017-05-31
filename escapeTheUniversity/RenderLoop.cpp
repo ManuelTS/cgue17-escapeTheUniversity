@@ -53,9 +53,16 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		else if (key == GLFW_KEY_F3)
 			rl->wireFrameMode = !rl->wireFrameMode;
 		else if (key == GLFW_KEY_F4)
-			cout << "TODO: Texture-Sampling-Quality: Nearest Neighbor/Bilinear" << endl; // TODO
+		{
+			rl->textureSampling++;
+			rl->changeQuality();
+		}
+			
 		else if (key == GLFW_KEY_F5)
-			cout << "TODO: Mip Maping-Quality: Off/Nearest Neighbour/Linear" << endl; // TODO
+		{
+			rl->mipMapping++;
+			rl->changeQuality();
+		}
 		else if (key == GLFW_KEY_F6)
 			cout << "TODO: Visualizing the depth buffer." << endl; // TODO Visualizing the depth buffer http://learnopengl.com/#!Advanced-OpenGL/Depth-testing, swith shaders to depth ones
 		else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE)
@@ -225,7 +232,7 @@ void RenderLoop::start()
 	Bullet* b = Bullet::getInstance(); // Calculate bouding volumes, no pointer deletion since it is a singelton!
 	b->init();
 	b->createAndAddBoundingObjects(ml->root); // Sets pointers of rigitBodies in all nodes of the scene graph
-	b->createCamera(camera);
+	b->createCamera(camera); // Create cam bounding cylinder
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
@@ -504,4 +511,68 @@ void RenderLoop::toggleFullscreen()
 	}
 	else
 		glfwSetWindowMonitor(window, NULL, 0, 0, width, height, 0);
+}
+
+void RenderLoop::changeQuality()
+{
+	Text* text = Text::getInstance();
+	int paramMin = 0;
+	int paramMax = 0;
+
+	if (textureSampling > 1) // Texture Sampling
+		textureSampling = 0;
+
+	if (textureSampling == 0)
+	{
+		text->addText2Display(Text::TEXTURE_SAMPLING_NEAREST_NEIGHBOR);
+		paramMax = GL_NEAREST;
+	}
+	else //if (textureSampling == 1)
+	{
+		text->addText2Display(Text::TEXTURE_SAMPLING_BILINEAR);
+		paramMax = GL_LINEAR;
+	}
+
+	if (mipMapping > 2) // Mip mapps
+		mipMapping = 0;
+
+	if (mipMapping == 0)
+	{
+		text->addText2Display(Text::MIP_MAPPING_OFF);
+		paramMin = GL_NEAREST;
+	}
+	else if (mipMapping == 1)
+	{
+		text->addText2Display(Text::MIP_MAPPING_NEAREST_NEIGHBOR);
+
+		if (textureSampling == 0)
+			paramMin = GL_NEAREST_MIPMAP_NEAREST;
+		else // textSampling == 1
+			paramMin = GL_LINEAR_MIPMAP_NEAREST;
+	}
+	else if (mipMapping == 2)
+	{
+		text->addText2Display(Text::MIP_MAPPING_BILINEAR);
+
+		if (textureSampling == 0)
+			paramMin = GL_NEAREST_MIPMAP_LINEAR;
+		else // textSampling == 1
+			paramMin = GL_LINEAR_MIPMAP_LINEAR;
+	}
+
+	for (Node* n: ModelLoader::getInstance()->getAllNodes())
+	{
+		ModelNode* mn = dynamic_cast<ModelNode*>(n);
+
+		if(mn && mn->meshes.size() > 0)
+			for (Mesh* me :mn->meshes)
+				for (Mesh::Texture t : me->textures)
+				{
+					glBindTexture(GL_TEXTURE_2D, t.id);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, paramMin); // The combination of both parameters can create trilinear filtering, see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, paramMax);
+					glBindTexture(GL_TEXTURE_2D, 0);
+				}
+
+	}
 }

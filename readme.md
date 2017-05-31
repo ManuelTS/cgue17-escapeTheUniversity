@@ -8,7 +8,7 @@ is a 3D single player stealth game by [Manuel T. Schrempf 0920136](mailto:e09201
 3. Download the [master branch](https://github.com/ManuelTS/cgue17-escapeTheUniversity.git)
 4. In VS15 set _Tools/Options/Debugging/Symbols/Microsoft Symbol Servers_ to `true`
 5. Right Click on the project _escapeTheUniversity_
-  - On the upper left set Configuration to _All Configurations_
-  - Enter in _Configuration Properties/Debugging/Working directory_ `$(SolutionDir)`
+    1. On the upper left set Configuration to _All Configurations_
+    1. Enter in _Configuration Properties/Debugging/Working directory_ `$(SolutionDir)`
 6. In VS15 select the build mode `release` or `debug` and `x86` as platform
 7. Build the game and play

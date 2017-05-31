@@ -16,17 +16,17 @@ public:
 		glm::vec3 normal; // Normal
 		glm::vec2 texCoords; // TexCoords
 	};
-	
-	std::vector<Vertex> data;
-	std::vector<unsigned int> indices;
-	std::vector<glm::vec4> materials; // Materials, rbg material values, a shininess
-
 	/*Contains all texture ids, names, and paths.*/
 	struct Texture{
 		unsigned int id;
 		std::string name;
 		std::string path;
 	};
+	
+	std::vector<Vertex> data;
+	std::vector<unsigned int> indices;
+	std::vector<glm::vec4> materials; // Materials, rbg material values, a shininess
+	std::vector<Texture> textures; // Textures
 
 	Mesh() {};
 	Mesh(std::vector<unsigned int>_indices, std::vector<Vertex> _data, std::vector<Texture> _textures, std::vector<glm::vec4> _materials);
@@ -40,8 +40,6 @@ private:
 	unsigned int VAO;
 	unsigned int VBO;
 	unsigned int materialVBO;
-
-	std::vector<Texture> textures; // Textures
 
 	int maxTextureUnits = 0;
 	const unsigned int positionsLocation = 0; // In gBuffer.vert and stencil.vert

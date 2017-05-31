@@ -18,6 +18,8 @@ class RenderLoop{
 		// Time
 		double timePast; // Last, past time  in milliseconds
 		double timeNow; // New, current time in milliseconds
+
+		
 	
 		RenderLoop(void){}; // Private constructor to allow only one instance
 		RenderLoop(RenderLoop const&); // Private constructor to prevent copies
@@ -35,9 +37,13 @@ class RenderLoop{
 
 		int width; // Current window width
 		int height; // Current window height
+
 		double xScroll = 0.0; // The last x value scrolled
 		double yScroll = 0.0; // The last y value scrolled
+
 		unsigned int drawnTriangles = 0;// Contains all the drawn triangles if the fps mode is activated
+
+		//Switches and modes for game
 		bool help = false; // Display help on screen or not, standard false
 		bool fps = false; // Display FPS on screen or, standard false
 		bool wireFrameMode = false; // True if the wireframe mode is activated, false if not, standard false
@@ -48,6 +54,9 @@ class RenderLoop{
 		bool fullscreen = false; // Toogle fullscreen mode, default false
 		bool showCamCoords = false; // Toggle the rendering of the camera coords on the screen, default false
 		bool drawBulletDebug = false; // Toggle the drawing of the bullet world debug, default false
+		// Sampling states
+		int textureSampling = 1; // Texture Sampling Quality: 0 = Nearest Neighbor, 1 = Bilinear, default: 1 see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping
+		int mipMapping = 2; // Maping-Quality: 0 = Off, 1 = Nearest Neigbor, 2 = Bilinear, default: 2
 		
 		double deltaTime; // Difference of variable timeNew and timeOld in nano seconds
 
@@ -55,6 +64,7 @@ class RenderLoop{
 		void start(); // Initializes and starts the actual renderloop
 		void renderText(); // Renders the FPS on the screen
 		void toggleFullscreen(); // Toggles the fullscreen
+		void changeQuality(); // Changes the quality of texture sampling and Mip Mapping, see variables mipMapping and textureSampling. True if texture, false if mip mapping
 
 		/*Returns the pointer to the unique instance of the render loop class.*/
 		static RenderLoop* RenderLoop::getInstance()

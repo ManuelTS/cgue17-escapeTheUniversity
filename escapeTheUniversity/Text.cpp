@@ -199,6 +199,26 @@ void Text::removeTime(const double deltaTime)
 				gameOver();
 				hasTimeLeft(i, deltaTime);
 				break;
+			case TEXTURE_SAMPLING_NEAREST_NEIGHBOR:
+				quality("Texture Sampling Nearest Neighbor", true);
+				hasTimeLeft(i, deltaTime);
+				break;
+			case TEXTURE_SAMPLING_BILINEAR:
+				quality("Texture Sampling Bilinear", true);
+				hasTimeLeft(i, deltaTime);
+				break;
+			case MIP_MAPPING_OFF:
+				quality("Mip Mapping Off");
+				hasTimeLeft(i, deltaTime);
+				break;
+			case MIP_MAPPING_NEAREST_NEIGHBOR:
+				quality("Mip Mapping Nearest Neighbor");
+				hasTimeLeft(i, deltaTime);
+				break;
+			case MIP_MAPPING_BILINEAR:
+				quality("Mip Mapping Bilinear");
+				hasTimeLeft(i, deltaTime);
+				break;
 		}
 }
 
@@ -212,6 +232,11 @@ void Text::gameOver()
 	color = glm::vec3(1.0f, 0.0f, 0.0f);
 	write("Exmatriculated", -1.05f, -0.1f, 1.0f, -45.0f);
 	color = DEFAULT_COLOR; // Restet original color for other possible text draws
+}
+
+void Text::quality(std::string text, bool texture)
+{
+	write(text.c_str(), -0.98f, texture ? 0.1f : 0.0f, 0.5f, 0.0f);
 }
 
 void Text::fps(const double pastTime, const double deltaTime, const unsigned int drawnTriangles)
