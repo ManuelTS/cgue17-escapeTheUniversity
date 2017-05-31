@@ -19,7 +19,7 @@ btConvexHullShape* BVG::calculateVHACD(ModelNode* modelNode)
 	#endif*/
 
 	const unsigned int triangleStride = 3; // one index points to a vertex, 3 indices to a triangle
-	const unsigned int pointStride = 3; // One vertex is ordered in this array as xyz, one trianle has 3 vertices which are equal to 9 entries in this array as xyzxyzxyz 
+	const unsigned int pointStride = 9; // One vertex is ordered in this array as xyz, one trianle has 3 vertices which are equal to 9 entries in this array as xyzxyzxyz 
 	bool res = interfaceVHACD->Compute(points->data(), pointStride, points->size() / pointStride, triangles->data(), triangleStride, triangles->size() / triangleStride, params); // compute approximate convex decomposition
 
 	// read results
@@ -29,8 +29,8 @@ btConvexHullShape* BVG::calculateVHACD(ModelNode* modelNode)
 	for (unsigned int p = 0; p < nConvexHulls; ++p)
 		interfaceVHACD->GetConvexHull(p, vhacdConvexHull); // get the p-th convex-hull informatiion
 														   
-	// btConvexHullShape: the pointer to the first element of mesh vertices array, the total number of vertices and the stride between two vertices.
-	//btConvexHullShape* btShape = new btConvexHullShape((const btScalar*) vhacdConvexHull.m_points, vhacdConvexHull.m_nPoints, pointStride);
+	//btConvexHullShape: the pointer to the first element of mesh vertices array, the total number of vertices and the stride between two vertices.
+	btConvexHullShape* btShape = new btConvexHullShape((const float*) vhacdConvexHull.m_points, vhacdConvexHull.m_nPoints, pointStride);
 	// release memory
 	interfaceVHACD->Clean();
 	interfaceVHACD->Release();
@@ -40,8 +40,7 @@ btConvexHullShape* BVG::calculateVHACD(ModelNode* modelNode)
 	delete points;
 	modelNode->indicesVerticesArray = false;
 
-	//return btShape;
-	return nullptr;
+	return btShape;
 }
 
 Callback::Callback(void) {}

@@ -20,8 +20,8 @@ void BulletDebugDrawer::BulletDebugDrawer::drawLine(const btVector3 &from, const
 	fromV.position = glm::vec3(from.getX(), from.getY(), from.getZ());
 	toV.position = glm::vec3(to.getX(), to.getY(), to.getZ());
 
-	m->data.push_back(fromV);
-	m->data.push_back(toV);
+	m->vertices.push_back(fromV);
+	m->vertices.push_back(toV);
 	m->indices.push_back(index++);
 	m->indices.push_back(index++);
 	m->materials.push_back(glm::vec4(0, 0, 0, 1));
@@ -31,7 +31,7 @@ void BulletDebugDrawer::BulletDebugDrawer::drawLine(const btVector3 &from, const
 void BulletDebugDrawer::draw()
 {
 	m->draw(GL_LINES);
-	m->data.clear();
+	m->vertices.clear();
 	m->indices.clear();
 	m->materials.clear();
 }

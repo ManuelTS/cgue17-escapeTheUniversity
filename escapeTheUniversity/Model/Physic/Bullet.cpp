@@ -30,7 +30,7 @@ void Bullet::init()
 
 void Bullet::createAndAddBoundingObjects(Node* current)
 {
-	if (true) //concurentThreadsSupported == 0) // Hyperthreading unsupported, calculate normally
+	if (true) // TODO enable hyper, concurentThreadsSupported == 0) // Hyperthreading unsupported, calculate normally
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
@@ -83,7 +83,7 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 	if (mn->bounding)
 	{
 		BVG* bvg = new BVG();
-		btConvexHullShape* shape = nullptr;//bvg->calculateVHACD(mn); 
+		btConvexHullShape* shape = bvg->calculateVHACD(mn); 
 		delete bvg;
 		// Max 100 vertices
 		// shape->optimizeConvexHull();
@@ -109,33 +109,39 @@ void Bullet::createBuilding(ModelNode* mn) {
 	vector<int>* indices = mn->getAllIndices(); // Array of vertex indexes (similar to an EBO)
 	vector<float>* points = mn->getAllVertices();  // Array of coordinates, the vertices of the node or rather model
 
-	btTriangleIndexVertexArray* meshes = new btTriangleIndexVertexArray; // Constructor with arguments causes LNK2019, so just 
-	btIndexedMesh mesh;
-	
-	// A lot of adaptions done, source: https://www.bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11519&p=38852&hilit=btTriangleIndexVertexArray#p38852
-	const int stride = 3; // For vertex indices and vertices, see BVG.cpp for explanation
-	mesh.m_indexType = PHY_INTEGER;
-	mesh.m_numTriangles = indices->size();
-	mesh.m_triangleIndexStride = stride * sizeof(int);
-	mesh.m_triangleIndexBase = new unsigned char[sizeof(int) * indices->size()];// Allocate memory for the mesh
-	
-	mesh.m_vertexType = PHY_FLOAT;
-	mesh.m_numVertices = points->size() / stride;
-	mesh.m_vertexStride = stride * sizeof(float);
-	mesh.m_vertexBase = new unsigned char[sizeof(btScalar) * points->size()];// Allocate memory for the mesh
-
-	// copy indices into mesh
-	int* indicesP = static_cast<int*>((void*)(mesh.m_triangleIndexBase));
-	for (int i = 0; i < indices->size(); ++i)
-		indicesP[i] = points->at(i);
+	btTriangleMesh *mesh= new btTriangleMesh();
 
 	// copy vertices into mesh
-	btScalar* vertexData = static_cast<btScalar*>((void*)(mesh.m_vertexBase));
-	for (int i = 0; i < points->size(); ++i)
-		vertexData[i] = points->at(i);
+	btVector3 v1; // Vertices of one triangle
+	btVector3 v2;
+	btVector3 v3;
+	for (int i = 0; i < indices->size(); i++) // Loop through all indices, fil v1-3 from them to create one triangle
+	{
+		const unsigned int vertexIndex = indices->at(i);
+		mesh->addIndex(vertexIndex);
 
-	meshes->addIndexedMesh(mesh); // Create entry
-	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshes, true, true);
+		switch (i % 3)
+		{
+			case 0:
+				v1.setX(points->at(vertexIndex));
+				v1.setY(points->at(vertexIndex + 1));
+				v1.setZ(points->at(vertexIndex + 2));
+				break;
+			case 1:
+				v2.setX(points->at(vertexIndex));
+				v2.setY(points->at(vertexIndex + 1));
+				v2.setZ(points->at(vertexIndex + 2));
+				break;
+			case 2: 
+				v3.setX(points->at(vertexIndex));
+				v3.setY(points->at(vertexIndex + 1));
+				v3.setZ(points->at(vertexIndex + 2));
+				mesh->addTriangle(v1, v2, v3); // All three triangle vertices are complete copy them into the mesh
+				break;
+		}
+	}
+
+	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(mesh, false, false); // TODO True causes error, check it or make own simplified bounding volume with VHACD
 	glm::vec3 pos = mn->getWorldPosition();
 	mn->collisionObject = new btCollisionObject(); // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
 	mn->collisionObject->setCollisionShape(shape);

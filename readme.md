@@ -4,7 +4,8 @@ is a 3D single player stealth game by [Manuel T. Schrempf 0920136](mailto:e09201
 
 ## Build
 1. Have or buy [Windows 8.1+](https://www.microsoft.com/en-us/windows) and an [AMD graphics card](https://www.amd.com/en)
-2. Download [Virtual Studio 2015](https://www.visualstudio.com/) (VS15)
+2. Download and install [Virtual Studio 2015](https://www.visualstudio.com/) (VS15)
+    1. Make sure C++11 or higher is installed or gets installed with VS15, since [VS 15 or higher C++ is not installed with the VS by](https://blogs.msdn.microsoft.com/vcblog/2015/07/24/setup-changes-in-visual-studio-2015-affecting-c-developers/)
 3. Download the [master branch](https://github.com/ManuelTS/cgue17-escapeTheUniversity.git)
 4. In VS15 set _Tools/Options/Debugging/Symbols/Microsoft Symbol Servers_ to `true`
 5. Right Click on the project _escapeTheUniversity_

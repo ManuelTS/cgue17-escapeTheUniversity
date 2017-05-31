@@ -23,13 +23,13 @@ public:
 		std::string path;
 	};
 	
-	std::vector<Vertex> data;
+	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 	std::vector<glm::vec4> materials; // Materials, rbg material values, a shininess
 	std::vector<Texture> textures; // Textures
 
 	Mesh() {};
-	Mesh(std::vector<unsigned int>_indices, std::vector<Vertex> _data, std::vector<Texture> _textures, std::vector<glm::vec4> _materials);
+	Mesh(std::vector<unsigned int>_indices, std::vector<Vertex> _vertices, std::vector<Texture> _textures, std::vector<glm::vec4> _materials);
 	~Mesh();
 	
 	void draw(unsigned int drawMode = GL_TRIANGLES);

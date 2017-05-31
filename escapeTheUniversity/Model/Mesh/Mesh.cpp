@@ -12,7 +12,7 @@ Mesh::~Mesh(){
 }
 
 /*Links the VBOs, indices, positions, normals, textCoords (UVs), textureIds, -names and -paths together in one VAO.*/
-Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _data, vector<Texture> _textures, vector<glm::vec4> _materials) : indices(_indices), data(_data), textures(_textures), materials(_materials)
+Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _vertices, vector<Texture> _textures, vector<glm::vec4> _materials) : indices(_indices), vertices(_vertices), textures(_textures), materials(_materials)
 {
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
 	//Link
@@ -25,7 +25,7 @@ Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _data, vector<Texture> 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(GLuint), &this->indices[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(Vertex), &data[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(positionsLocation);
 	glVertexAttribPointer(positionsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
@@ -65,7 +65,7 @@ void Mesh::draw(unsigned int drawMode)
 		glBindVertexArray(VAO);
 
 		if (rl->fps)
-			rl->drawnTriangles += data.size() / 3;
+			rl->drawnTriangles += vertices.size() / 3;
 
 		glDrawElements(drawMode, indices.size(), GL_UNSIGNED_INT, 0); // Draw
 		glBindVertexArray(0);

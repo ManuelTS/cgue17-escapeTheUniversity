@@ -104,13 +104,17 @@ vector<float>* ModelNode::getAllVertices() {
 		vertices = new vector<float>();
 
 		for (unsigned int i = 0; i < size; i++) // Go through all meshes
-			for (unsigned int j = 0; j < meshes[i]->data.size(); j++) // Go through all mesh vertices
+		{
+			const Mesh* const m = meshes.at(i);
+
+			for (unsigned int j = 0; j < m->vertices.size(); j++) // Go through all mesh vertices
 			{
-				const glm::vec3 position = meshes[i]->data[j].position; // Get all the vertices
+				const glm::vec3 position = m->vertices.at(j).position; // Get all the vertices
 				vertices->push_back(position.x);
 				vertices->push_back(position.y);
 				vertices->push_back(position.z);
 			}
+		}
 
 		indicesVerticesArray = true;
 		return vertices;
