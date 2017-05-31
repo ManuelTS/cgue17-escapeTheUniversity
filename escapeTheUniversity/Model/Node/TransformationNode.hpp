@@ -1,6 +1,6 @@
 #pragma once
-#define degreesToRadians(x) x*(3.141592f/180.0f)
-#define GLM_FORCE_RADIANS
+#define degreesToRadians(x) x*(3.141592f/180.0f) // Use this for radiant calculation, the GLM one does not work!
+#define GLM_FORCE_RADIANS // Use this for radiant calculation, the GLM one does not work!
 #include "Node.hpp"
 
 class TransformationNode : public Node

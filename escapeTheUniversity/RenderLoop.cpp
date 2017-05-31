@@ -222,10 +222,10 @@ void RenderLoop::start()
 
 	ml->load("Playground.dae"); // Load Models
 
-	//Bullet* b = Bullet::getInstance(); // Calculate bouding volumes, no pointer deletion since it is a singelton!
-	//b->init();
-	//b->createAndAddBoundingObjects(ml->root); // Sets pointers of rigitBodies in all nodes of the scene graph
-	//b->createCamera(camera);
+	Bullet* b = Bullet::getInstance(); // Calculate bouding volumes, no pointer deletion since it is a singelton!
+	b->init();
+	b->createAndAddBoundingObjects(ml->root); // Sets pointers of rigitBodies in all nodes of the scene graph
+	b->createCamera(camera);
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
@@ -392,15 +392,15 @@ void RenderLoop::calculateDeltaTime()
 	deltaTime = timeNow - timePast;
 	timePast = timeNow;
 
-	//Bullet::getInstance()->step(deltaTime);
+	Bullet::getInstance()->step(deltaTime);
 }
 
 /*Listens for user input.*/
 void RenderLoop::doMovement(double timeDelta)
 {
 	//Set camera postion after the physics from the last frame were calculated
-	//const btVector3 newCamPos = camera->rigitBody->getWorldTransform().getOrigin();
-	//camera->position = vec3(newCamPos.getX(), newCamPos.getY(), newCamPos.getZ());
+	const btVector3 newCamPos = camera->rigitBody->getWorldTransform().getOrigin();
+	camera->position = vec3(newCamPos.getX(), newCamPos.getY(), newCamPos.getZ());
 
 	// Camera controls
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)

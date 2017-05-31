@@ -3,10 +3,7 @@ All ordered by priority!
 Programming (Manuel):
 
 render generated bounding Shapes:
-m_guiHelper->getRenderInterface();
-Debug Drawing from the manual
-
-fix camera ridgitBody
+Draw all bounding volumnes
 
 https://tuwel.tuwien.ac.at/mod/forum/discuss.php?d=91157
 
