@@ -29,8 +29,13 @@ btConvexHullShape* BVG::calculateVHACD(ModelNode* modelNode)
 	for (unsigned int p = 0; p < nConvexHulls; ++p)
 		interfaceVHACD->GetConvexHull(p, vhacdConvexHull); // get the p-th convex-hull informatiion
 														   
-	//btConvexHullShape: the pointer to the first element of mesh vertices array, the total number of vertices and the stride between two vertices.
-	btConvexHullShape* btShape = new btConvexHullShape((const float*) vhacdConvexHull.m_points, vhacdConvexHull.m_nPoints, pointStride);
+	btConvexHullShape* btShape = new btConvexHullShape;// Constructor gives an LNK 2019 error do it with the hand. btConvexHullShape: the pointer to the first element of mesh vertices array, the total number of vertices and the stride between two vertices.
+
+	for (; *vhacdConvexHull.m_points; *vhacdConvexHull.m_points += 3) // Insert points manually
+		btShape->addPoint(btVector3((btScalar)*vhacdConvexHull.m_points, (btScalar)*vhacdConvexHull.m_points + 1, (btScalar)*vhacdConvexHull.m_points + 2), false);
+
+	btShape->recalcLocalAabb();
+
 	// release memory
 	interfaceVHACD->Clean();
 	interfaceVHACD->Release();

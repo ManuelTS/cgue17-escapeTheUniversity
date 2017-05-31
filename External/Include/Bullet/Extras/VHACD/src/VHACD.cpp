@@ -113,7 +113,7 @@ inline int FindMinimumElement(const float* const d, float* const m, const int be
 {
     int idx = -1;
     float min = (std::numeric_limits<float>::max)();
-    for (int i = begin; i < end; ++i) {
+    for (size_t i = begin; i < end; ++i) {
         if (d[i] < min) {
             idx = i;
             min = d[i];
@@ -1302,8 +1302,8 @@ void VHACD::MergeConvexHulls(const Parameters& params)
             if (bestCost >= threshold) {
                 break;
             }
-			double nr = 1 + (8 * addr);
-            const size_t addrI = (static_cast<int>(sqrt(nr)) - 1) >> 1;
+
+            const size_t addrI = (static_cast<int>(sqrt(1 + (8 * addr))) - 1) >> 1;
             const size_t p1 = addrI + 1;
             const size_t p2 = addr - ((addrI * (addrI + 1)) >> 1);
             assert(p1 >= 0);
