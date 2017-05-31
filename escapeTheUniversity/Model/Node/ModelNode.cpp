@@ -53,8 +53,7 @@ void ModelNode::draw()
 	{
 		if(bounding)
 		{
-			btTransform trans;
-			rigitBody->getMotionState()->getWorldTransform(trans);
+			btTransform& trans = collisionObject->getWorldTransform();
 			glm::mat4 temp = hirachicalModelMatrix;
 			trans.getOpenGLMatrix(glm::value_ptr(hirachicalModelMatrix));
 

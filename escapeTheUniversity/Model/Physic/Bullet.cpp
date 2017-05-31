@@ -30,11 +30,11 @@ void Bullet::init()
 
 void Bullet::createAndAddBoundingObjects(Node* current)
 {
-	if (true && concurentThreadsSupported == 0) // Hyperthreading unsupported, calculate normally
+	if (true) //concurentThreadsSupported == 0) // Hyperthreading unsupported, calculate normally
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
-		if (mn && mn->bounding && mn->meshes.size() > 0)
+		if (mn && mn->meshes.size() > 0)
 			distributeBoundingGeneration(mn);
 
 		for (Node* child : current->children)
@@ -48,9 +48,6 @@ void Bullet::createAndAddBoundingObjects(Node* current)
 		for (Node* child : nodes)
 		{
 			ModelNode* mn = dynamic_cast<ModelNode*>(child);
-
-			if (mn && mn->name.find("_bounding") != string::npos)
-				int i = 0;
 
 			if (mn && mn->meshes.size() > 0)
 			{ // Leave if structure like this
@@ -71,6 +68,16 @@ void Bullet::createAndAddBoundingObjects(Node* current)
 
 }
 
+void Bullet::removeFinished(vector<future<bool>>* threads)
+{
+	for (std::vector<future<bool>>::iterator i = threads->begin(); i != threads->end(); i++) // algorithm::remove_if caused problems
+		if (i->valid() && i->get()) // Valid checks if the future has a shared state , get gets true ergo thread finished, delete it 
+		{
+			threads->erase(i);
+			break;
+		}
+}
+
 bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 {
 	if (mn->bounding)
@@ -88,28 +95,54 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		glm::vec3 pos = mn->getWorldPosition();
 		btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z)));
 		btRigidBody::btRigidBodyConstructionInfo ci(mass, myMotionState, shape, localInertia);
-		mn->rigitBody = new btRigidBody(ci);
-		dynamicsWorld->addRigidBody(mn->rigitBody);
+		btRigidBody* rB = new btRigidBody(ci);
+		mn->collisionObject = rB;
+		dynamicsWorld->addRigidBody(rB);
 	}
 	else if (mn->name.find(ModelLoader::getInstance()->LEFT_WING) != string::npos || mn->name.find(ModelLoader::getInstance()->RIGHT_WING) != string::npos)
-		createBuilding(mn); 
-	// TODO use btBvhTriangleMeshShape for the wings and rooms
+		createBuilding(mn);
+
 	return true;
 }
 
 void Bullet::createBuilding(ModelNode* mn) {
-	vector<int>* triangles = mn->getAllIndices(); // Array of vertex indexes (similar to an EBO)
+	vector<int>* indices = mn->getAllIndices(); // Array of vertex indexes (similar to an EBO)
 	vector<float>* points = mn->getAllVertices();  // Array of coordinates, the vertices of the node or rather model
-	const unsigned int triangleStride = 3; // one index points to a vertex, 3 indices to a triangle
-	const unsigned int pointStride = 3; // One vertex is ordered in this array as xyz, one trianle has 3 vertices which are equal to 9 entries in this array as xyzxyzxyz 
 
-	//btTriangleIndexVertexArray* meshes = new btTriangleIndexVertexArray(triangles->size() / triangleStride, triangles->data(), triangleStride, points->size() / pointStride, points->data(), pointStride);
-	//btCollisionShape* groundShape = new btBvhTriangleMeshShape(meshes, true, true);
-	//glm::vec3 pos = mn->getWorldPosition();
-	//btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z))); // mass 0 = fixed object not moveable, xyz of origin
-	//btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0)); // To construct multiple rigit bodies with same construction info
-	//mn->rigitBody = new btRigidBody(groundRigidBodyCI);
-	//dynamicsWorld->addRigidBody(mn->rigitBody);
+	btTriangleIndexVertexArray* meshes = new btTriangleIndexVertexArray; // Constructor with arguments causes LNK2019, so just 
+	btIndexedMesh mesh;
+	
+	// A lot of adaptions done, source: https://www.bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11519&p=38852&hilit=btTriangleIndexVertexArray#p38852
+	const int stride = 3; // For vertex indices and vertices, see BVG.cpp for explanation
+	mesh.m_indexType = PHY_INTEGER;
+	mesh.m_numTriangles = indices->size();
+	mesh.m_triangleIndexStride = stride * sizeof(int);
+	mesh.m_triangleIndexBase = new unsigned char[sizeof(int) * indices->size()];// Allocate memory for the mesh
+	
+	mesh.m_vertexType = PHY_FLOAT;
+	mesh.m_numVertices = points->size() / stride;
+	mesh.m_vertexStride = stride * sizeof(float);
+	mesh.m_vertexBase = new unsigned char[sizeof(btScalar) * points->size()];// Allocate memory for the mesh
+
+	// copy indices into mesh
+	int* indicesP = static_cast<int*>((void*)(mesh.m_triangleIndexBase));
+	for (int i = 0; i < indices->size(); ++i)
+		indicesP[i] = points->at(i);
+
+	// copy vertices into mesh
+	btScalar* vertexData = static_cast<btScalar*>((void*)(mesh.m_vertexBase));
+	for (int i = 0; i < points->size(); ++i)
+		vertexData[i] = points->at(i);
+
+	meshes->addIndexedMesh(mesh); // Create entry
+	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshes, true, true);
+	glm::vec3 pos = mn->getWorldPosition();
+	mn->collisionObject = new btCollisionObject(); // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
+	mn->collisionObject->setCollisionShape(shape);
+	btTransform trans;
+	trans.setOrigin(btVector3(pos.x, pos.y, pos.z));
+	mn->collisionObject->setWorldTransform(trans);
+	dynamicsWorld->addCollisionObject(mn->collisionObject);
 }
 
 void Bullet::createCamera(Camera* c) 
@@ -122,18 +155,14 @@ void Bullet::createCamera(Camera* c)
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z))); // xyz of origin
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, shape, btVector3(0, 0, 0)); // To construct multiple rigit bodies with same construction info
 	c->rigitBody = new btRigidBody(groundRigidBodyCI);
+
+	//c->rigitBody->setCollisionFlags(c->rigitBody->getCollisionFlags & ~(btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_KINEMATIC_OBJECT)
+	//https://www.bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11220&hilit=btTriangleIndexVertexArray
+
 	dynamicsWorld->addRigidBody(c->rigitBody);
 }
 
-void Bullet::removeFinished(vector<future<bool>>* threads)
-{
-	for (std::vector<future<bool>>::iterator i = threads->begin(); i != threads->end(); i++) // algorithm::remove_if caused problems
-		if (i->valid() && i->get()) // Valid checks if the future has a shared state , get gets true ergo thread finished, delete it 
-		{
-			threads->erase(i);
-			break;
-		}
-}
+
 
 void Bullet::step(const double deltaTime)
 {

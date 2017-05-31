@@ -23,7 +23,7 @@ public:
 	glm::mat4 inverseModelMatrix; // Inverse object space MM
 	glm::mat4 hirachicalModelMatrix; // Ancestor multipled Model matrix, e.g. in position in world space
 	glm::mat4 inverseHirachicalModelMatrix; // Ancestor calculated Model matrix
-	btRigidBody* rigitBody; // The rigit body of this node, nullptr if none was generated
+	btCollisionObject* collisionObject; // The rigit body of this node, nullptr if none was generated
 
 	bool render = true; // True if this node should be rendered false if not, default: true
 	bool stencil = false; // True if an extra stencil FBO for this node VAO should be generated in the mesh constructor, false if not. Default: false

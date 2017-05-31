@@ -1,8 +1,10 @@
+#pragma once
+#include "TransformationNode.hpp"
 #include <GLM/gtc/matrix_transform.hpp>
 #include <GLM/gtc/matrix_inverse.hpp>
-#include "TransformationNode.hpp"
 #include "ModelNode.hpp"
 #include "..\..\RenderLoop.hpp"
+
 
 
 TransformationNode::TransformationNode()
