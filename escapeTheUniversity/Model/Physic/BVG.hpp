@@ -1,7 +1,7 @@
 #pragma once
 #include "..\Node\ModelNode.hpp"
-#include "Bullet\Extras\VHACD\public\VHACD.h"
-#include "Bullet\src\btBulletDynamicsCommon.h"
+#include "VHACD\public\VHACD.h"
+#include "Bullet/btBulletDynamicsCommon.h"
 #include <string>
 #include <fstream>
 

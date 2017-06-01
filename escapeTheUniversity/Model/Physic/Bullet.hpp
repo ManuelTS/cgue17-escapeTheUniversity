@@ -1,6 +1,6 @@
 #pragma once
 #include "../Node/ModelNode.hpp"
-#include "Bullet/src/btBulletDynamicsCommon.h"
+#include "Bullet/btBulletDynamicsCommon.h"
 #include "../../Debug/BulletDebugDrawer.hpp"
 #include <future>
 

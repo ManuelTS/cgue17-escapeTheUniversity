@@ -4,7 +4,7 @@
 #include "..\..\Shader.hpp"
 #include "..\..\RenderLoop.hpp"
 #include "..\Mesh\Mesh.hpp"
-#include "Bullet/src/btBulletDynamicsCommon.h"
+#include "Bullet/btBulletDynamicsCommon.h"
 
 /**This is the default node containing information about a model.*/
 class ModelNode : public Node

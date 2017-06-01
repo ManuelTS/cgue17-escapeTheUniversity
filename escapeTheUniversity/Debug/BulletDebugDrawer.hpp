@@ -1,5 +1,5 @@
 #pragma once
-#include "Bullet/src/btBulletDynamicsCommon.h"
+#include "Bullet/btBulletDynamicsCommon.h"
 
 class BulletDebugDrawer : public btIDebugDraw
 {
