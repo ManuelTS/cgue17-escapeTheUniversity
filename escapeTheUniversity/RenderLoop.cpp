@@ -82,7 +82,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			rl->stencil = !rl->stencil;
 		else if (key == GLFW_KEY_F11)
 			rl->toggleFullscreen();
-		else if (key == GLFW_KEY_F12)
+		//else if (key == GLFW_KEY_F12) // Causes an error
+		else if(key == GLFW_KEY_SCROLL_LOCK)
 			rl->drawBulletDebug = !rl->drawBulletDebug;
 		else if (key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT || key == GLFW_KEY_RIGHT_BRACKET || key == GLFW_KEY_KP_ADD)
 		{ // slash is german minus and right bracket is german plus on a german keyboard
@@ -298,6 +299,9 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glDepthMask(GL_FALSE);
 	glDisable(GL_DEPTH_TEST);
 
+	if (drawBulletDebug) // Draw debug world of bullet
+		Bullet::getInstance()->debugDraw();
+
 	// Light pass, point lights:
 	deferredShader->useProgram();
 	gBuffer->bindTextures();
@@ -327,18 +331,6 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	if (drawBulletDebug) // Draw debug world of bullet
-	{
-		glClear(GL_COLOR_BUFFER_BIT);
-		gBufferShader->useProgram();
-		glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, glm::value_ptr(mat4())); // Bullet draws in world coords, no modelMatrix needed, just a placeholder for no translation via MM
-		glUniformMatrix4fv(ModelNode::inverseModelLocation, 1, GL_FALSE, glm::value_ptr(glm::inverseTranspose(mat4())));
-
-		glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, projectionMatrixP);
-		glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
-		Bullet::getInstance()->debugDraw();
-	}
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	gBuffer->renderQuad(); // Render 2D quad to screen
 	temp.clear();
@@ -354,7 +346,7 @@ void RenderLoop::draw(Node* current)
 		{
 			// If model node and (no frustum or transformationNode or modelNode bounding frustum sphere (modelNode center, radius) inside frustum):
 			// ... render only when the model node schould be rendered
-			if (mn->render && (frustum || dynamic_cast<TransformationNode*>(current) || Frustum::getInstance()->sphereInFrustum(mn->getWorldPosition(), mn->radius) != -1))
+			if (mn->render && (frustum || Frustum::getInstance()->sphereInFrustum(mn->getWorldPosition(), mn->radius) != -1))
 				pureDraw(current);
 		}
 		else // If no model node render anyway

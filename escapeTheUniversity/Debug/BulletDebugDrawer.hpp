@@ -8,7 +8,7 @@ private:
 	unsigned int VAO = 0;
 	unsigned int VBO = 0;
 	unsigned int index; // Vertex index array
-	Mesh* m; // Mesh used to draw all the primitives coming from bullet
+	Mesh* container; // Mesh used to draw all the primitives coming from bullet
 public:
 		BulletDebugDrawer();
 		~BulletDebugDrawer();

@@ -6,6 +6,11 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "escapeTheUniversity", "escapeTheUniversity\escapeTheUniversity.vcxproj", "{0BFE40F4-A61C-47B7-A5AA-0F53B1CA2BDD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "..\..\..\Computergraphiken\UE\Collision Detection\bullet3\Code CMake\bin\src\BulletCollision\BulletCollision.vcxproj", "{21385395-5FC3-32E3-B4F3-D27FB26B86E7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5E3AEB00-F141-345A-A9C3-96FFCD344D76} = {5E3AEB00-F141-345A-A9C3-96FFCD344D76}
+		{34778A3F-654A-35AD-82DA-243D5E87486A} = {34778A3F-654A-35AD-82DA-243D5E87486A}
+		{0BFE40F4-A61C-47B7-A5AA-0F53B1CA2BDD} = {0BFE40F4-A61C-47B7-A5AA-0F53B1CA2BDD}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletDynamics", "..\..\..\Computergraphiken\UE\Collision Detection\bullet3\Code CMake\bin\src\BulletDynamics\BulletDynamics.vcxproj", "{34778A3F-654A-35AD-82DA-243D5E87486A}"
 EndProject

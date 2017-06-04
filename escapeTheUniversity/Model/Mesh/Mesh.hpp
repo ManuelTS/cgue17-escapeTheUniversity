@@ -33,6 +33,7 @@ public:
 	~Mesh();
 	
 	void draw(unsigned int drawMode = GL_TRIANGLES);
+	void clear(); // Clears all vectors
 private:
 	// Shared handles
 	unsigned int EBO;

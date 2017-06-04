@@ -99,7 +99,7 @@ private:
 	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link();
 	layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
 	layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
-	layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, rgb unused
+	layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, // rgb = optional color, if all are not zero the texture is unused, a = shininess value
 
 	layout (location = 0) out vec3 fragmentPosition; // Usage in: gBuffer.frag in
 	layout (location = 1) out vec3 normalVector;     // Usage in: gBuffer.frag in
@@ -114,7 +114,7 @@ private:
 		texCoords.x = tc.x;                         // Forward uv texel coordinates to the fragment shader
 		texCoords.y = 1 - tc.y;                     // Forward uv texel coordinates to the fragment shader, TODO finde cause and solution to this flipped y coords wordaround
 		normalVector = mat3(inverseModel) * normal; // Forward normals to fragment shader
-		materialDiffuseShininess = material;        // rgb unused
+		materialDiffuseShininess = material;        // rgb = optional color, if all are not zero the texture is unused, a = shininess value
 	})glsl";
 	const char* GBUFFER_FRAG = R"glsl(
 	#version 430 core
@@ -133,14 +133,18 @@ private:
 
 	void main()
 	{
-		vec3 color = texture(textureDiffuse, texCoords).rgb; 
+		vec3 color = texture(textureDiffuse, texCoords).rgb;
+		
+		if(materialDiffuseShininess.r != 0 || materialDiffuseShininess.g != 0 || materialDiffuseShininess.b != 0)
+			color = materialDiffuseShininess.rgb; 
+
 		gColorNormal.x = packHalf2x16(color.xy);
 		gColorNormal.y = packHalf2x16(vec2(color.z,normalVector.x));
 		gColorNormal.z = packHalf2x16(normalVector.yz);
 		//gColorNormal.w = uint(0.0); // Unused
 
 		gPositionAndShininess.xyz = fragmentPosition;
-		gPositionAndShininess.w = materialDiffuseShininess.a; // Specular texture NOT IMPLEMENTED, // materialDiffuseShininess.rgb is unused!
+		gPositionAndShininess.w = materialDiffuseShininess.a; // a is the material shininess value
 	})glsl";
 	const char* DEFERRED_SHADING_VERT = R"glsl(
 	#version 430 core

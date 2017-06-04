@@ -53,12 +53,18 @@ void ModelNode::draw()
 	{
 		if(bounding)
 		{
-			btTransform& trans = collisionObject->getWorldTransform();
+			btRigidBody* rb = static_cast<btRigidBody*>(collisionObject);
+			btTransform trans;
+			rb->getMotionState()->getWorldTransform(trans);
 			glm::mat4 temp = hirachicalModelMatrix;
-			trans.getOpenGLMatrix(glm::value_ptr(hirachicalModelMatrix));
+			trans.getOpenGLMatrix(glm::value_ptr(hirachicalModelMatrix)); // Get transformed position from bullet
 
 			if(temp != hirachicalModelMatrix)
+			{
+				position = (temp - hirachicalModelMatrix)[3]; // Get changed position from bullet in object space
+				modelMatrix[3] = glm::vec4(position, 1.0f);
 				inverseHirachicalModelMatrix = glm::inverseTranspose(inverseHirachicalModelMatrix);
+			}
 			
 			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(hirachicalModelMatrix));
 			glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseHirachicalModelMatrix));

@@ -30,7 +30,7 @@ void Bullet::init()
 
 void Bullet::createAndAddBoundingObjects(Node* current)
 {
-	if (true) // TODO enable hyper, concurentThreadsSupported == 0) // Hyperthreading unsupported, calculate normally
+	if (true)  //concurentThreadsSupported == 0) // Hyperthreading unsupported, calculate normally
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
@@ -86,12 +86,15 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		btConvexHullShape* shape = bvg->calculateVHACD(mn); 
 		delete bvg;
 		// Max 100 vertices
-		// shape->optimizeConvexHull();
-		//shape->initializePolyhedralFeatures();
+		//shape->optimizeConvexHull();
+		#if _DEBUG
+			//shape->initializePolyhedralFeatures(); // Changing the collision shape now bad idea,  That will make the debug rendering more pretty, but doesn't change anything related to collision detection etc. http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11385&p=38354&hilit=initializePolyhedralFeatures#p38354
+		#endif
 		// test hulls with http://www.bulletphysics.org/mediawiki-1.5.8/index.php/BtShapeHull_vertex_reduction_utility
 		const float mass = 5.0;
 		btVector3 localInertia = btVector3(0, 0, 0);
 		shape->calculateLocalInertia(mass, localInertia);
+		shape->setMargin(0.05f);
 		glm::vec3 pos = mn->getWorldPosition();
 		btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z)));
 		btRigidBody::btRigidBodyConstructionInfo ci(mass, myMotionState, shape, localInertia);
@@ -141,10 +144,12 @@ void Bullet::createBuilding(ModelNode* mn) {
 		}
 	}
 
-	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(mesh, false, false); // TODO True causes error, check it or make own simplified bounding volume with VHACD
+	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(mesh, true, true);
+	shape->setMargin(0.05f);
 	glm::vec3 pos = mn->getWorldPosition();
 	mn->collisionObject = new btCollisionObject(); // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
 	mn->collisionObject->setCollisionShape(shape);
+	
 	btTransform trans;
 	trans.setOrigin(btVector3(pos.x, pos.y, pos.z));
 	mn->collisionObject->setWorldTransform(trans);
@@ -161,10 +166,6 @@ void Bullet::createCamera(Camera* c)
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z))); // xyz of origin
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, shape, btVector3(0, 0, 0)); // To construct multiple rigit bodies with same construction info
 	c->rigitBody = new btRigidBody(groundRigidBodyCI);
-
-	//c->rigitBody->setCollisionFlags(c->rigitBody->getCollisionFlags & ~(btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_KINEMATIC_OBJECT)
-	//https://www.bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11220&hilit=btTriangleIndexVertexArray
-
 	dynamicsWorld->addRigidBody(c->rigitBody);
 }
 

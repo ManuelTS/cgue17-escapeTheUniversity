@@ -9,6 +9,7 @@ Mesh::~Mesh(){
 	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteVertexArrays(1,&VAO);
+	clear();
 }
 
 /*Links the VBOs, indices, positions, normals, textCoords (UVs), textureIds, -names and -paths together in one VAO.*/
@@ -34,7 +35,7 @@ Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _vertices, vector<Textu
 	glEnableVertexAttribArray(uvLocation);
 	glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, texCoords));
 
-	glGenBuffers(1, &materialVBO); // RGB unused, only vec4.a for shininess
+	glGenBuffers(1, &materialVBO); // RGB = optional color, if all are not zero the texture is unused, only vec4.a for shininess
 	glBindBuffer(GL_ARRAY_BUFFER, materialVBO);
 	glBufferData(GL_ARRAY_BUFFER, materials.size() * sizeof(materials[0]), &materials[0], GL_STATIC_DRAW); // Play with last param 4 performance
 	glVertexAttribPointer(materialLocation, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
@@ -75,4 +76,11 @@ void Mesh::draw(unsigned int drawMode)
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
+}
+
+void Mesh::clear() {
+	indices.clear();
+	vertices.clear();
+	textures.clear();
+	materials.clear();
 }
