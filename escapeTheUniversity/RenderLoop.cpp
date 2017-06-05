@@ -288,7 +288,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glDepthMask(GL_TRUE); // Must be before glClearColor, otherwise it remains untouched
 	glDepthFunc(GL_LEQUAL);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to white
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	const float* projectionMatrixP = glm::value_ptr(glm::perspective((float)camera->zoom, (float)width / (float)height, frustum->nearD, frustum->farD));
 	const float* viewMatrixP = glm::value_ptr(camera->getViewMatrix());
@@ -297,7 +297,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
 	draw(ml->root); // Draw all nodes except light ones
 	glDepthMask(GL_FALSE);
-	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_DEPTH_TEST);	
 
 	if (drawBulletDebug) // Draw debug world of bullet
 		Bullet::getInstance()->debugDraw();
@@ -312,9 +312,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	{
 		LightNode* ln = ml->lights.at(i);
 		const float sphereRadius = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
-		const bool drawLight = frustum->sphereInFrustum(vec3(ln->light.position), sphereRadius) != -1;
 
-		ln->light.position.w = drawLight ? 1.0f : 0.0f; // See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
+		ln->light.position.w = frustum->sphereInFrustum(vec3(ln->light.position), sphereRadius);// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
 		temp.push_back(ln->light);
 	}
 

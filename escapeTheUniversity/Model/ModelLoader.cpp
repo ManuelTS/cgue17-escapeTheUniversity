@@ -25,7 +25,7 @@ void ModelLoader::load(string path)
 		path = MODEL_DIR + path;
 		loadModels = false; // Makes sure in the hole game that the models are loaded only once!
 		Assimp::Importer importer;// Read file via ASSIMP
-		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate);
 
 		if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // Error check, if not zero
 			Debugger::getInstance()->pauseExit("ASSIMP " + *importer.GetErrorString());

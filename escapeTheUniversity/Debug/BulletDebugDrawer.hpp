@@ -7,7 +7,7 @@ private:
 	int debugMode = 0; // Debugt mode, default 0 = no debugging: http://bulletphysics.org/Bullet/BulletFull/classbtIDebugDraw.html
 	unsigned int VAO = 0;
 	unsigned int VBO = 0;
-	unsigned int index; // Vertex index array
+	unsigned int index = 0; // Vertex index array
 	Mesh* container; // Mesh used to draw all the primitives coming from bullet
 public:
 		BulletDebugDrawer();

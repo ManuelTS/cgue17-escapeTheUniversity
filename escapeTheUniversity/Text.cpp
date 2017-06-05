@@ -170,6 +170,12 @@ void Text::writeVertices(vector<float>*vertices)
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, size / 4); //Each vertex has two xy and two uv entries, ergo divide by four for correct vertex amount	
 }
 
+void Text::bulletDebugMessage(const char* text)
+{
+	bulletDebugMessageBuffer.append(text);
+	addText2Display(BULLET_DEBUG_MESSAGE);
+}
+
 void Text::addText2Display(const int toAdd) {
 	displayTime.push_back(toAdd);
 	displayTime.push_back(toAdd);
@@ -217,6 +223,10 @@ void Text::removeTime(const double deltaTime)
 				break;
 			case MIP_MAPPING_BILINEAR:
 				quality("Mip Mapping Bilinear");
+				hasTimeLeft(i, deltaTime);
+				break;
+			case BULLET_DEBUG_MESSAGE:
+				write(bulletDebugMessageBuffer.c_str(), -0.95f, 0.95f, 0.4f, 0.0f);
 				hasTimeLeft(i, deltaTime);
 				break;
 		}

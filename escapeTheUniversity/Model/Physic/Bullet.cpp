@@ -20,7 +20,7 @@ void Bullet::init()
 		dynamicsWorld->setGravity(btVector3(0, -10, 0));
 		#if _DEBUG
 			debugDrawer = new BulletDebugDrawer();
-			debugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+			debugDrawer->setDebugMode(btIDebugDraw::DBG_DrawAabb);
 			dynamicsWorld->setDebugDrawer(debugDrawer);
 		#endif
 
@@ -145,6 +145,7 @@ void Bullet::createBuilding(ModelNode* mn) {
 	}
 
 	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(mesh, true, true);
+	//shape->buildOptimizedBvh();
 	shape->setMargin(0.05f);
 	glm::vec3 pos = mn->getWorldPosition();
 	mn->collisionObject = new btCollisionObject(); // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
