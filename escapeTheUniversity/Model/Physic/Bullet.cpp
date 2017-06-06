@@ -87,9 +87,7 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		delete bvg;
 		// Max 100 vertices
 		//shape->optimizeConvexHull();
-		#if _DEBUG
-			//shape->initializePolyhedralFeatures(); // Changing the collision shape now bad idea,  That will make the debug rendering more pretty, but doesn't change anything related to collision detection etc. http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11385&p=38354&hilit=initializePolyhedralFeatures#p38354
-		#endif
+		shape->initializePolyhedralFeatures(); // Changing the collision shape now bad idea,  That will make the debug rendering more pretty, but doesn't change anything related to collision detection etc. http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11385&p=38354&hilit=initializePolyhedralFeatures#p38354
 		// test hulls with http://www.bulletphysics.org/mediawiki-1.5.8/index.php/BtShapeHull_vertex_reduction_utility
 		const float mass = 5.0;
 		btVector3 localInertia = btVector3(0, 0, 0);
@@ -136,7 +134,7 @@ void Bullet::createBuilding(ModelNode* mn)
 	}
 
 	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshArray, true, true); // A single mesh with all vertices of a big object in it confuses bullet and generateds an "overflow in AABB..." error
-	//shape->buildOptimizedBvh();
+	shape->buildOptimizedBvh();
 	shape->setMargin(0.05f);
 	glm::vec3 pos = mn->getWorldPosition();
 	mn->collisionObject = new btCollisionObject(); // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
@@ -151,6 +149,7 @@ void Bullet::createBuilding(ModelNode* mn)
 void Bullet::createCamera(Camera* c) 
 {
 	btCollisionShape* shape= new btCylinderShape(btVector3(1, 2, 1)); 
+	shape->setMargin(0.05f);
 	const float mass = 80.0;
 	btVector3 localInertia = btVector3(0, 0, 0);
 	shape->calculateLocalInertia(mass, localInertia);
