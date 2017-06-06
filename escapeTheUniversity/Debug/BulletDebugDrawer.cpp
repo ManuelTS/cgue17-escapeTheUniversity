@@ -6,7 +6,9 @@
 
 using namespace std;
 
-BulletDebugDrawer::BulletDebugDrawer(){
+// btIDebugDraw::DrawFeaturesText no method call
+BulletDebugDrawer::BulletDebugDrawer()
+{
 	container = new Mesh(); // Empty container mesh, no VAO generated only for data container
 }
 
@@ -55,7 +57,9 @@ void BulletDebugDrawer::drawTriangle(const btVector3& a, const btVector3& b, con
 	int i = 0;
 }
 
-void BulletDebugDrawer::drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color){
+// btIDebugDraw::DBG_DrawContactPoints
+void BulletDebugDrawer::drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color)
+{
 	int i = 0;
 }
 
@@ -77,9 +81,21 @@ void BulletDebugDrawer::setDebugMode(int db)
 
 void BulletDebugDrawer::draw()
 {
-	Mesh* drawer = new Mesh(container->indices, container->vertices, container->textures, container->materials); // Generate and link VAO only here since it can change a in size
-	drawer->draw(GL_LINES);
-	delete drawer;
-	container->clear();
-	index = 0;
+	if(!container->indices.empty() || !container->vertices.empty())
+	{ 
+		Mesh* drawer = new Mesh(container->indices, container->vertices, container->textures, container->materials); // Generate and link VAO only here since it can change a in size
+		drawer->draw(GL_LINES);
+		delete drawer;
+		container->clear();
+		index = 0;
+	}
+	else
+	{
+		if (index == 0) // Display it only once
+		{
+			cout << "No indices or vertices are set from bullet." << endl;
+			Text::getInstance()->bulletDebugMessage("No indices or vertices are set from bullet.");
+		}
+		index = 1;
+	}
 }

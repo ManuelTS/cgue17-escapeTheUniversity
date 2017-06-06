@@ -84,3 +84,31 @@ void Mesh::clear() {
 	textures.clear();
 	materials.clear();
 }
+
+vector<int>* Mesh::getAllIndices()
+{
+	return (vector<int>*)&indices;
+}
+
+vector<float>* Mesh::getAllVertices() {
+	unsigned int size = vertices.size();
+
+	if (size > 0)
+	{
+		vector<float>* temp = new vector<float>();
+
+
+		for (unsigned int j = 0; j < size; j++) // Go through all mesh vertices
+		{
+			const glm::vec3 position = vertices.at(j).position; // Get all the vertices
+			temp->push_back(position.x);
+			temp->push_back(position.y);
+			temp->push_back(position.z);
+		}
+
+		
+		return temp;
+	}
+
+	return nullptr;
+}

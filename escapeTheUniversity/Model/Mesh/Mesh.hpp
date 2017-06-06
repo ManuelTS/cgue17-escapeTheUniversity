@@ -34,6 +34,8 @@ public:
 	
 	void draw(unsigned int drawMode = GL_TRIANGLES);
 	void clear(); // Clears all vectors
+	vector<int>* getAllIndices(); // Returns a pointer to all vertex indices of all meshes in this node. Dont' delete vector after usage!
+	vector<float>* getAllVertices(); // Returns a pointer to all vertices of all meshes in this node. Delete vector after usage!
 private:
 	// Shared handles
 	unsigned int EBO;

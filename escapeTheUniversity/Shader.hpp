@@ -133,7 +133,7 @@ private:
 	void main()
 	{
 		vec3 color = materialDiffuseShininess.rgb;
-		uint textureLookup = 0; // Handle to know in the deferred frag shader if only a color value or a texture is used
+		float textureLookup = 0; // Handle to know in the deferred frag shader if only a color value or a texture is used
 
 		if(materialDiffuseShininess.r == 0 && materialDiffuseShininess.g == 0 && materialDiffuseShininess.b == 0) // rgb = optional color, if one is not zero the texture is unused, a = shininess 
 		{
@@ -144,10 +144,10 @@ private:
 		gColorNormal.x = packHalf2x16(color.xy);
 		gColorNormal.y = packHalf2x16(vec2(color.z,normalVector.x));
 		gColorNormal.z = packHalf2x16(normalVector.yz);
-		gColorNormal.w = textureLookup; // Handle to know in the deferred frag shader if only a color value or a texture is used, coulde be packed with another one
+		gColorNormal.w = packHalf2x16(vec2(textureLookup, 0)); // Handle to know in the deferred frag shader if only a color value or a texture is used
 
 		gPositionAndShininess.xyz = fragmentPosition;
-		gPositionAndShininess.w = materialDiffuseShininess.a; // a is the material shininess value, could be packed with another one
+		gPositionAndShininess.w = materialDiffuseShininess.a; // a is the material shininess value
 	})glsl";
 	const char* DEFERRED_SHADING_VERT = R"glsl(
 	#version 430 core
@@ -231,14 +231,14 @@ private:
 	void main()
 	{
 		//Unpack GBuffer
-		
 		uvec4 gColorAndNormal = texelFetch(colorAndNormalTex, ivec2(gl_FragCoord.xy), 0);
 		vec4 gPositionAndShininess = texelFetch(positionAndShininessTex, ivec2(gl_FragCoord.xy), 0);
 		vec2 temp = unpackHalf2x16(gColorAndNormal.y);
 
 		vec3 diffuse = vec3(unpackHalf2x16(gColorAndNormal.x), temp.x);
-
-		if(gColorAndNormal.w == 0) // Handle to know in the deferred frag shader if only a color value or a texture is used
+		vec2 directColor = unpackHalf2x16(gColorAndNormal.w);
+		
+		if(directColor.x == 0) // Handle to know in the deferred frag shader if only a color value or a texture is used
 			gl_FragColor = vec4(diffuse, 1.0f);
 		else
 		{

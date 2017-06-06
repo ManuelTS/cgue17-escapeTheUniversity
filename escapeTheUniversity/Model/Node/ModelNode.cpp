@@ -91,8 +91,10 @@ vector<int>* ModelNode::getAllIndices()
 		{
 			vertexOffset = indices->size();// The indices for different meshes start all at one but are needed to be continous (from the last mesh only !) since all vertices read are continous too
 
-			for (unsigned int j = 0; j < meshes[i]->indices.size(); j++) // Go through all mesh vertices
-				indices->push_back(vertexOffset + meshes[i]->indices[j]); // cast unsigned int to int because of vhacd method signature
+			vector<int>* temp = meshes[i]->getAllIndices();
+
+			for (unsigned int j = 0; j < temp->size(); j++) // Go through all mesh vertices
+				indices->push_back(vertexOffset + temp->at(j)); // cast unsigned int to int because of vhacd method signature
 		}
 
 		indicesVerticesArray = true;
@@ -111,15 +113,12 @@ vector<float>* ModelNode::getAllVertices() {
 
 		for (unsigned int i = 0; i < size; i++) // Go through all meshes
 		{
-			const Mesh* const m = meshes.at(i);
+			Mesh* m = meshes.at(i);
+			vector<float>* temp = m->getAllVertices();
 
-			for (unsigned int j = 0; j < m->vertices.size(); j++) // Go through all mesh vertices
-			{
-				const glm::vec3 position = m->vertices.at(j).position; // Get all the vertices
-				vertices->push_back(position.x);
-				vertices->push_back(position.y);
-				vertices->push_back(position.z);
-			}
+			vertices->insert(vertices->end(), temp->begin(), temp->end());
+			
+			delete temp;
 		}
 
 		indicesVerticesArray = true;

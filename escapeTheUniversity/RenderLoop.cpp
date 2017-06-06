@@ -211,8 +211,10 @@ void RenderLoop::start()
 { // Init all
 	ModelLoader* ml = ModelLoader::getInstance();
 	SoundManager* sm = SoundManager::getInstance();
+	#if _DEBUG	
 	sm->initFileName("Music\\Jahzzar_-_01_-_The_last_ones.mp3"); // Init SM with music file to play while loading
 	sm->playSound();
+	#endif
 
 	initVar = new Initialization();
 

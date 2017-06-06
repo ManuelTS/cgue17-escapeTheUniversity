@@ -20,7 +20,7 @@ void Bullet::init()
 		dynamicsWorld->setGravity(btVector3(0, -10, 0));
 		#if _DEBUG
 			debugDrawer = new BulletDebugDrawer();
-			debugDrawer->setDebugMode(btIDebugDraw::DBG_DrawAabb);
+			debugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 			dynamicsWorld->setDebugDrawer(debugDrawer);
 		#endif
 
@@ -108,43 +108,34 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 	return true;
 }
 
-void Bullet::createBuilding(ModelNode* mn) {
-	vector<int>* indices = mn->getAllIndices(); // Array of vertex indexes (similar to an EBO)
-	vector<float>* points = mn->getAllVertices();  // Array of coordinates, the vertices of the node or rather model
+void Bullet::createBuilding(ModelNode* mn)
+{
+	btTriangleIndexVertexArray* meshArray = new btTriangleIndexVertexArray();
 
-	btTriangleMesh *mesh= new btTriangleMesh();
-
-	// copy vertices into mesh
-	btVector3 v1; // Vertices of one triangle
-	btVector3 v2;
-	btVector3 v3;
-	for (int i = 0; i < indices->size(); i++) // Loop through all indices, fil v1-3 from them to create one triangle
+	for (unsigned int meshIndex = 0; meshIndex < mn->meshes.size(); meshIndex++)
 	{
-		const unsigned int vertexIndex = indices->at(i);
-		mesh->addIndex(vertexIndex);
+		Mesh* mnMesh = mn->meshes.at(meshIndex);
+		btIndexedMesh btMesh;
+		const int stride = 3; // For vertex indices and vertices, see BVG.cpp for explanation
 
-		switch (i % 3)
-		{
-			case 0:
-				v1.setX(points->at(vertexIndex));
-				v1.setY(points->at(vertexIndex + 1));
-				v1.setZ(points->at(vertexIndex + 2));
-				break;
-			case 1:
-				v2.setX(points->at(vertexIndex));
-				v2.setY(points->at(vertexIndex + 1));
-				v2.setZ(points->at(vertexIndex + 2));
-				break;
-			case 2: 
-				v3.setX(points->at(vertexIndex));
-				v3.setY(points->at(vertexIndex + 1));
-				v3.setZ(points->at(vertexIndex + 2));
-				mesh->addTriangle(v1, v2, v3); // All three triangle vertices are complete copy them into the mesh
-				break;
-		}
+		// Source https://github.com/VDrift/vdrift/blob/master/src/trackloader.cpp#L75
+		btMesh.m_indexType = PHY_INTEGER;
+		btMesh.m_numTriangles = mnMesh->indices.size() / stride;
+		btMesh.m_triangleIndexStride = stride * sizeof(unsigned int);
+		btMesh.m_triangleIndexBase = (const unsigned char*) mnMesh->indices.data();// Allocate memory for the mesh
+		
+		vector<float>* vertices = mnMesh->getAllVertices();
+
+		btMesh.m_vertexType = PHY_FLOAT;
+		btMesh.m_numVertices = vertices->size() / stride;
+		btMesh.m_vertexStride = stride * sizeof(float);
+		btMesh.m_vertexBase = (const unsigned char*) vertices->data();// Allocate memory for the mesh
+
+		meshArray->addIndexedMesh(btMesh);
+		//delete vertices; // Must be active, bullet uses this pointer!
 	}
 
-	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(mesh, true, true);
+	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshArray, true, true); // A single mesh with all vertices of a big object in it confuses bullet and generateds an "overflow in AABB..." error
 	//shape->buildOptimizedBvh();
 	shape->setMargin(0.05f);
 	glm::vec3 pos = mn->getWorldPosition();
