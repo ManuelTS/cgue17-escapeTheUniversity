@@ -59,36 +59,16 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 		return processLightNode(&name, parent, node, scene);
 	else // Normal node and transformation processing
 	{
-		ModelNode* current = new ModelNode();
+		ModelNode* current = string::npos != name.find(ANGLE_SUFFIX) ? new TransformationNode : new ModelNode();
 
 		current->name = name;
 
 		if (string::npos != name.find(BOUNDING_SUFFIX))
 			current->bounding = true;
 
-		if (string::npos != name.find(DOOR_SUFFIX)) // Door Model, Door Node
-		{
-			aiNode* aiParent = node->mParent;
-
-			if (aiParent != NULL && string(aiParent->mName.C_Str()).find(ANGLE_SUFFIX) != string::npos) // Read the pivot point of this node
-				((ModelNode*)current)->pivot = getTransformationVec(&aiParent->mTransformation);
-
-			TransformationNode* interpolation = new TransformationNode();
-
-			interpolation->parent = parent;
-			current->parent = interpolation;
-			interpolation->children.push_back(current);
-	
-			processMeshesAndChildren(current, node, scene);
-
-			return dynamic_cast<Node*>(interpolation);
-		}
-		else
-		{
-			current->parent = parent;
-			processMeshesAndChildren(current, node, scene);
-			return current;
-		}
+		current->parent = parent;
+		processMeshesAndChildren(current, node, scene);
+		return current;
 	}
 
 }

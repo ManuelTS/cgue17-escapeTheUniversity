@@ -6,7 +6,6 @@
 #include "..\..\RenderLoop.hpp"
 
 
-
 TransformationNode::TransformationNode()
 {
 }

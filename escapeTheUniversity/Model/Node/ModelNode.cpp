@@ -2,6 +2,7 @@
 #include <GLM/gtc/matrix_transform.hpp>
 #include <GLM/gtc/matrix_inverse.hpp>
 #include "ModelNode.hpp"
+#include "TransformationNode.hpp"
 
 ModelNode::ModelNode()
 {
@@ -69,7 +70,8 @@ void ModelNode::draw()
 			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(hirachicalModelMatrix));
 			glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseHirachicalModelMatrix));
 		}
-		else {
+		else
+		{
 			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(hirachicalModelMatrix));
 			glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseHirachicalModelMatrix));
 		}

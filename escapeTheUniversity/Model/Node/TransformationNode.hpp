@@ -1,9 +1,9 @@
 #pragma once
 #define degreesToRadians(x) x*(3.141592f/180.0f) // Use this for radiant calculation, the GLM one does not work!
 #define GLM_FORCE_RADIANS // Use this for radiant calculation, the GLM one does not work!
-#include "Node.hpp"
+#include "ModelNode.hpp"
 
-class TransformationNode : public Node
+class TransformationNode : public ModelNode
 {
 	private:
 		const float RADIANT = degreesToRadians(90.0f); // Value is in angle, result in radiants

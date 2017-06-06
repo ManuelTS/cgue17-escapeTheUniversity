@@ -13,7 +13,6 @@ public:
 	std::vector<Mesh*> meshes; // Contains all meshes of this node.
 	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f); // Position the node's geometrical center, in world coords relative to the parent.
 	float radius = 0.0f; // Radius of the bounding sphere of this node, it is the biggest mesh value 
-	glm::vec3 pivot = glm::vec3(0.0f, 0.0f, 0.0f); // Pivot of this node, standard value if unset is a zero vector.
 
 	vector<int>* indices; // Pointer to all sequential indices of all vertices in an array of this node, needed for example for btTriangleIndexVertexArray
 	vector<float>* vertices; // Pointer to all sequential vertices in an array of this node, needed for example for btTriangleIndexVertexArray
