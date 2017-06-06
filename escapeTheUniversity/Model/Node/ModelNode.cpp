@@ -3,6 +3,7 @@
 #include <GLM/gtc/matrix_inverse.hpp>
 #include "ModelNode.hpp"
 #include "TransformationNode.hpp"
+#include "../../Debug/Debugger.hpp"
 
 ModelNode::ModelNode()
 {
@@ -54,9 +55,7 @@ void ModelNode::draw()
 	{
 		if(bounding)
 		{
-			btRigidBody* rb = static_cast<btRigidBody*>(collisionObject);
-			btTransform trans;
-			rb->getMotionState()->getWorldTransform(trans);
+			btTransform trans = collisionObject->getWorldTransform();
 			glm::mat4 temp = hirachicalModelMatrix;
 			trans.getOpenGLMatrix(glm::value_ptr(hirachicalModelMatrix)); // Get transformed position from bullet
 
@@ -66,6 +65,10 @@ void ModelNode::draw()
 				modelMatrix[3] = glm::vec4(position, 1.0f);
 				inverseHirachicalModelMatrix = glm::inverseTranspose(inverseHirachicalModelMatrix);
 			}
+
+			int i = 0;
+			for (Mesh*m : meshes)
+				Debugger::getInstance()->writeAllVertices(m->getAllVertices(), name + "_render" + std::to_string(i++));
 			
 			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(hirachicalModelMatrix));
 			glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseHirachicalModelMatrix));

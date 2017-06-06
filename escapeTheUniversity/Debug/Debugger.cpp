@@ -3,6 +3,7 @@
 #include <GLM\gtc\type_ptr.hpp>
 #include <GL/glew.h>
 #include <iostream>
+#include <fstream>
 #include <time.h>
 #include "Debugger.hpp"
 #include "MemoryLeakTracker.h"
@@ -10,7 +11,30 @@
 using namespace std;
 
 Debugger::~Debugger()
-{}
+{
+}
+
+void Debugger::writeAllVertices(vector<float>* vertices, string fileNameWithoutEnding)
+{
+	string coords = "";
+
+	for (int i = 0; i < vertices->size(); i += 3)
+	{
+		char yes[50];
+		sprintf(yes, "i = %4d, x = %4.2f, y = %4.2f, z = %4.2f\n", i, vertices->at(i), vertices->at(i + 1), vertices->at(i + 2));
+		coords = coords.append(yes);
+	}
+
+	writeLogFile(fileNameWithoutEnding, coords);
+}
+
+void Debugger::writeLogFile(string fileNameWithoutEnding, string text) {
+	ofstream out(logFilePath + fileNameWithoutEnding + ".log");
+
+	out << text << endl;
+
+	out.close();
+}
 
 //In case a GLFW function fails, an error is reported to the GLFW error callback
 void Debugger::errorCallback(int error, const char* description)

@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <sstream>
+#include <vector>
 
 class Debugger
 {
@@ -12,6 +13,8 @@ private:
 	std::string getAttachmentComponentType(int param);
 	std::string getAttachmentObjectType(int param);
 	std::string getAttachmentColorEncoding(int param);
+
+	const std::string logFilePath = ".\\Setting\\";
 public:
 	Debugger(void){}; // Private constructor to allow only one instance
 	Debugger(Debugger const&); // Private constructor to prevent copies
@@ -37,5 +40,7 @@ public:
 	void stopCPUTimer();
 	void printFrameBufferAttachments();
 	void checkWholeFramebufferCompleteness();
+	void writeAllVertices(std::vector<float>* vertices, std::string fileNameWithoutEnding); // Writes all vectors to a log file
+	void writeLogFile(std::string fileNameWithoutEnding, std::string text); // Writes a log file in the settings folder
 };
 

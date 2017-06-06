@@ -2,6 +2,7 @@
 #include "BVG.hpp"
 #include "../ModelLoader.hpp"
 #include "../../Camera/Camera.hpp"
+#include "../../Debug/Debugger.hpp"
 //#include "../../Debug/MemoryLeakTracker.h" // Not possible in here because of "solver = new btSequentialImpulseConstraintSolver;"
 
 void Bullet::init()
@@ -20,7 +21,7 @@ void Bullet::init()
 		dynamicsWorld->setGravity(btVector3(0, -10, 0));
 		#if _DEBUG
 			debugDrawer = new BulletDebugDrawer();
-			debugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+			debugDrawer->setDebugMode(btIDebugDraw::DBG_FastWireframe);
 			dynamicsWorld->setDebugDrawer(debugDrawer);
 		#endif
 
@@ -30,7 +31,7 @@ void Bullet::init()
 
 void Bullet::createAndAddBoundingObjects(Node* current)
 {
-	if (true)  //concurentThreadsSupported == 0) // Hyperthreading unsupported, calculate normally
+	if (concurentThreadsSupported == 0) // Hyperthreading unsupported, calculate normally
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
@@ -82,26 +83,30 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 {
 	if (mn->bounding)
 	{
-		BVG* bvg = new BVG();
-		btConvexHullShape* shape = bvg->calculateVHACD(mn); 
-		delete bvg;
-		// Max 100 vertices
-		//shape->optimizeConvexHull();
-		shape->initializePolyhedralFeatures(); // Changing the collision shape now bad idea,  That will make the debug rendering more pretty, but doesn't change anything related to collision detection etc. http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11385&p=38354&hilit=initializePolyhedralFeatures#p38354
-		// test hulls with http://www.bulletphysics.org/mediawiki-1.5.8/index.php/BtShapeHull_vertex_reduction_utility
-		const float mass = 5.0;
-		btVector3 localInertia = btVector3(0, 0, 0);
-		shape->calculateLocalInertia(mass, localInertia);
-		shape->setMargin(0.05f);
-		glm::vec3 pos = mn->getWorldPosition();
-		btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z)));
-		btRigidBody::btRigidBodyConstructionInfo ci(mass, myMotionState, shape, localInertia);
-		btRigidBody* rB = new btRigidBody(ci);
-		mn->collisionObject = rB;
-		dynamicsWorld->addRigidBody(rB);
+		if (mn->name.find(ModelLoader::getInstance()->SMALL_WING) != string::npos || mn->name.find(ModelLoader::getInstance()->BIG_WING) != string::npos)
+			createBuilding(mn);
+		else
+		{
+			BVG* bvg = new BVG();
+			btConvexHullShape* shape = bvg->calculateVHACD(mn); // Max 100 vertices
+			delete bvg;
+		
+			//shape->optimizeConvexHull();
+			shape->initializePolyhedralFeatures(); // Changing the collision shape now bad idea,  That will make the debug rendering more pretty, but doesn't change anything related to collision detection etc. http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11385&p=38354&hilit=initializePolyhedralFeatures#p38354
+			// test hulls with http://www.bulletphysics.org/mediawiki-1.5.8/index.php/BtShapeHull_vertex_reduction_utility
+			const float mass = 5.0;
+			btVector3 localInertia = btVector3(0, 0, 0);
+			shape->calculateLocalInertia(mass, localInertia);
+			shape->setMargin(0.05f);
+			glm::vec3 pos = mn->getWorldPosition();
+			btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z)));
+			btRigidBody::btRigidBodyConstructionInfo ci(mass, myMotionState, shape, localInertia);
+			btRigidBody* rB = new btRigidBody(ci);
+			mn->collisionObject = rB;
+			dynamicsWorld->addRigidBody(rB);
+		}
 	}
-	else if (mn->name.find(ModelLoader::getInstance()->LEFT_WING) != string::npos || mn->name.find(ModelLoader::getInstance()->RIGHT_WING) != string::npos)
-		createBuilding(mn);
+
 
 	return true;
 }
@@ -110,6 +115,7 @@ void Bullet::createBuilding(ModelNode* mn)
 {
 	btTriangleIndexVertexArray* meshArray = new btTriangleIndexVertexArray();
 
+	
 	for (unsigned int meshIndex = 0; meshIndex < mn->meshes.size(); meshIndex++)
 	{
 		Mesh* mnMesh = mn->meshes.at(meshIndex);
@@ -130,11 +136,14 @@ void Bullet::createBuilding(ModelNode* mn)
 		btMesh.m_vertexBase = (const unsigned char*) vertices->data();// Allocate memory for the mesh
 
 		meshArray->addIndexedMesh(btMesh);
+			
 		//delete vertices; // Must be active, bullet uses this pointer!
+		Debugger::getInstance()->writeAllVertices(vertices, mn->name + "_init");
 	}
 
+
 	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshArray, true, true); // A single mesh with all vertices of a big object in it confuses bullet and generateds an "overflow in AABB..." error
-	shape->buildOptimizedBvh();
+	//shape->buildOptimizedBvh();
 	shape->setMargin(0.05f);
 	glm::vec3 pos = mn->getWorldPosition();
 	mn->collisionObject = new btCollisionObject(); // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here

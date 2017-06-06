@@ -66,7 +66,7 @@ void BulletDebugDrawer::drawContactPoint(const btVector3& PointOnB, const btVect
 // Called when btIDebugDraw::DBG_DrawAabb (overflow in AABB)
 void BulletDebugDrawer::reportErrorWarning(const char* warningString)
 {
-	cout << warningString << endl;
+	cerr << warningString << endl;
 	Text::getInstance()->bulletDebugMessage(warningString ? warningString : "Empty bullet debug message.");
 }
 
@@ -93,7 +93,7 @@ void BulletDebugDrawer::draw()
 	{
 		if (index == 0) // Display it only once
 		{
-			cout << "No indices or vertices are set from bullet." << endl;
+			cerr << "No indices or vertices are set from bullet." << endl;
 			Text::getInstance()->bulletDebugMessage("No indices or vertices are set from bullet.");
 		}
 		index = 1;
