@@ -22,7 +22,8 @@ public:
 	glm::mat4 inverseModelMatrix; // Inverse object space MM
 	glm::mat4 hirachicalModelMatrix; // Ancestor multipled Model matrix, e.g. in position in world space
 	glm::mat4 inverseHirachicalModelMatrix; // Ancestor calculated Model matrix
-	btCollisionObject* collisionObject; // The rigit body of this node, nullptr if none was generated
+	btCollisionObject* collisionObject = nullptr; // The collision of this node, nullptr if none was generated
+	btRigidBody* rigidBody = nullptr; // The rigid body of this node, nullptr if none was generated, since pointer casting does not work more pointers of bullet are needed, why having inheriance in the first place? -.-
 
 	bool render = true; // True if this node should be rendered false if not, default: true
 	bool stencil = false; // True if an extra stencil FBO for this node VAO should be generated in the mesh constructor, false if not. Default: false

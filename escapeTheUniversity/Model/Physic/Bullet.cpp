@@ -2,7 +2,6 @@
 #include "BVG.hpp"
 #include "../ModelLoader.hpp"
 #include "../../Camera/Camera.hpp"
-#include "../../Debug/Debugger.hpp"
 //#include "../../Debug/MemoryLeakTracker.h" // Not possible in here because of "solver = new btSequentialImpulseConstraintSolver;"
 
 void Bullet::init()
@@ -21,7 +20,7 @@ void Bullet::init()
 		dynamicsWorld->setGravity(btVector3(0, -10, 0));
 		#if _DEBUG
 			debugDrawer = new BulletDebugDrawer();
-			debugDrawer->setDebugMode(btIDebugDraw::DBG_FastWireframe);
+			debugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 			dynamicsWorld->setDebugDrawer(debugDrawer);
 		#endif
 
@@ -35,7 +34,7 @@ void Bullet::createAndAddBoundingObjects(Node* current)
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
-		if (mn && mn->meshes.size() > 0 && mn->bounding)
+		if (mn && mn->bounding && mn->meshes.size() > 0)
 			distributeBoundingGeneration(mn);
 
 		for (Node* child : current->children)
@@ -50,7 +49,7 @@ void Bullet::createAndAddBoundingObjects(Node* current)
 		{
 			ModelNode* mn = dynamic_cast<ModelNode*>(child);
 
-			if (mn && mn->meshes.size() > 0 && mn->bounding)
+			if (mn && mn->bounding && mn->meshes.size() > 0)
 			{ // Leave if structure like this
 				if (threads->size() < concurentThreadsSupported) // If the system thread maximum is not reached, create a thread and calc bounding volume
 					threads->push_back(async(launch::async, &Bullet::distributeBoundingGeneration, this, mn));
@@ -66,7 +65,6 @@ void Bullet::createAndAddBoundingObjects(Node* current)
 		nodes.clear();
 		delete threads;
 	}
-
 }
 
 void Bullet::removeFinished(vector<future<bool>>* threads)
@@ -88,7 +86,6 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		BVG* bvg = new BVG();
 		btConvexHullShape* shape = bvg->calculateVHACD(mn); // Max 100 vertices
 		delete bvg;
-		shapes.push_back(shape);
 		
 		//shape->optimizeConvexHull();
 		shape->initializePolyhedralFeatures(); // Changing the collision shape now bad idea,  That will make the debug rendering more pretty, but doesn't change anything related to collision detection etc. http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11385&p=38354&hilit=initializePolyhedralFeatures#p38354
@@ -101,7 +98,8 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z)));
 		btRigidBody::btRigidBodyConstructionInfo ci(mass, myMotionState, shape, localInertia);
 		btRigidBody* rB = new btRigidBody(ci);
-		mn->collisionObject = rB;
+		mn->rigidBody = rB;
+		shapes.push_back(shape);
 		dynamicsWorld->addRigidBody(rB);
 	}
 
@@ -112,8 +110,7 @@ void Bullet::createBuilding(ModelNode* mn)
 {
 	btTriangleIndexVertexArray* meshArray = new btTriangleIndexVertexArray();
 
-	
-	for (unsigned int meshIndex = 0; meshIndex < mn->meshes.size(); meshIndex++)
+	for (unsigned int meshIndex = 0, i = 0; meshIndex < mn->meshes.size(); meshIndex++)
 	{
 		Mesh* mnMesh = mn->meshes.at(meshIndex);
 		btIndexedMesh btMesh;
@@ -133,30 +130,26 @@ void Bullet::createBuilding(ModelNode* mn)
 		btMesh.m_vertexBase = (const unsigned char*) vertices->data();// Allocate memory for the mesh
 
 		meshArray->addIndexedMesh(btMesh);
-			
 		//delete vertices; // Must be active, bullet uses this pointer!
-		Debugger::getInstance()->writeAllVertices(vertices, mn->name + "_init");
 	}
 
-
 	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshArray, true, true); // A single mesh with all vertices of a big object in it confuses bullet and generateds an "overflow in AABB..." error
-	shapes.push_back(shape);
 	//shape->buildOptimizedBvh();
 	shape->setMargin(0.05f);
-	glm::vec3 pos = mn->getWorldPosition();
 	mn->collisionObject = new btCollisionObject(); // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
 	mn->collisionObject->setCollisionShape(shape);
 	
 	btTransform trans;
+	glm::vec3 pos = mn->getWorldPosition();
 	trans.setOrigin(btVector3(pos.x, pos.y, pos.z));
 	mn->collisionObject->setWorldTransform(trans);
+	shapes.push_back(shape);
 	dynamicsWorld->addCollisionObject(mn->collisionObject);
 }
 
 void Bullet::createCamera(Camera* c) 
 {
 	btCollisionShape* shape= new btCylinderShape(btVector3(1, 2, 1)); 
-	shapes.push_back(shape);
 	shape->setMargin(0.05f);
 	const float mass = 80.0;
 	btVector3 localInertia = btVector3(0, 0, 0);
@@ -165,10 +158,9 @@ void Bullet::createCamera(Camera* c)
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z))); // xyz of origin
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, shape, btVector3(0, 0, 0)); // To construct multiple rigit bodies with same construction info
 	c->rigitBody = new btRigidBody(groundRigidBodyCI);
+	shapes.push_back(shape);
 	dynamicsWorld->addRigidBody(c->rigitBody);
 }
-
-
 
 void Bullet::step(const double deltaTime)
 {
