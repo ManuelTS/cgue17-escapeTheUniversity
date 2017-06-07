@@ -398,9 +398,6 @@ void RenderLoop::calculateDeltaTime()
 /*Listens for user input.*/
 void RenderLoop::doMovement(double timeDelta)
 {
-	//Set camera postion after the physics from the last frame were calculated
-	const btVector3 newCamPos = camera->rigitBody->getWorldTransform().getOrigin();
-	camera->position = vec3(newCamPos.getX(), newCamPos.getY(), newCamPos.getZ());
 
 	// Camera controls
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -411,6 +408,12 @@ void RenderLoop::doMovement(double timeDelta)
 		camera->processKeyboard(camera->LEFT, timeDelta);
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera->processKeyboard(camera->RIGHT, timeDelta);
+
+	//Set camera postion after the physics from the last frame were calculated
+	/*btTransform trans;
+	camera->rigitBody->getMotionState()->getWorldTransform(trans);
+	const btVector3 newCamPos = trans.getOrigin();
+	camera->position = vec3(newCamPos.getX(), newCamPos.getY(), newCamPos.getZ());*/
 }
 
 // Displays the ETU loading screen with music, source https://open.gl/textures

@@ -94,8 +94,12 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		btVector3 localInertia = btVector3(0, 0, 0);
 		shape->calculateLocalInertia(mass, localInertia);
 		shape->setMargin(0.05f);
-		glm::vec3 pos = mn->getWorldPosition();
-		btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z)));
+		
+		btTransform trans;
+		trans.setIdentity();
+		trans.setFromOpenGLMatrix((btScalar*)&mn->hirachicalModelMatrix);
+
+		btDefaultMotionState* myMotionState = new btDefaultMotionState(trans);
 		btRigidBody::btRigidBodyConstructionInfo ci(mass, myMotionState, shape, localInertia);
 		btRigidBody* rB = new btRigidBody(ci);
 		mn->rigidBody = rB;
@@ -134,15 +138,16 @@ void Bullet::createBuilding(ModelNode* mn)
 	}
 
 	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshArray, true, true); // A single mesh with all vertices of a big object in it confuses bullet and generateds an "overflow in AABB..." error
-	//shape->buildOptimizedBvh();
+	shape->buildOptimizedBvh();
 	shape->setMargin(0.05f);
 	mn->collisionObject = new btCollisionObject(); // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
 	mn->collisionObject->setCollisionShape(shape);
-	
+
 	btTransform trans;
-	glm::vec3 pos = mn->getWorldPosition();
-	trans.setOrigin(btVector3(pos.x, pos.y, pos.z));
+	trans.setIdentity();
+	trans.setFromOpenGLMatrix((btScalar*) &mn->hirachicalModelMatrix);
 	mn->collisionObject->setWorldTransform(trans);
+			
 	shapes.push_back(shape);
 	dynamicsWorld->addCollisionObject(mn->collisionObject);
 }

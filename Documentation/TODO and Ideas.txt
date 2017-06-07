@@ -3,11 +3,11 @@ All ordered by priority!
 Programming (Manuel):
 
 render generated bounding Shapes:
-Draw all bounding volumnes
+Fix position displacement of bullet bounding volumnes
+Fix color problem
+Use VHACD on building meshes!
+Uncomment camera setting in #doMovement method
 
-https://tuwel.tuwien.ac.at/mod/forum/discuss.php?d=91157
-
-Use the VHACD only on complex objects "_vhacd", otherwise use the standard bounding sphere "_bounding"
 
 Skymap, with a beautiful night sky von NASA deep field image full of stars in OGLSB as cube map on page 640. Before doing that check "seamless cube map / sky box2".
 
