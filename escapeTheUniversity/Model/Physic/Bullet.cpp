@@ -35,7 +35,7 @@ void Bullet::createAndAddBoundingObjects(Node* current)
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
-		if (mn && mn->meshes.size() > 0)
+		if (mn && mn->meshes.size() > 0 && mn->bounding)
 			distributeBoundingGeneration(mn);
 
 		for (Node* child : current->children)
@@ -50,7 +50,7 @@ void Bullet::createAndAddBoundingObjects(Node* current)
 		{
 			ModelNode* mn = dynamic_cast<ModelNode*>(child);
 
-			if (mn && mn->meshes.size() > 0)
+			if (mn && mn->meshes.size() > 0 && mn->bounding)
 			{ // Leave if structure like this
 				if (threads->size() < concurentThreadsSupported) // If the system thread maximum is not reached, create a thread and calc bounding volume
 					threads->push_back(async(launch::async, &Bullet::distributeBoundingGeneration, this, mn));
@@ -81,32 +81,29 @@ void Bullet::removeFinished(vector<future<bool>>* threads)
 
 bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 {
-	if (mn->bounding)
+	if (mn->name.find(ModelLoader::getInstance()->SMALL_WING) != string::npos || mn->name.find(ModelLoader::getInstance()->BIG_WING) != string::npos)
+		createBuilding(mn);
+	else
 	{
-		if (mn->name.find(ModelLoader::getInstance()->SMALL_WING) != string::npos || mn->name.find(ModelLoader::getInstance()->BIG_WING) != string::npos)
-			createBuilding(mn);
-		else
-		{
-			BVG* bvg = new BVG();
-			btConvexHullShape* shape = bvg->calculateVHACD(mn); // Max 100 vertices
-			delete bvg;
+		BVG* bvg = new BVG();
+		btConvexHullShape* shape = bvg->calculateVHACD(mn); // Max 100 vertices
+		delete bvg;
+		shapes.push_back(shape);
 		
-			//shape->optimizeConvexHull();
-			shape->initializePolyhedralFeatures(); // Changing the collision shape now bad idea,  That will make the debug rendering more pretty, but doesn't change anything related to collision detection etc. http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11385&p=38354&hilit=initializePolyhedralFeatures#p38354
-			// test hulls with http://www.bulletphysics.org/mediawiki-1.5.8/index.php/BtShapeHull_vertex_reduction_utility
-			const float mass = 5.0;
-			btVector3 localInertia = btVector3(0, 0, 0);
-			shape->calculateLocalInertia(mass, localInertia);
-			shape->setMargin(0.05f);
-			glm::vec3 pos = mn->getWorldPosition();
-			btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z)));
-			btRigidBody::btRigidBodyConstructionInfo ci(mass, myMotionState, shape, localInertia);
-			btRigidBody* rB = new btRigidBody(ci);
-			mn->collisionObject = rB;
-			dynamicsWorld->addRigidBody(rB);
-		}
+		//shape->optimizeConvexHull();
+		shape->initializePolyhedralFeatures(); // Changing the collision shape now bad idea,  That will make the debug rendering more pretty, but doesn't change anything related to collision detection etc. http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11385&p=38354&hilit=initializePolyhedralFeatures#p38354
+		// test hulls with http://www.bulletphysics.org/mediawiki-1.5.8/index.php/BtShapeHull_vertex_reduction_utility
+		const float mass = 5.0;
+		btVector3 localInertia = btVector3(0, 0, 0);
+		shape->calculateLocalInertia(mass, localInertia);
+		shape->setMargin(0.05f);
+		glm::vec3 pos = mn->getWorldPosition();
+		btDefaultMotionState* myMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z)));
+		btRigidBody::btRigidBodyConstructionInfo ci(mass, myMotionState, shape, localInertia);
+		btRigidBody* rB = new btRigidBody(ci);
+		mn->collisionObject = rB;
+		dynamicsWorld->addRigidBody(rB);
 	}
-
 
 	return true;
 }
@@ -143,6 +140,7 @@ void Bullet::createBuilding(ModelNode* mn)
 
 
 	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshArray, true, true); // A single mesh with all vertices of a big object in it confuses bullet and generateds an "overflow in AABB..." error
+	shapes.push_back(shape);
 	//shape->buildOptimizedBvh();
 	shape->setMargin(0.05f);
 	glm::vec3 pos = mn->getWorldPosition();
@@ -158,6 +156,7 @@ void Bullet::createBuilding(ModelNode* mn)
 void Bullet::createCamera(Camera* c) 
 {
 	btCollisionShape* shape= new btCylinderShape(btVector3(1, 2, 1)); 
+	shapes.push_back(shape);
 	shape->setMargin(0.05f);
 	const float mass = 80.0;
 	btVector3 localInertia = btVector3(0, 0, 0);

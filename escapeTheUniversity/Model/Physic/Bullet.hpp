@@ -15,13 +15,13 @@ private:
 	bool initialized = false; // True if bullet wase initialized once, flase if not. Default: false
 	const unsigned int concurentThreadsSupported = std::thread::hardware_concurrency(); // Get number of hardware thread contexts (on most systems its CPU count which is != to possible thread count) but who cares? we just want a simple speedup
 
-	///collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.
+	//collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.
 	btDefaultCollisionConfiguration* collisionConfiguration;
-	///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher(see Extras / BulletMultiThreaded)
+	//use the default collision dispatcher. For parallel processing you can use a diffent dispatcher(see Extras / BulletMultiThreaded)
 	btCollisionDispatcher* dispatcher;
-	///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.
+	//btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.
 	btBroadphaseInterface* overlappingPairCache;
-	///the default constraint solver. For parallel processing you can use a different solver(see Extras / BulletMultiThreaded)
+	//the default constraint solver. For parallel processing you can use a different solver(see Extras / BulletMultiThreaded)
 	btSequentialImpulseConstraintSolver* solver;
 	btDiscreteDynamicsWorld* dynamicsWorld;
 	btAlignedObjectArray<btCollisionShape*> shapes;
