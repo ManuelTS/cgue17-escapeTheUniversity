@@ -222,7 +222,7 @@ void RenderLoop::start()
 	height = initVar->height;
 	glViewport(0, 0, width, height);
 
-	camera = new Camera(glm::vec3(3.0f, 10.0f, -5.0f), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
+	camera = new Camera(glm::vec3(9, 5, 3), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
 
 	initGLFWandGLEW();
 	displayLoadingScreen(ml);
@@ -235,7 +235,7 @@ void RenderLoop::start()
 	Bullet* b = Bullet::getInstance(); // Calculate bouding volumes, no pointer deletion since it is a singelton!
 	b->init();
 	b->createAndAddBoundingObjects(ml->root); // Sets pointers of rigitBodies in all nodes of the scene graph
-	b->createCamera(camera); // Create cam bounding cylinder
+	//b->createCamera(camera); // Create cam bounding cylinder
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
@@ -348,10 +348,7 @@ void RenderLoop::draw(Node* current)
 			// If model node and (no frustum or transformationNode or modelNode bounding frustum sphere (modelNode center, radius) inside frustum):
 			// ... render only when the model node schould be rendered
 
-			if (mn->name.find("Sphere") != string::npos)
-				int xxx = 0;
-
-			if (mn->render && (frustum || Frustum::getInstance()->sphereInFrustum(mn->hirachicalModelMatrix[3], mn->radius) != -1)) // World position is [3]
+			if (mn->render && (frustum || Frustum::getInstance()->sphereInFrustum(mn->hirachicalModelMatrix[3], mn->radius) > -1)) // World position is [3]
 				pureDraw(current);
 		}
 		else // If no model node render anyway
@@ -402,6 +399,12 @@ void RenderLoop::calculateDeltaTime()
 /*Listens for user input.*/
 void RenderLoop::doMovement(double timeDelta)
 {
+	//Set camera postion after the physics from the last frame were calculated
+	btTransform trans;
+	//camera->rigitBody->getMotionState()->getWorldTransform(trans);
+	mat4 matrix;
+	//trans.getOpenGLMatrix(glm::value_ptr(matrix));
+	//camera->position = matrix[3];
 
 	// Camera controls
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -413,11 +416,9 @@ void RenderLoop::doMovement(double timeDelta)
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera->processKeyboard(camera->RIGHT, timeDelta);
 
-	//Set camera postion after the physics from the last frame were calculated
-	/*btTransform trans;
-	camera->rigitBody->getMotionState()->getWorldTransform(trans);
-	const btVector3 newCamPos = trans.getOrigin();
-	camera->position = vec3(newCamPos.getX(), newCamPos.getY(), newCamPos.getZ());*/
+	//matrix[3] = vec4(camera->position, 1.0f); // Set the new position to the bounding camera object
+	//trans.setFromOpenGLMatrix(glm::value_ptr(matrix));
+	//camera->rigitBody->getMotionState()->setWorldTransform(trans);
 }
 
 // Displays the ETU loading screen with music, source https://open.gl/textures

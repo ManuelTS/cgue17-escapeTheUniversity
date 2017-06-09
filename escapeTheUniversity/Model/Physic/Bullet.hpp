@@ -13,7 +13,8 @@ class Bullet
 {
 private:
 	bool initialized = false; // True if bullet wase initialized once, flase if not. Default: false
-	const unsigned int concurentThreadsSupported = std::thread::hardware_concurrency(); // Get number of hardware thread contexts (on most systems its CPU count which is != to possible thread count) but who cares? we just want a simple speedup
+	const unsigned int CONCURENT_THREADS_SUPPORTED = std::thread::hardware_concurrency(); // Get number of hardware thread contexts (on most systems its CPU count which is != to possible thread count) but who cares? we just want a simple speedup
+	const float DEFAULT_COLLISION_MARGIN = 0.05;
 
 	btDefaultCollisionConfiguration* collisionConfiguration;//collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.
 	btCollisionDispatcher* dispatcher;//use the default collision dispatcher. For parallel processing you can use a diffent dispatcher(see Extras / BulletMultiThreaded)

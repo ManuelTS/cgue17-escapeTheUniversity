@@ -54,6 +54,9 @@ void ModelNode::draw()
 	{
 		if(bounding && rigidBody)
 		{
+			if (name.find("Sphere") != string::npos)
+				int i = 0;
+
 			btTransform trans;
 			rigidBody->getMotionState()->getWorldTransform(trans);
 			glm::mat4 temp = hirachicalModelMatrix;
@@ -61,8 +64,8 @@ void ModelNode::draw()
 
 			if(temp != hirachicalModelMatrix)
 			{
-				//position = (temp - hirachicalModelMatrix)[3]; // Get changed position from bullet in object space
-				//modelMatrix[3] = glm::vec4(position, 1.0f);
+				position = (temp - hirachicalModelMatrix)[3]; // Get changed position from bullet in object space
+				modelMatrix[3] = glm::vec4(position, 1.0f);
 				inverseHirachicalModelMatrix = glm::inverseTranspose(inverseHirachicalModelMatrix);
 			}
 			

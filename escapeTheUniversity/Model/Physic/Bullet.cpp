@@ -30,7 +30,7 @@ void Bullet::init()
 
 void Bullet::createAndAddBoundingObjects(Node* current)
 {
-	if (concurentThreadsSupported == 0) // Hyperthreading unsupported, calculate normally
+	if (CONCURENT_THREADS_SUPPORTED == 0) // Hyperthreading unsupported, calculate normally
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
@@ -51,11 +51,11 @@ void Bullet::createAndAddBoundingObjects(Node* current)
 
 			if (mn && mn->bounding && mn->meshes.size() > 0)
 			{ // Leave if structure like this
-				if (threads->size() < concurentThreadsSupported) // If the system thread maximum is not reached, create a thread and calc bounding volume
+				if (threads->size() < CONCURENT_THREADS_SUPPORTED) // If the system thread maximum is not reached, create a thread and calc bounding volume
 					threads->push_back(async(launch::async, &Bullet::distributeBoundingGeneration, this, mn));
 				else // All threads busy, wait for one to finish and if so remove him
 				{
-					while (threads->size() >= concurentThreadsSupported)
+					while (threads->size() >= CONCURENT_THREADS_SUPPORTED)
 						removeFinished(threads);
 					//At least one thread is removed, so start for this one
 					threads->push_back(async(launch::async, &Bullet::distributeBoundingGeneration, this, mn));
@@ -97,7 +97,7 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		const float mass = 5.0;
 		btVector3 localInertia = btVector3(0, 0, 0);
 		shape->calculateLocalInertia(mass, localInertia);
-		shape->setMargin(0.05f);
+		shape->setMargin(DEFAULT_COLLISION_MARGIN);
 		
 		btTransform trans;
 		trans.setIdentity();
@@ -119,29 +119,28 @@ void Bullet::createBuilding(ModelNode* mn)
 	btTriangleIndexVertexArray* meshArray = new btTriangleIndexVertexArray();
 	//BVG* bvg = new BVG(); // VHACD calculation causes a bullet exception which should net happen according to their own comments
 
-	for (unsigned int meshIndex = 0, i = 0; meshIndex < mn->meshes.size(); meshIndex++)
+	for (unsigned int meshIndex = 0, STRIDE = 3; meshIndex < mn->meshes.size(); meshIndex++) // For vertex indices and vertices, see BVG.cpp for explanation is the stride
 	{
 		Mesh* glMesh = mn->meshes.at(meshIndex);
 		btIndexedMesh btMesh;
-		const int stride = 3; // For vertex indices and vertices, see BVG.cpp for explanation
 
 		btMesh.m_indexType = PHY_INTEGER;
-		btMesh.m_numTriangles = glMesh->indices.size() / stride;
-		btMesh.m_triangleIndexStride = stride * sizeof(unsigned int);
+		btMesh.m_numTriangles = glMesh->indices.size() / STRIDE;
+		btMesh.m_triangleIndexStride = STRIDE * sizeof(unsigned int);
 		btMesh.m_triangleIndexBase = (const unsigned char*)glMesh->indices.data();// Allocate memory for the mesh
 
 		vector<float>* vertices = glMesh->getAllVertices();
 
 		btMesh.m_vertexType = PHY_FLOAT;
-		btMesh.m_numVertices = vertices->size() / stride;
-		btMesh.m_vertexStride = stride * sizeof(float);
+		btMesh.m_numVertices = vertices->size() / STRIDE;
+		btMesh.m_vertexStride = STRIDE * sizeof(float);
 		btMesh.m_vertexBase = (const unsigned char*)vertices->data();// Allocate memory for the mesh
 		meshArray->addIndexedMesh(btMesh);
 	}
 
 	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshArray, true, true); // A single mesh with all vertices of a big object in it confuses bullet and generateds an "overflow in AABB..." error
 	shape->buildOptimizedBvh();
-	shape->setMargin(0.05f);
+	shape->setMargin(DEFAULT_COLLISION_MARGIN);
 	mn->collisionObject = new btCollisionObject(); // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
 	mn->collisionObject->setCollisionShape(shape);
 
@@ -156,14 +155,22 @@ void Bullet::createBuilding(ModelNode* mn)
 
 void Bullet::createCamera(Camera* c) 
 {
-	btCollisionShape* shape= new btCylinderShape(btVector3(1, 2, 1)); 
-	shape->setMargin(0.05f);
-	const float mass = 80.0;
+	btCylinderShape* shape= new btCylinderShape(btVector3(1, 2, 1));
+	shape->setMargin(DEFAULT_COLLISION_MARGIN);
+	const float mass = 10.0;
 	btVector3 localInertia = btVector3(0, 0, 0);
 	shape->calculateLocalInertia(mass, localInertia);
-	glm::vec3 pos = c->position;
-	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(pos.x, pos.y, pos.z))); // xyz of origin
-	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, shape, btVector3(0, 0, 0)); // To construct multiple rigit bodies with same construction info
+
+	mat4 matrix = mat4();
+	matrix[3] = vec4(c->position, 1.0f);
+
+	btTransform trans;
+	trans.setIdentity();
+	trans.setFromOpenGLMatrix((btScalar*)&matrix);
+
+
+	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
+	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
 	c->rigitBody = new btRigidBody(groundRigidBodyCI);
 	shapes.push_back(shape);
 	dynamicsWorld->addRigidBody(c->rigitBody);
