@@ -321,7 +321,6 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	}
 
 	// Set light parameters
-
 	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
 	glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
 	glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
@@ -348,6 +347,10 @@ void RenderLoop::draw(Node* current)
 		{
 			// If model node and (no frustum or transformationNode or modelNode bounding frustum sphere (modelNode center, radius) inside frustum):
 			// ... render only when the model node schould be rendered
+
+			if (mn->name.find("Sphere") != string::npos)
+				int xxx = 0;
+
 			if (mn->render && (frustum || Frustum::getInstance()->sphereInFrustum(mn->hirachicalModelMatrix[3], mn->radius) != -1)) // World position is [3]
 				pureDraw(current);
 		}

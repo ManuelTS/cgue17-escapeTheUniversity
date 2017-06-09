@@ -54,9 +54,6 @@ void ModelNode::draw()
 	{
 		if(bounding && rigidBody)
 		{
-			if (name.find("Sphere") != std::string::npos)
-				int xxx = 0;
-
 			btTransform trans;
 			rigidBody->getMotionState()->getWorldTransform(trans);
 			glm::mat4 temp = hirachicalModelMatrix;

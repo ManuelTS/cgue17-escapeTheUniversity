@@ -3,7 +3,6 @@ All ordered by priority!
 Programming (Manuel):
 
 render generated bounding Shapes:
-Fix color problem
 Uncomment camera setting in #doMovement method
 
 
