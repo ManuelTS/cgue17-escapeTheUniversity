@@ -298,11 +298,12 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, projectionMatrixP);
 	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
 	draw(ml->root); // Draw all nodes except light ones
+
+	if (drawBulletDebug)
+		Bullet::getInstance()->debugDraw();
+
 	glDepthMask(GL_FALSE);
 	glDisable(GL_DEPTH_TEST);	
-
-	if (drawBulletDebug) // Draw debug world of bullet
-		Bullet::getInstance()->debugDraw();
 
 	// Light pass, point lights:
 	deferredShader->useProgram();
@@ -347,7 +348,7 @@ void RenderLoop::draw(Node* current)
 		{
 			// If model node and (no frustum or transformationNode or modelNode bounding frustum sphere (modelNode center, radius) inside frustum):
 			// ... render only when the model node schould be rendered
-			if (mn->render && (frustum || Frustum::getInstance()->sphereInFrustum(mn->getWorldPosition(), mn->radius) != -1))
+			if (mn->render && (frustum || Frustum::getInstance()->sphereInFrustum(mn->hirachicalModelMatrix[3], mn->radius) != -1)) // World position is [3]
 				pureDraw(current);
 		}
 		else // If no model node render anyway

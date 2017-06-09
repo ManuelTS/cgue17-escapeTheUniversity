@@ -133,7 +133,7 @@ private:
 	void main()
 	{
 		vec3 color = materialDiffuseShininess.rgb;
-		float textureLookup = 0; // Handle to know in the deferred frag shader if only a color value or a texture is used
+		uint textureLookup = 0; // Handle to know in the deferred frag shader if only a color value or a texture is used
 
 		if(materialDiffuseShininess.r == 0 && materialDiffuseShininess.g == 0 && materialDiffuseShininess.b == 0) // rgb = optional color, if one is not zero the texture is unused, a = shininess 
 		{
@@ -144,7 +144,7 @@ private:
 		gColorNormal.x = packHalf2x16(color.xy);
 		gColorNormal.y = packHalf2x16(vec2(color.z,normalVector.x));
 		gColorNormal.z = packHalf2x16(normalVector.yz);
-		gColorNormal.w = packHalf2x16(vec2(textureLookup, 0)); // Handle to know in the deferred frag shader if only a color value or a texture is used
+		gColorNormal.w = textureLookup; // Handle to know in the deferred frag shader if only a color value or a texture is used
 
 		gPositionAndShininess.xyz = fragmentPosition;
 		gPositionAndShininess.w = materialDiffuseShininess.a; // a is the material shininess value
@@ -236,10 +236,10 @@ private:
 		vec2 temp = unpackHalf2x16(gColorAndNormal.y);
 
 		vec3 diffuse = vec3(unpackHalf2x16(gColorAndNormal.x), temp.x);
-		vec2 directColor = unpackHalf2x16(gColorAndNormal.w);
+		float directColor = gColorAndNormal.w; // Handle to know in the deferred frag shader if only a color value or a texture is used
 		
-		if(directColor.x == 0) // Handle to know in the deferred frag shader if only a color value or a texture is used
-			gl_FragColor = vec4(diffuse, 1.0f);
+		if(directColor == 0) // Handle to know in the deferred frag shader if only a color value or a texture is used
+			gl_FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 		else
 		{
 			float specular = gPositionAndShininess.w;

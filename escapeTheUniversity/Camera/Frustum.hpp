@@ -1,14 +1,14 @@
 #pragma once
+#define degreesToRadians(x) x*(3.141592f/180.0f) // Use this for radiant calculation, the GLM one does not work!
 #include <GLM\glm.hpp>
 
 // Calculates if a point or shepre is in, out, or intersects the view frustum with the radar approach
 class Frustum
 {
 private:
-	const float HALF_ANG2RAD = 3.14159265358979323846f / 180.0f;
 	glm::vec3 camPos; // camera position
 	glm::vec3 front, right, up; // the camera referential, see camera.cpp
-	float width, height, ratio, sphereFactorX, sphereFactorY;;
+	float ratio, sphereFactorX, sphereFactorY;;
 	double tang;
 
 	Frustum(void) {}; // Private constructor to allow only one instance

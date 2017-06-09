@@ -25,6 +25,9 @@ ModelNode::~ModelNode()
 
 void ModelNode::setModelMatrix()
 {
+	if (name.find("SmallWing") != string::npos || name.find("BigWing") != string::npos)
+		int xxxx = 0;
+
 	modelMatrix = glm::translate(glm::mat4(), position);
 	inverseModelMatrix = glm::inverseTranspose(modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
 	hirachicalModelMatrix = glm::translate(glm::mat4(), getWorldPosition()); // Don't use the MM here only *m!
@@ -61,8 +64,8 @@ void ModelNode::draw()
 
 			if(temp != hirachicalModelMatrix)
 			{
-				position = (temp - hirachicalModelMatrix)[3]; // Get changed position from bullet in object space
-				modelMatrix[3] = glm::vec4(position, 1.0f);
+				//position = (temp - hirachicalModelMatrix)[3]; // Get changed position from bullet in object space
+				//modelMatrix[3] = glm::vec4(position, 1.0f);
 				inverseHirachicalModelMatrix = glm::inverseTranspose(inverseHirachicalModelMatrix);
 			}
 			

@@ -23,7 +23,7 @@ class Camera{
 		};
 
 		// Camera Attributes
-		vec3 position = vec3(0.0f, 0.0f, 0.0f); // Camera position
+		vec3 position = vec3(0.0f, 0.0f, 0.0f); // Camera position in world coords
 		vec3 front; // vector pointing towards the camera's positive z-axis.
 		vec3 up; // y axis, cross product of front and right
 		vec3 right; // represents the positive x-axis of the camera space
