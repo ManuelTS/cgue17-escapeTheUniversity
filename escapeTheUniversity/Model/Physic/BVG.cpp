@@ -3,13 +3,9 @@
 
 using namespace std;
 
-btConvexHullShape* BVG::calculateVHACD(ModelNode* modelNode)
+void BVG::calculateVHACD(vector<int>* indices, vector<float>* points, IVHACD* interfaceVHACD)
 {
-	vector<int>* indices = modelNode->getAllIndices(); // Array of vertex indexes (similar to an EBO)
-	vector<float>* points = modelNode->getAllVertices();  // Array of coordinates, the vertices of the node or rather model
-
-	IVHACD::Parameters    params; // V-HACD parameters: https://kmamou.blogspot.co.at/2014/12/v-hacd-20-parameters-description.html or in our own development source folder
-	IVHACD* interfaceVHACD = CreateVHACD(); // create interface
+	IVHACD::Parameters params; // V-HACD parameters: https://kmamou.blogspot.co.at/2014/12/v-hacd-20-parameters-description.html or in our own development source folder
 
 	/*#if _DEBUG
 		Callback callback;
@@ -23,6 +19,61 @@ btConvexHullShape* BVG::calculateVHACD(ModelNode* modelNode)
 	const unsigned int indicesSize = indices->size() / indicesStride;
 	const unsigned int pointSize = points->size() / pointStride;
 	bool res = interfaceVHACD->Compute(points->data(), pointStride, pointSize, indices->data(), indicesStride, indicesSize, params); // compute approximate convex decomposition
+}
+
+btIndexedMesh BVG::meshCalculation(Mesh* mesh)
+{
+	vector<int>* indices = mesh->getAllIndices(); // Array of vertex indexes (similar to an EBO)
+	vector<float>* points = mesh->getAllVertices();  // Array of coordinates, the vertices of the node or rather model
+	IVHACD* interfaceVHACD = CreateVHACD(); // create interface
+
+	calculateVHACD(indices, points, interfaceVHACD);
+
+	// read results
+	unsigned int nConvexHulls = interfaceVHACD->GetNConvexHulls(); // Get the number of convex-hulls
+	IVHACD::ConvexHull hull;
+
+	for (unsigned int p = 0; p < nConvexHulls; ++p)
+		interfaceVHACD->GetConvexHull(p, hull); // get the p-th convex-hull informatiion
+
+	btIndexedMesh btMesh;
+	const int stride = 3; // For vertex indices and vertices, see BVG.cpp for explanation
+
+	vector<unsigned int>* uIndices = new vector<unsigned int>();
+
+	for (unsigned int i = 0; *hull.m_triangles; i++)
+		uIndices->push_back((unsigned int)*hull.m_triangles + i);
+
+	btMesh.m_indexType = PHY_INTEGER;
+	btMesh.m_numTriangles = hull.m_nTriangles / stride;
+	btMesh.m_triangleIndexStride = stride * sizeof(unsigned int);
+	btMesh.m_triangleIndexBase = (const unsigned char*)uIndices->data();// Allocate memory for the mesh
+
+	btMesh.m_vertexType = PHY_DOUBLE;
+	btMesh.m_numVertices = hull.m_nPoints / stride;
+	btMesh.m_vertexStride = stride * sizeof(double);
+	btMesh.m_vertexBase = (const unsigned char*)hull.m_points;// Allocate memory for the mesh
+
+	// release memory
+	interfaceVHACD->Clean();
+	interfaceVHACD->Release();
+	//indices->clear(); // Keep pointer around since bullet uses them
+	//uIndices->clear();
+	//points->clear();
+	//delete indices; // Are de direct mesh indices, no extra container generated, do not delete them!
+	//delete uIndices;
+	//delete points;
+
+	return btMesh; // Returning this a object should be okay since there are only pointers in there
+}
+
+btConvexHullShape* BVG::nodeCalculation(ModelNode* modelNode)
+{
+	vector<int>* indices = modelNode->getAllIndices(); // Array of vertex indexes (similar to an EBO)
+	vector<float>* points = modelNode->getAllVertices();  // Array of coordinates, the vertices of the node or rather model
+	IVHACD* interfaceVHACD = CreateVHACD(); // create interface
+
+	calculateVHACD(indices, points, interfaceVHACD);
 
 	// read results
 	unsigned int nConvexHulls = interfaceVHACD->GetNConvexHulls(); // Get the number of convex-hulls

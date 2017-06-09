@@ -83,8 +83,8 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		createBuilding(mn);
 	else
 	{
-		BVG* bvg = new BVG();
-		btConvexHullShape* shape = bvg->calculateVHACD(mn); // Max 100 vertices
+		BVG* bvg = new BVG(); // VHACD calculation
+		btConvexHullShape* shape = bvg->nodeCalculation(mn); // Max 100 vertices
 		delete bvg;
 		
 		//shape->optimizeConvexHull();
@@ -113,28 +113,26 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 void Bullet::createBuilding(ModelNode* mn)
 {
 	btTriangleIndexVertexArray* meshArray = new btTriangleIndexVertexArray();
+	//BVG* bvg = new BVG(); // VHACD calculation causes a bullet exception which should net happen according to their own comments
 
 	for (unsigned int meshIndex = 0, i = 0; meshIndex < mn->meshes.size(); meshIndex++)
 	{
-		Mesh* mnMesh = mn->meshes.at(meshIndex);
+		Mesh* glMesh = mn->meshes.at(meshIndex);
 		btIndexedMesh btMesh;
 		const int stride = 3; // For vertex indices and vertices, see BVG.cpp for explanation
 
-		// Source https://github.com/VDrift/vdrift/blob/master/src/trackloader.cpp#L75
 		btMesh.m_indexType = PHY_INTEGER;
-		btMesh.m_numTriangles = mnMesh->indices.size() / stride;
+		btMesh.m_numTriangles = glMesh->indices.size() / stride;
 		btMesh.m_triangleIndexStride = stride * sizeof(unsigned int);
-		btMesh.m_triangleIndexBase = (const unsigned char*) mnMesh->indices.data();// Allocate memory for the mesh
-		
-		vector<float>* vertices = mnMesh->getAllVertices();
+		btMesh.m_triangleIndexBase = (const unsigned char*)glMesh->indices.data();// Allocate memory for the mesh
+
+		vector<float>* vertices = glMesh->getAllVertices();
 
 		btMesh.m_vertexType = PHY_FLOAT;
 		btMesh.m_numVertices = vertices->size() / stride;
 		btMesh.m_vertexStride = stride * sizeof(float);
-		btMesh.m_vertexBase = (const unsigned char*) vertices->data();// Allocate memory for the mesh
-
+		btMesh.m_vertexBase = (const unsigned char*)vertices->data();// Allocate memory for the mesh
 		meshArray->addIndexedMesh(btMesh);
-		//delete vertices; // Must be active, bullet uses this pointer!
 	}
 
 	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshArray, true, true); // A single mesh with all vertices of a big object in it confuses bullet and generateds an "overflow in AABB..." error

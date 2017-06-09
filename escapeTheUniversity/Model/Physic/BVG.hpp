@@ -1,5 +1,6 @@
 #pragma once
 #include "..\Node\ModelNode.hpp"
+#include "..\Mesh\Mesh.hpp"
 #include "VHACD\public\VHACD.h"
 #include "Bullet/btBulletDynamicsCommon.h"
 #include <string>
@@ -11,8 +12,10 @@ using namespace VHACD;
 class BVG {
 	private:
 		const std::string LOG_FILE_PATH = "Setting\vhacd.log";
+		void calculateVHACD(vector<int>* indices, vector<float>* points, IVHACD* interfaceVHACD); // Calculates an V-Hierarchical Approximate Convex Decomposition (V-HACD) bounding volume, true is only retured because threads need a state to check or wait for
 	public:
-		btConvexHullShape* calculateVHACD(ModelNode* modelNode); // Calculates an V-Hierarchical Approximate Convex Decomposition (V-HACD) bounding volume, true is only retured because threads need a state to check or wait for
+		btConvexHullShape* nodeCalculation(ModelNode* modelNode); // Calculates an V-Hierarchical Approximate Convex Decomposition (V-HACD) bounding volume, true is only retured because threads need a state to check or wait for
+		btIndexedMesh meshCalculation(Mesh* mesh);
 };
 
 class Callback : public IVHACD::IUserCallback
