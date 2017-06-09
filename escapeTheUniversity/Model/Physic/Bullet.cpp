@@ -54,8 +54,12 @@ void Bullet::createAndAddBoundingObjects(Node* current)
 				if (threads->size() < concurentThreadsSupported) // If the system thread maximum is not reached, create a thread and calc bounding volume
 					threads->push_back(async(launch::async, &Bullet::distributeBoundingGeneration, this, mn));
 				else // All threads busy, wait for one to finish and if so remove him
+				{
 					while (threads->size() >= concurentThreadsSupported)
 						removeFinished(threads);
+					//At least one thread is removed, so start for this one
+					threads->push_back(async(launch::async, &Bullet::distributeBoundingGeneration, this, mn));
+				}
 			}
 		}
 

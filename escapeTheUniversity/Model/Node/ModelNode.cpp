@@ -25,9 +25,6 @@ ModelNode::~ModelNode()
 
 void ModelNode::setModelMatrix()
 {
-	if (name.find("SmallWing") != string::npos || name.find("BigWing") != string::npos)
-		int xxxx = 0;
-
 	modelMatrix = glm::translate(glm::mat4(), position);
 	inverseModelMatrix = glm::inverseTranspose(modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
 	hirachicalModelMatrix = glm::translate(glm::mat4(), getWorldPosition()); // Don't use the MM here only *m!
@@ -57,6 +54,9 @@ void ModelNode::draw()
 	{
 		if(bounding && rigidBody)
 		{
+			if (name.find("Sphere") != std::string::npos)
+				int xxx = 0;
+
 			btTransform trans;
 			rigidBody->getMotionState()->getWorldTransform(trans);
 			glm::mat4 temp = hirachicalModelMatrix;

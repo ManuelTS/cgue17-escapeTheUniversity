@@ -3,9 +3,7 @@ All ordered by priority!
 Programming (Manuel):
 
 render generated bounding Shapes:
-Fix position displacement of bullet bounding volumnes
 Fix color problem
-Use VHACD on building meshes!
 Uncomment camera setting in #doMovement method
 
 
