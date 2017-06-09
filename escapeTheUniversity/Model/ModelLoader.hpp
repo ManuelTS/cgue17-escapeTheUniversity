@@ -58,7 +58,7 @@ public:
 
 	void load(std::string path); // Loads all models and generates the scene graph
 	unsigned int ModelLoader::loadPicture(std::string path); // Loads a single picture
-	std::vector<Node*> getAllNodes(); // Traverses the scenegraph and puts all nodes in the vector
+	void setTextureState(Node* current, int paramMin, int paramMax); // Sets the texture sampling state of the current node
 
 	// Light
 	const unsigned int lightBinding = 2; // In the deferredShading.frag

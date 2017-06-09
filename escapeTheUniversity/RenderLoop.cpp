@@ -94,13 +94,13 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 		else if (key == GLFW_KEY_E)
 		{
-			for (Node* n : ModelLoader::getInstance()->getAllNodes())
+			/*for (Node* n : ModelLoader::getInstance()->getAllNodes())
 			{
 				TransformationNode* dn = dynamic_cast<TransformationNode*>(n);
 
 				if (dn)
 					dn->switchState();
-			}
+			}*/
 		}
 		else if (key == GLFW_KEY_Q)
 		{
@@ -222,7 +222,7 @@ void RenderLoop::start()
 	height = initVar->height;
 	glViewport(0, 0, width, height);
 
-	camera = new Camera(glm::vec3(9, 5, 3), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
+	camera = new Camera(glm::vec3(8,5,3), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
 
 	initGLFWandGLEW();
 	displayLoadingScreen(ml);
@@ -235,6 +235,7 @@ void RenderLoop::start()
 	Bullet* b = Bullet::getInstance(); // Calculate bouding volumes, no pointer deletion since it is a singelton!
 	b->init();
 	b->createAndAddBoundingObjects(ml->root); // Sets pointers of rigitBodies in all nodes of the scene graph
+	b->join();
 	//b->createCamera(camera); // Create cam bounding cylinder
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
@@ -561,19 +562,6 @@ void RenderLoop::changeQuality()
 			paramMin = GL_LINEAR_MIPMAP_LINEAR;
 	}
 
-	for (Node* n: ModelLoader::getInstance()->getAllNodes())
-	{
-		ModelNode* mn = dynamic_cast<ModelNode*>(n);
-
-		if(mn && mn->meshes.size() > 0)
-			for (Mesh* me :mn->meshes)
-				for (Mesh::Texture t : me->textures)
-				{
-					glBindTexture(GL_TEXTURE_2D, t.id);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, paramMin); // The combination of both parameters can create trilinear filtering, see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, paramMax);
-					glBindTexture(GL_TEXTURE_2D, 0);
-				}
-
-	}
+	ModelLoader* ml = ModelLoader::getInstance();
+	ml->setTextureState(ml->root, paramMin, paramMax);
 }

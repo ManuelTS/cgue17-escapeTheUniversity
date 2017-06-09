@@ -13,8 +13,9 @@ class Bullet
 {
 private:
 	bool initialized = false; // True if bullet wase initialized once, flase if not. Default: false
-	const unsigned int CONCURENT_THREADS_SUPPORTED = std::thread::hardware_concurrency(); // Get number of hardware thread contexts (on most systems its CPU count which is != to possible thread count) but who cares? we just want a simple speedup
 	const float DEFAULT_COLLISION_MARGIN = 0.05;
+	const unsigned int CONCURENT_THREADS_SUPPORTED = std::thread::hardware_concurrency(); // Get number of hardware thread contexts (on most systems its CPU count which is != to possible thread count) but who cares? we just want a simple speedup
+	vector<future<bool>>* threads = new vector<future<bool>>(); // Contains all futures for collision object generation
 
 	btDefaultCollisionConfiguration* collisionConfiguration;//collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.
 	btCollisionDispatcher* dispatcher;//use the default collision dispatcher. For parallel processing you can use a diffent dispatcher(see Extras / BulletMultiThreaded)
@@ -42,6 +43,7 @@ public:
 
 	void init(); // Initalizes the bullet world, called only once
 	void createAndAddBoundingObjects(Node* current); // Creates and adds the bounding volumes into the bullet world and to the nodes
+	void join();// Waits and removes all threads that where created for collision object creation
 	void createCamera(Camera* camera); // Creates the bounding object for the camera
 	void step(const double deltaTime); // Sets the timing syncronization of bullet physics
 	void Bullet::debugDraw(); // Draws the whole debug world of bullet, see constructor and BulletDebugDraw.cpp and .hpp
