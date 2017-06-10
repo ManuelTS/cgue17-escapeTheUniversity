@@ -17,7 +17,8 @@ void Bullet::init()
 		//the default constraint solver. For parallel processing you can use a different solver(see Extras / BulletMultiThreaded)
 		solver = new btSequentialImpulseConstraintSolver;
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-		dynamicsWorld->setGravity(btVector3(0, -10, 0));
+		dynamicsWorld->setGravity(btVector3(0, -5, 0));
+		
 		#if _DEBUG
 			debugDrawer = new BulletDebugDrawer();
 			debugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
@@ -30,45 +31,36 @@ void Bullet::init()
 
 void Bullet::createAndAddBoundingObjects(Node* current)
 {
-	if (CONCURENT_THREADS_SUPPORTED == 0) // Hyperthreading unsupported, calculate normally
-	{
-		ModelNode* mn = dynamic_cast<ModelNode*>(current);
+	ModelNode* mn = dynamic_cast<ModelNode*>(current);
 
-		if (mn && mn->bounding && mn->meshes.size() > 0)
+	if (mn && mn->bounding && mn->meshes.size() > 0)
+	{
+		if (CONCURENT_THREADS_SUPPORTED == 0) // Hyperthreading unsupported, calculate normally
 			distributeBoundingGeneration(mn);
-
-		for (Node* child : current->children)
-			createAndAddBoundingObjects(child);
-	}
-	else  // Hyperthreaded bounding volume generation
-	{
-		vector<Node*> nodes = current->getAllNodesDepthFirst(current);
-		vector<future<bool>>* threads = new vector<future<bool>>();
-
-		for (Node* child : nodes)
+		else  // Hyperthreaded bounding volume generation
 		{
-			ModelNode* mn = dynamic_cast<ModelNode*>(child);
-
-			if (mn && mn->bounding && mn->meshes.size() > 0)
-			{ // Leave if structure like this
-				if (threads->size() < CONCURENT_THREADS_SUPPORTED) // If the system thread maximum is not reached, create a thread and calc bounding volume
-					threads->push_back(async(launch::async, &Bullet::distributeBoundingGeneration, this, mn));
-				else // All threads busy, wait for one to finish and if so remove him
-				{
-					while (threads->size() >= CONCURENT_THREADS_SUPPORTED)
-						removeFinished(threads);
-					//At least one thread is removed, so start for this one
-					threads->push_back(async(launch::async, &Bullet::distributeBoundingGeneration, this, mn));
-				}
+			if (threads->size() < CONCURENT_THREADS_SUPPORTED) // If the system thread maximum is not reached, create a thread and calc bounding volume
+				threads->push_back(async(launch::async, &Bullet::distributeBoundingGeneration, this, mn));
+			else // All threads busy, wait for one to finish and if so remove him
+			{
+				while (threads->size() >= CONCURENT_THREADS_SUPPORTED)
+					removeFinished(threads);
+				//At least one thread is removed, so start for this one
+				threads->push_back(async(launch::async, &Bullet::distributeBoundingGeneration, this, mn));
 			}
 		}
-
-		while (threads->size() > 0) // Wait until all remaining threads are finished and remove them
-			removeFinished(threads);
-
-		nodes.clear();
-		delete threads;
 	}
+
+	for (Node* child : current->children)
+		createAndAddBoundingObjects(child);
+}
+
+void Bullet::join() 
+{
+	while (threads->size() > 0) // Wait until all remaining threads are finished and remove them
+		removeFinished(threads);
+
+	delete threads;
 }
 
 void Bullet::removeFinished(vector<future<bool>>* threads)

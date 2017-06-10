@@ -394,7 +394,19 @@ unsigned int ModelLoader::loadPicture(string path)
 	return glHandle;
 }
 
-vector<Node*> ModelLoader::getAllNodes()
-{
-	return root->getAllNodesDepthFirst(root);
+void ModelLoader::setTextureState(Node* current, int paramMin, int paramMax) {
+	ModelNode* mn = dynamic_cast<ModelNode*>(current);
+
+	if (mn && mn->meshes.size() > 0)
+		for (Mesh* me : mn->meshes)
+			for (Mesh::Texture t : me->textures)
+			{
+				glBindTexture(GL_TEXTURE_2D, t.id);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, paramMin); // The combination of both parameters can create trilinear filtering, see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, paramMax);
+				glBindTexture(GL_TEXTURE_2D, 0);
+			}
+
+	for (Node* child : current->children)
+		setTextureState(child, paramMin, paramMax);
 }
