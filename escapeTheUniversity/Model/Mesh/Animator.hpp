@@ -45,8 +45,7 @@ This file was modified for the AssimpOpenGLDemo by drivenbynostalgia.com.
 ---------------------------------------------------------------------------
 */
 
-#ifndef ANIMATOR_H
-#define ANIMATOR_H
+#pragma once
 
 #include <vector>
 #include <map>
@@ -126,6 +125,7 @@ public:
   *   transformation matrix.
   */
   const aiMatrix4x4& GetGlobalTransform(const aiNode* node) const;
+  const double ANIMATION_TICKS_PER_SECOND = 20; // How many animation keys per second
 
 private:
   /** Recursively creates an internal node structure matching the 
@@ -165,8 +165,4 @@ private:
   AnimationNode* m_pRootNode;
   unsigned int m_uCurrentAnimationIndex;
   const aiAnimation* m_pCurrentAnimation;
-
-  const double ANIMATION_TICKS_PER_SECOND = 20; // How many animation keys per second
 };
-
-#endif

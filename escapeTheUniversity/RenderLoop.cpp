@@ -251,6 +251,7 @@ void RenderLoop::start()
 		if (render)
 		{
 			doMovement(deltaTime);
+			ml->animator->UpdateAnimation(deltaTime, ml->animator->ANIMATION_TICKS_PER_SECOND);
 			doDeferredShading(gBuffer, gBufferShader, deferredShader, ml);
 		}
 		else

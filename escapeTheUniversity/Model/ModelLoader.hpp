@@ -1,4 +1,4 @@
-#pragma 
+#pragma once
 
 #include <assimp/scene.h>
 #include <GL\glew.h>
@@ -47,8 +47,7 @@ public:
 
 	// Resource top folder directories
 	const std::string MODEL_DIR = ".\\Model\\";
-	// Number of lights 
-	const unsigned int LIGHT_NUMBER = 10;
+	const unsigned int LIGHT_NUMBER = 10;// Max number of lights 
 
 	/*Returns the pointer to the unique instance of this class.*/
 	static ModelLoader* ModelLoader::getInstance()

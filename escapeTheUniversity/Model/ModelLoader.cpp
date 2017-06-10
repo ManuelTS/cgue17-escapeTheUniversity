@@ -199,7 +199,8 @@ std::string ModelLoader::lightSourceTypeToString(aiLightSourceType type)
 
 Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, const aiScene* scene, ModelNode* modelNode)
 {
-	Mesh* mesh = new Mesh(); // Our own mesh;
+	Mesh* mesh = new Mesh(); // Our own mesh
+	mesh->modelNode = modelNode;
 
 	// Loop through each of the mesh's vertices
 	for (unsigned int i = 0; i < assimpMesh->mNumVertices; i++)
@@ -237,13 +238,36 @@ Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, const aiScene* scene, ModelNo
 
 	// Process the meshes bones
 	std::vector<aiVertexWeight>* vTempWeightsPerVertex = new std::vector<aiVertexWeight>[assimpMesh->mNumVertices];
+	std::vector<glm::mat4>* offsetMatrices = new std::vector<glm::mat4>[assimpMesh->mNumVertices];
 
 	for (unsigned int boneIndex = 0; boneIndex < assimpMesh->mNumBones; boneIndex++)
 	{
 		const aiBone * pBone = assimpMesh->mBones[boneIndex];
 
 		for (unsigned int weightIndex = 0; weightIndex < pBone->mNumWeights; weightIndex++)
+		{
 			vTempWeightsPerVertex[pBone->mWeights[weightIndex].mVertexId].push_back(aiVertexWeight(boneIndex, pBone->mWeights[weightIndex].mWeight));
+			glm::mat4 boneOffsetMatrix;
+			
+			boneOffsetMatrix[0][0] = pBone->mOffsetMatrix.a1;
+			boneOffsetMatrix[0][1] = pBone->mOffsetMatrix.b1;
+			boneOffsetMatrix[0][2] = pBone->mOffsetMatrix.c1;
+			boneOffsetMatrix[0][3] = pBone->mOffsetMatrix.d1;
+			boneOffsetMatrix[1][0] = pBone->mOffsetMatrix.a2;
+			boneOffsetMatrix[1][1] = pBone->mOffsetMatrix.b2;
+			boneOffsetMatrix[1][2] = pBone->mOffsetMatrix.c2;
+			boneOffsetMatrix[1][3] = pBone->mOffsetMatrix.d2;
+			boneOffsetMatrix[2][0] = pBone->mOffsetMatrix.a3;
+			boneOffsetMatrix[2][1] = pBone->mOffsetMatrix.b3;
+			boneOffsetMatrix[2][2] = pBone->mOffsetMatrix.c3;
+			boneOffsetMatrix[2][3] = pBone->mOffsetMatrix.d3;
+			boneOffsetMatrix[3][0] = pBone->mOffsetMatrix.a4;
+			boneOffsetMatrix[3][1] = pBone->mOffsetMatrix.b4;
+			boneOffsetMatrix[3][2] = pBone->mOffsetMatrix.c4;
+			boneOffsetMatrix[3][3] = pBone->mOffsetMatrix.d4;
+
+			offsetMatrices[pBone->mWeights[weightIndex].mVertexId].push_back(boneOffsetMatrix);
+		}
 	}
 
 	for (unsigned int boneIndex = 0; boneIndex < assimpMesh->mNumVertices; boneIndex++) {
@@ -257,35 +281,41 @@ Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, const aiScene* scene, ModelNo
 				Debugger::getInstance()->pause(nodeName.c_str());
 			}
 
+			bone.offsetMatrix = offsetMatrices->at(boneIndex);
+
 			for (unsigned int weightIndex = 0; weightIndex < vTempWeightsPerVertex[boneIndex].size();)
 			{
+				mesh->hasBones = true;
 				if(weightIndex < vTempWeightsPerVertex[boneIndex].size())
 				{
-				bone.index.x = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
-				bone.weight.x = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
+					bone.index.x = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
+					bone.weight.x = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
 				}
 				if (weightIndex < vTempWeightsPerVertex[boneIndex].size())
 				{
-				bone.index.y = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
-				bone.weight.y = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
+					bone.index.y = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
+					bone.weight.y = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
 				}
 				if (weightIndex < vTempWeightsPerVertex[boneIndex].size())
 				{
-				bone.index.z = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
-				bone.weight.z = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
+					bone.index.z = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
+					bone.weight.z = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
 				}
 				if (weightIndex < vTempWeightsPerVertex[boneIndex].size())
 				{
-				bone.index.w = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
-				bone.weight.w = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
+					bone.index.w = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
+					bone.weight.w = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
 				}
 			}
+
 		}
 		mesh->bones.push_back(bone);
 	}
 
 	vTempWeightsPerVertex->clear();
 	delete[] vTempWeightsPerVertex;
+	offsetMatrices->clear();
+	delete[] offsetMatrices;
 
 	/*for (unsigned int boneIndex = 0; assimpMesh->HasBones() && boneIndex < assimpMesh->mNumBones; boneIndex++) {
 		const aiBone * pBone = assimpMesh->mBones[boneIndex];

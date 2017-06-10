@@ -2,6 +2,7 @@
 #include "..\..\Shader.hpp"
 #include "..\..\Debug\MemoryLeakTracker.h"
 #include <iostream>
+#include <GLM\gtc\type_ptr.hpp>
 
 using namespace std;
 
@@ -48,6 +49,22 @@ void Mesh::link()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void Mesh::transmitBoneMatrix()
+{
+		vector<glm::mat4> boneMatrices;
+
+		if (hasBones)
+		{
+			 // TODO deliver hirachicalModelMatrix  from model node via method signature
+			for (Mesh::Bone bone : bones)
+				boneMatrices.push_back(hirachicalModelMatrix * glm::inverse(bone.offsetMatrix));
+
+			glUniformMatrix4fv(boneMatricesLocation, MAX_BONE_NUMER, GL_FALSE, glm::value_ptr(boneMatrices[0]));
+		}
+
+		boneMatrices.clear();
+}
+
 /*Draws this mesh*/
 void Mesh::draw(unsigned int drawMode)
 {		
@@ -70,6 +87,8 @@ void Mesh::draw(unsigned int drawMode)
 
 		if (rl->fps)
 			rl->drawnTriangles += vertices.size() / 3;
+
+		transmitBoneMatrix();
 
 		glDrawElements(drawMode, indices.size(), GL_UNSIGNED_INT, 0); // Draw
 		glBindVertexArray(0);

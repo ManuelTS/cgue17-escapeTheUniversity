@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Initialization.hpp"
 #include <GLM\glm.hpp>
 #include <vector>
@@ -17,9 +18,7 @@ class RenderLoop{
 		GLFWwindow* window;
 		// Time
 		double timePast; // Last, past time  in milliseconds
-		double timeNow; // New, current time in milliseconds
-
-		
+		double timeNow; // New, current time in millisecond		
 	
 		RenderLoop(void){}; // Private constructor to allow only one instance
 		RenderLoop(RenderLoop const&); // Private constructor to prevent copies
@@ -31,6 +30,7 @@ class RenderLoop{
 		void draw(Node* current); // Draws all lights which checking their dependencies and condition (no Light Node drawing, frustum culling, flag setting)
 		void pureDraw(Node* current); // Draws the argument node without any checks and calls draw for its children again
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
+ 		
 	public:
 		Camera* camera;
 		Initialization* initVar;

@@ -95,6 +95,7 @@ private:
 	layout (location = 4)  uniform mat4 inverseModel; // Usage in: ModelNode.hpp#draw()
 	layout (location = 8)  uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading()
 	layout (location = 12) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading()
+	layout (location = 16) uniform mat4 boneMatrices[60]; // Usage in: RenderLoop.cpp#transmitBoneMatrix()
 
 	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link();
 	layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();

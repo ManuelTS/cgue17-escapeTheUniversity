@@ -20,8 +20,11 @@ public:
 	struct Bone
 	{
 		glm::uvec4 index; // Index of the vertex which is influenced by the bone.
-		glm::vec4 weight;
+		glm::vec4 weight; // The amount how the mesh is influenced
+		glm::mat4 offsetMatrix; // Matrix that transforms from mesh space to bone space in bind pose
 	};
+
+	bool hasBones = false; // True if at least one bone assigned 
 
 	/*Contains all texture ids, names, and paths.*/
 	struct Texture{
@@ -35,6 +38,8 @@ public:
 	std::vector<unsigned int> indices; // Contains all indices of this mesh
 	std::vector<glm::vec4> materials; // Materials, rbg material values, a shininess
 	std::vector<Texture> textures; // Textures
+
+	ModelNode* modelNode; // Is the node this mesh belongs to
 
 	Mesh();
 	~Mesh();
@@ -57,6 +62,11 @@ private:
 	const unsigned int normalsLocation = 1; // In gBuffer.vert
 	const unsigned int uvLocation = 2; // UVs, In gBuffer.vert
 	const unsigned int materialLocation = 3; // In gBuffer.vert
+	const unsigned int boneMatricesLocation = 16; // In gBuffer.vert
+
+	const unsigned int MAX_BONE_NUMER = 60; // Max bone number
 
 	RenderLoop* rl = RenderLoop::getInstance(); // to set the drawn trianlges
+
+	void transmitBoneMatrix();// Transmits the bone matrices to the vertex shader
 };

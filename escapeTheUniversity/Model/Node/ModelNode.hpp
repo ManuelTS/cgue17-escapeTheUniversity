@@ -4,13 +4,14 @@
 #include "..\..\Shader.hpp"
 #include "..\..\RenderLoop.hpp"
 #include "..\Mesh\Mesh.hpp"
+#include <vector>
 #include "Bullet/btBulletDynamicsCommon.h"
 
 /**This is the default node containing information about a model.*/
 class ModelNode : public Node
 {
 public:
-	std::vector<Mesh*> meshes; // Contains all meshes of this node.
+	vector<Mesh*> meshes; // Contains all meshes of this node.
 	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f); // Position the node's geometrical center, in world coords relative to the parent.
 	float radius = 0.0f; // Radius of the bounding sphere of this node, it is the biggest mesh value 
 
