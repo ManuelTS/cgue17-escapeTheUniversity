@@ -19,8 +19,8 @@ public:
 
 	struct Bone
 	{
+		glm::uvec4 index; // Index of the vertex which is influenced by the bone.
 		glm::vec4 weight;
-		glm::uvec4 index;
 	};
 
 	/*Contains all texture ids, names, and paths.*/

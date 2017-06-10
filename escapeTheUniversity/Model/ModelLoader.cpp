@@ -25,7 +25,7 @@ void ModelLoader::load(string path)
 		path = MODEL_DIR + path;
 		loadModels = false; // Makes sure in the hole game that the models are loaded only once!
 		Assimp::Importer importer;// Read file via ASSIMP
-		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate);
+		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_LimitBoneWeights);
 
 		if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // Error check, if not zero
 			Debugger::getInstance()->pauseExit("ASSIMP " + *importer.GetErrorString());
@@ -233,37 +233,88 @@ Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, const aiScene* scene, ModelNo
 			vertex.texCoords = glm::vec2(0.0f, 0.0f);
 
 		mesh->vertices.push_back(vertex);
+	}
 
-		// Process the meshes bones
-		for (unsigned int boneIndex = 0; assimpMesh->HasBones() && boneIndex < assimpMesh->mNumBones; boneIndex++) {
-			const aiBone * pBone = assimpMesh->mBones[boneIndex];
+	// Process the meshes bones
+	std::vector<aiVertexWeight>* vTempWeightsPerVertex = new std::vector<aiVertexWeight>[assimpMesh->mNumVertices];
 
-			if (pBone->mNumWeights > 4)
+	for (unsigned int boneIndex = 0; boneIndex < assimpMesh->mNumBones; boneIndex++)
+	{
+		const aiBone * pBone = assimpMesh->mBones[boneIndex];
+
+		for (unsigned int weightIndex = 0; weightIndex < pBone->mNumWeights; weightIndex++)
+			vTempWeightsPerVertex[pBone->mWeights[weightIndex].mVertexId].push_back(aiVertexWeight(boneIndex, pBone->mWeights[weightIndex].mWeight));
+	}
+
+	for (unsigned int boneIndex = 0; boneIndex < assimpMesh->mNumVertices; boneIndex++) {
+		Mesh::Bone bone;
+
+		if (assimpMesh->HasBones()) 
+		{
+			if (vTempWeightsPerVertex[boneIndex].size() > 4)
 			{
-				string nodeName = "The node " + modelNode->name + " has more than four weights in the bone " + pBone->mName.C_Str() + ".";
+				string nodeName = "The node " + modelNode->name + " has more than four weights in the bone.";
 				Debugger::getInstance()->pause(nodeName.c_str());
 			}
 
-			for (unsigned int weightIndex = 0; weightIndex < pBone->mNumWeights;)
+			for (unsigned int weightIndex = 0; weightIndex < vTempWeightsPerVertex[boneIndex].size();)
 			{
-				Mesh::Bone bone;
-
-				bone.index.x = pBone->mWeights[weightIndex].mVertexId;
-				bone.weight.x = pBone->mWeights[weightIndex++].mWeight;
-
-				bone.index.y = pBone->mWeights[weightIndex].mVertexId;
-				bone.weight.y = pBone->mWeights[weightIndex++].mWeight;
-
-				bone.index.z = pBone->mWeights[weightIndex].mVertexId;
-				bone.weight.z = pBone->mWeights[weightIndex++].mWeight;
-
-				bone.index.w = pBone->mWeights[weightIndex].mVertexId;
-				bone.weight.w = pBone->mWeights[weightIndex++].mWeight;
-
-				mesh->bones.push_back(bone);
+				if(weightIndex < vTempWeightsPerVertex[boneIndex].size())
+				{
+				bone.index.x = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
+				bone.weight.x = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
+				}
+				if (weightIndex < vTempWeightsPerVertex[boneIndex].size())
+				{
+				bone.index.y = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
+				bone.weight.y = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
+				}
+				if (weightIndex < vTempWeightsPerVertex[boneIndex].size())
+				{
+				bone.index.z = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
+				bone.weight.z = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
+				}
+				if (weightIndex < vTempWeightsPerVertex[boneIndex].size())
+				{
+				bone.index.w = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
+				bone.weight.w = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
+				}
 			}
 		}
+		mesh->bones.push_back(bone);
 	}
+
+	vTempWeightsPerVertex->clear();
+	delete[] vTempWeightsPerVertex;
+
+	/*for (unsigned int boneIndex = 0; assimpMesh->HasBones() && boneIndex < assimpMesh->mNumBones; boneIndex++) {
+		const aiBone * pBone = assimpMesh->mBones[boneIndex];
+
+		if (pBone->mNumWeights > 4)
+		{
+			string nodeName = "The node " + modelNode->name + " has more than four weights in the bone " + pBone->mName.C_Str() + ".";
+			Debugger::getInstance()->pause(nodeName.c_str());
+		}
+
+		for (unsigned int weightIndex = 0; weightIndex < pBone->mNumWeights;)
+		{
+			Mesh::Bone bone;
+
+			bone.index.x = pBone->mWeights[weightIndex].mVertexId;
+			bone.weight.x = pBone->mWeights[weightIndex++].mWeight;
+
+			bone.index.y = pBone->mWeights[weightIndex].mVertexId;
+			bone.weight.y = pBone->mWeights[weightIndex++].mWeight;
+
+			bone.index.z = pBone->mWeights[weightIndex].mVertexId;
+			bone.weight.z = pBone->mWeights[weightIndex++].mWeight;
+
+			bone.index.w = pBone->mWeights[weightIndex].mVertexId;
+			bone.weight.w = pBone->mWeights[weightIndex++].mWeight;
+
+			mesh->bones.push_back(bone);
+		}
+	}*/
 
 	// Now loop through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
 	for (unsigned int i = 0; i < assimpMesh->mNumFaces; i++)
