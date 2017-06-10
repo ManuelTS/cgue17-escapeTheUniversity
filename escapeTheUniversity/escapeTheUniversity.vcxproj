@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Debug\BulletDebugDrawer.cpp" />
+    <ClCompile Include="Model\Mesh\Animator.cpp" />
     <ClCompile Include="Model\Physic\Bullet.cpp" />
     <ClCompile Include="Camera\Camera.cpp" />
     <ClCompile Include="Debug\Debugger.cpp" />
@@ -42,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug\BulletDebugDrawer.hpp" />
+    <ClInclude Include="Model\Mesh\Animator.hpp" />
     <ClInclude Include="Model\Physic\Bullet.hpp" />
     <ClInclude Include="Camera\Camera.hpp" />
     <ClInclude Include="Debug\Debugger.hpp" />

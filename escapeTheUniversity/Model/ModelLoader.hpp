@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "Mesh/Mesh.hpp"
+#include "Mesh/Animator.hpp"
 
 class Node;
 class ModelNode;
@@ -42,6 +43,7 @@ public:
 	const std::string SMALL_WING = "SmallWing";
 	const std::string BIG_WING = "BigWing";
 	Node* root; // Root node of the scene graph
+	Animator* animator; // Is the animator for  vertex skinning animations
 
 	// Resource top folder directories
 	const std::string MODEL_DIR = ".\\Model\\";

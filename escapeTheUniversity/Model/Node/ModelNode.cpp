@@ -25,7 +25,7 @@ ModelNode::~ModelNode()
 
 void ModelNode::setModelMatrix()
 {
-	modelMatrix = glm::translate(glm::mat4(), position);
+		modelMatrix = glm::translate(glm::mat4(), position);
 	inverseModelMatrix = glm::inverseTranspose(modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
 	hirachicalModelMatrix = glm::translate(glm::mat4(), getWorldPosition()); // Don't use the MM here only *m!
 	inverseHirachicalModelMatrix = glm::inverseTranspose(hirachicalModelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU

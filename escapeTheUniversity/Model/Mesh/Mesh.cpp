@@ -12,10 +12,13 @@ Mesh::~Mesh(){
 	clear();
 }
 
-/*Links the VBOs, indices, positions, normals, textCoords (UVs), textureIds, -names and -paths together in one VAO.*/
-Mesh::Mesh(vector<unsigned int> _indices, vector<Vertex> _vertices, vector<Texture> _textures, vector<glm::vec4> _materials) : indices(_indices), vertices(_vertices), textures(_textures), materials(_materials)
+Mesh::Mesh()
 {
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
+}
+
+void Mesh::link()
+{
 	//Link
 	glGenVertexArrays(1, &VAO); // Generate and setup normal VAO and VBO
 	glGenBuffers(1, &VBO);
