@@ -83,7 +83,15 @@ void BulletDebugDrawer::draw()
 {
 	if(!container->indices.empty() || !container->vertices.empty())
 	{ 
-		Mesh* drawer = new Mesh(container->indices, container->vertices, container->textures, container->materials); // Generate and link VAO only here since it can change a in size
+		Mesh* drawer = new Mesh(); // Generate and link VAO only here since it can change a in size
+
+		drawer->textures = container->textures;
+		drawer->materials = container->materials;
+		drawer->indices = container->indices;
+		drawer->vertices = container->vertices;
+
+		drawer->link();
+
 		drawer->draw(GL_LINES);
 		delete drawer;
 		container->clear();

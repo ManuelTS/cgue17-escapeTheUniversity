@@ -36,6 +36,9 @@ void ModelLoader::load(string path)
 
 		root = this->processNode(nullptr, scene->mRootNode, scene);// Process ASSIMP's root node recursively
 		
+		if (scene->HasAnimations())
+			animator = new Animator(scene, 0);
+		
 		loadedTextures.clear();
 		loadedMaterials.clear();
 	}
@@ -194,19 +197,18 @@ std::string ModelLoader::lightSourceTypeToString(aiLightSourceType type)
 		return "Unknown light enum type";
 }
 
-Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene, ModelNode* modelNode)
+Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, const aiScene* scene, ModelNode* modelNode)
 {
-	// Data to fill, Vertex data
-	vector<Mesh::Vertex> data;
+	Mesh* mesh = new Mesh(); // Our own mesh;
 
 	// Loop through each of the mesh's vertices
-	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+	for (unsigned int i = 0; i < assimpMesh->mNumVertices; i++)
 	{
 		Mesh::Vertex vertex;
 		// Positions
-		vertex.position.x = mesh->mVertices[i].x;
-		vertex.position.y = mesh->mVertices[i].y;
-		vertex.position.z = mesh->mVertices[i].z;
+		vertex.position.x = assimpMesh->mVertices[i].x;
+		vertex.position.y = assimpMesh->mVertices[i].y;
+		vertex.position.z = assimpMesh->mVertices[i].z;
 
 		if (fabs(vertex.position.x) > modelNode->radius)
 			modelNode->radius = fabs(vertex.position.x);
@@ -216,52 +218,81 @@ Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene, ModelNode* mo
 			modelNode->radius = fabs(vertex.position.z);
 
 		// Normals
-		vertex.normal.x = mesh->mNormals[i].x;
-		vertex.normal.y = mesh->mNormals[i].y;
-		vertex.normal.z = mesh->mNormals[i].z;
+		vertex.normal.x = assimpMesh->mNormals[i].x;
+		vertex.normal.y = assimpMesh->mNormals[i].y;
+		vertex.normal.z = assimpMesh->mNormals[i].z;
 		// Texture Coordinates
-		if (mesh->mTextureCoords[0]) // Does the mesh contain texture coordinates?
+		if (assimpMesh->mTextureCoords[0]) // Does the mesh contain texture coordinates?
 		{
 			// A vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't 
 			// use models where a vertex can have multiple texture coordinates so we always take the first set (0).
-			vertex.texCoords.x = mesh->mTextureCoords[0][i].x;
-			vertex.texCoords.y = mesh->mTextureCoords[0][i].y;
+			vertex.texCoords.x = assimpMesh->mTextureCoords[0][i].x;
+			vertex.texCoords.y = assimpMesh->mTextureCoords[0][i].y;
 		}
 		else
 			vertex.texCoords = glm::vec2(0.0f, 0.0f);
 
-		data.push_back(vertex);
-	}
-	// Now loop through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
-	vector<unsigned int> indices;
+		mesh->vertices.push_back(vertex);
 
-	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+		// Process the meshes bones
+		for (unsigned int boneIndex = 0; assimpMesh->HasBones() && boneIndex < assimpMesh->mNumBones; boneIndex++) {
+			const aiBone * pBone = assimpMesh->mBones[boneIndex];
+
+			if (pBone->mNumWeights > 4)
+			{
+				string nodeName = "The node " + modelNode->name + " has more than four weights in the bone " + pBone->mName.C_Str() + ".";
+				Debugger::getInstance()->pause(nodeName.c_str());
+			}
+
+			for (unsigned int weightIndex = 0; weightIndex < pBone->mNumWeights;)
+			{
+				Mesh::Bone bone;
+
+				bone.index.x = pBone->mWeights[weightIndex].mVertexId;
+				bone.weight.x = pBone->mWeights[weightIndex++].mWeight;
+
+				bone.index.y = pBone->mWeights[weightIndex].mVertexId;
+				bone.weight.y = pBone->mWeights[weightIndex++].mWeight;
+
+				bone.index.z = pBone->mWeights[weightIndex].mVertexId;
+				bone.weight.z = pBone->mWeights[weightIndex++].mWeight;
+
+				bone.index.w = pBone->mWeights[weightIndex].mVertexId;
+				bone.weight.w = pBone->mWeights[weightIndex++].mWeight;
+
+				mesh->bones.push_back(bone);
+			}
+		}
+	}
+
+	// Now loop through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
+	for (unsigned int i = 0; i < assimpMesh->mNumFaces; i++)
 	{
-		aiFace face = mesh->mFaces[i];
+		aiFace face = assimpMesh->mFaces[i];
 		// Retrieve all indices of the face and store them in the indices vector
 		for (GLuint j = 0; j < face.mNumIndices; j++)
-			indices.push_back(face.mIndices[j]);
+			mesh->indices.push_back(face.mIndices[j]);
 	}
 	// Process textures and materials
-	vector<Mesh::Texture> textures;
-	vector<glm::vec4> materials;
 
-	if (mesh->mMaterialIndex >= 0)
+	if (assimpMesh->mMaterialIndex >= 0)
 	{
-		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+		aiMaterial* material = scene->mMaterials[assimpMesh->mMaterialIndex];
 		vector<Mesh::Texture> text;
-		text = loadMaterialTextures(material, aiTextureType_AMBIENT, "textureAmbient", &materials);
-		textures.insert(textures.end(), text.begin(), text.end());
+		text = loadMaterialTextures(material, aiTextureType_AMBIENT, "textureAmbient", &mesh->materials);
+		mesh->textures.insert(mesh->textures.end(), text.begin(), text.end());
 		text.clear();
-		text = loadMaterialTextures(material, aiTextureType_DIFFUSE, "textureDiffuse", &materials);
-		textures.insert(textures.end(), text.begin(), text.end());
+		text = loadMaterialTextures(material, aiTextureType_DIFFUSE, "textureDiffuse", &mesh->materials);
+		mesh->textures.insert(mesh->textures.end(), text.begin(), text.end());
 		text.clear();
-		text = loadMaterialTextures(material, aiTextureType_SPECULAR, "textureSpecular", &materials);
-		textures.insert(textures.end(), text.begin(), text.end());
+		text = loadMaterialTextures(material, aiTextureType_SPECULAR, "textureSpecular", &mesh->materials);
+		mesh->textures.insert(mesh->textures.end(), text.begin(), text.end());
 		text.clear();
 	}
-	
-	return new Mesh(indices, data, textures, materials);
+
+	mesh->link();
+
+	return mesh; 
 }
 
 // Checks all material textures of a given type and loads the textures if they're not loaded yet.

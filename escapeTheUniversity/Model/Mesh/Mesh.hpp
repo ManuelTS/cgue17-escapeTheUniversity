@@ -16,6 +16,13 @@ public:
 		glm::vec3 normal; // Normal
 		glm::vec2 texCoords; // TexCoords
 	};
+
+	struct Bone
+	{
+		glm::vec4 weight;
+		glm::uvec4 index;
+	};
+
 	/*Contains all texture ids, names, and paths.*/
 	struct Texture{
 		unsigned int id;
@@ -23,15 +30,16 @@ public:
 		std::string path;
 	};
 	
-	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indices;
+	std::vector<Vertex> vertices; // Contains all vertices and their information
+	std::vector<Bone> bones; // Contains all bones and their weights and indices
+	std::vector<unsigned int> indices; // Contains all indices of this mesh
 	std::vector<glm::vec4> materials; // Materials, rbg material values, a shininess
 	std::vector<Texture> textures; // Textures
 
-	Mesh() {};
-	Mesh(std::vector<unsigned int>_indices, std::vector<Vertex> _vertices, std::vector<Texture> _textures, std::vector<glm::vec4> _materials);
+	Mesh();
 	~Mesh();
 	
+	void link(); // Creates and links the VAO for this mesh
 	void draw(unsigned int drawMode = GL_TRIANGLES);
 	void clear(); // Clears all vectors
 	vector<int>* getAllIndices(); // Returns a pointer to all vertex indices of all meshes in this node. Dont' delete vector after usage!
