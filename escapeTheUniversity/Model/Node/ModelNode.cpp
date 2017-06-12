@@ -76,7 +76,7 @@ void ModelNode::draw()
 		}
 
 		for (unsigned int i = 0; i < size; i++)
-			meshes[i]->draw();
+			meshes[i]->draw(GL_TRIANGLES);
 	}
 }
 

@@ -91,16 +91,17 @@ private:
 	const char* GBUFFER_VERT = R"glsl(
 	#version 430 core
 
-	layout (location = 0)  uniform mat4 model;	      // Usage in: ModelNode.hpp#draw()
-	layout (location = 4)  uniform mat4 inverseModel; // Usage in: ModelNode.hpp#draw()
-	layout (location = 8)  uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading()
-	layout (location = 12) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading()
-	layout (location = 16) uniform mat4 boneMatrices[60]; // Usage in: RenderLoop.cpp#transmitBoneMatrix()
+	layout (location = 0)  uniform mat4 model;	          // Usage in: ModelNode.hpp#draw()
+	layout (location = 4)  uniform mat4 inverseModel;     // Usage in: ModelNode.hpp#draw()
+	layout (location = 8)  uniform mat4 view;	          // Usage in: RenderLoop.cpp#doDeferredShading()
+	layout (location = 12) uniform mat4 projection;       // Usage in: RenderLoop.cpp#doDeferredShading()
+	layout (location = 16) uniform mat4 boneMatrices[60]; // Usage in: Mesh.cpp#transmitBoneMatrix()
 
-	layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link();
-	layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
-	layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
-	layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, // rgb = optional color, if all are not zero the texture is unused, a = shininess value
+	layout (location = 0) in vec3 position;    // Usage in: Mesh.cpp link();
+	layout (location = 1) in vec3 normal;      // Usage in: Mesh.cpp link();
+	layout (location = 2) in vec2 tc;          // Usage in: Mesh.cpp link();
+	layout (location = 3) in vec4 boneWeights; // Usage in: Mesh.cpp link();
+	layout (location = 4) in vec4 material;    // Usage in: Mesh.cpp link();, // rgb = optional color, if all are not zero the texture is unused, a = shininess value
 
 	layout (location = 0) out vec3 fragmentPosition; // Usage in: gBuffer.frag in
 	layout (location = 1) out vec3 normalVector;     // Usage in: gBuffer.frag in
@@ -112,7 +113,11 @@ private:
 		vec4 worldPosition = vec4(model * vec4(position, 1.0));
 		fragmentPosition = worldPosition.xyz;
 		gl_Position = projection * view * worldPosition;
-		texCoords = tc;                         // Forward uv texel coordinates to the fragment shader
+
+		if(boneWeights.x =! 0 || boneWeights.y =! 0 || boneWeights.z =! 0 || boneWeights.w =! 0)
+			boneMatrices[59] *= boneWeights; // TODO
+
+		texCoords = tc;                             // Forward uv texel coordinates to the fragment shader
 		normalVector = mat3(inverseModel) * normal; // Forward normals to fragment shader
 		materialDiffuseShininess = material;        // rgb = optional color, if all are not zero the texture is unused, a = shininess value
 	})glsl";

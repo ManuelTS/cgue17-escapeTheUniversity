@@ -36,7 +36,7 @@ private:
 	glm::vec3 getTransformationVec(aiMatrix4x4* transformation); // Transforms the blender 4x4 matrix into a xyz vec3
 	std::string lightSourceTypeToString(aiLightSourceType type); // Transforms the enum type into a string
 	
-	Mesh* processMesh(aiMesh* mesh, const aiScene* scene, ModelNode* modelNode); // Processes the mesh
+	Mesh* processMesh(aiMesh* mesh, const aiScene* scene, aiNode* assimpNode, ModelNode* modelNode); // Processes the mesh
 	std::vector<Mesh::Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::vector<glm::vec4>* materials);// Loads all materials and the textures
 	void linkLightUBO(); // Generates the Light UBO handle
 public:

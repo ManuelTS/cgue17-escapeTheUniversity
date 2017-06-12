@@ -94,7 +94,7 @@ void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const ai
 		// The scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 		
 		if (mn != 0) {
-			mn->meshes.push_back(processMesh(mesh, scene, mn));
+			mn->meshes.push_back(processMesh(mesh, scene, node, mn));
 		}
 	}
 
@@ -197,7 +197,7 @@ std::string ModelLoader::lightSourceTypeToString(aiLightSourceType type)
 		return "Unknown light enum type";
 }
 
-Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, const aiScene* scene, ModelNode* modelNode)
+Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, const aiScene* scene, aiNode* assimpNode, ModelNode* modelNode)
 {
 	Mesh* mesh = new Mesh(); // Our own mesh
 	mesh->modelNode = modelNode;
@@ -237,114 +237,34 @@ Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, const aiScene* scene, ModelNo
 	}
 
 	// Process the meshes bones
-	std::vector<aiVertexWeight>* vTempWeightsPerVertex = new std::vector<aiVertexWeight>[assimpMesh->mNumVertices];
-	std::vector<glm::mat4>* offsetMatrices = new std::vector<glm::mat4>[assimpMesh->mNumVertices];
-
 	for (unsigned int boneIndex = 0; boneIndex < assimpMesh->mNumBones; boneIndex++)
 	{
-		const aiBone * pBone = assimpMesh->mBones[boneIndex];
+		aiBone * pBone = assimpMesh->mBones[boneIndex];
 
 		for (unsigned int weightIndex = 0; weightIndex < pBone->mNumWeights; weightIndex++)
 		{
-			vTempWeightsPerVertex[pBone->mWeights[weightIndex].mVertexId].push_back(aiVertexWeight(boneIndex, pBone->mWeights[weightIndex].mWeight));
-			glm::mat4 boneOffsetMatrix;
-			
-			boneOffsetMatrix[0][0] = pBone->mOffsetMatrix.a1;
-			boneOffsetMatrix[0][1] = pBone->mOffsetMatrix.b1;
-			boneOffsetMatrix[0][2] = pBone->mOffsetMatrix.c1;
-			boneOffsetMatrix[0][3] = pBone->mOffsetMatrix.d1;
-			boneOffsetMatrix[1][0] = pBone->mOffsetMatrix.a2;
-			boneOffsetMatrix[1][1] = pBone->mOffsetMatrix.b2;
-			boneOffsetMatrix[1][2] = pBone->mOffsetMatrix.c2;
-			boneOffsetMatrix[1][3] = pBone->mOffsetMatrix.d2;
-			boneOffsetMatrix[2][0] = pBone->mOffsetMatrix.a3;
-			boneOffsetMatrix[2][1] = pBone->mOffsetMatrix.b3;
-			boneOffsetMatrix[2][2] = pBone->mOffsetMatrix.c3;
-			boneOffsetMatrix[2][3] = pBone->mOffsetMatrix.d3;
-			boneOffsetMatrix[3][0] = pBone->mOffsetMatrix.a4;
-			boneOffsetMatrix[3][1] = pBone->mOffsetMatrix.b4;
-			boneOffsetMatrix[3][2] = pBone->mOffsetMatrix.c4;
-			boneOffsetMatrix[3][3] = pBone->mOffsetMatrix.d4;
+			aiVertexWeight assimpVertexWeight = pBone->mWeights[weightIndex];
+			glm::vec4* pBoneWeight = &mesh->vertices.at(assimpVertexWeight.mVertexId).boneWeights;
 
-			offsetMatrices[pBone->mWeights[weightIndex].mVertexId].push_back(boneOffsetMatrix);
-		}
-	}
-
-	for (unsigned int boneIndex = 0; boneIndex < assimpMesh->mNumVertices; boneIndex++) {
-		Mesh::Bone bone;
-
-		if (assimpMesh->HasBones()) 
-		{
-			if (vTempWeightsPerVertex[boneIndex].size() > 4)
-			{
-				string nodeName = "The node " + modelNode->name + " has more than four weights in the bone.";
+			if (pBoneWeight->x == 0.0f)
+				pBoneWeight->x = assimpVertexWeight.mWeight;
+			else if (pBoneWeight->y == 0.0f)
+				pBoneWeight->y = assimpVertexWeight.mWeight;
+			else if (pBoneWeight->z == 0.0f)
+				pBoneWeight->z = assimpVertexWeight.mWeight;
+			else if (pBoneWeight->w == 0.0f)
+				pBoneWeight->w = assimpVertexWeight.mWeight;
+			else
+			{ // Not more than four influcences on a bone are allowed
+				string nodeName = "The node " + modelNode->name + " has more than four weights in the bone " + pBone->mName.C_Str() + ".";
 				Debugger::getInstance()->pause(nodeName.c_str());
 			}
-
-			bone.offsetMatrix = offsetMatrices->at(boneIndex);
-
-			for (unsigned int weightIndex = 0; weightIndex < vTempWeightsPerVertex[boneIndex].size();)
-			{
-				mesh->hasBones = true;
-				if(weightIndex < vTempWeightsPerVertex[boneIndex].size())
-				{
-					bone.index.x = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
-					bone.weight.x = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
-				}
-				if (weightIndex < vTempWeightsPerVertex[boneIndex].size())
-				{
-					bone.index.y = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
-					bone.weight.y = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
-				}
-				if (weightIndex < vTempWeightsPerVertex[boneIndex].size())
-				{
-					bone.index.z = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
-					bone.weight.z = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
-				}
-				if (weightIndex < vTempWeightsPerVertex[boneIndex].size())
-				{
-					bone.index.w = vTempWeightsPerVertex[boneIndex][weightIndex].mVertexId;
-					bone.weight.w = vTempWeightsPerVertex[boneIndex][weightIndex++].mWeight;
-				}
-			}
-
 		}
-		mesh->bones.push_back(bone);
+
+		if(mesh->assimpBoneNode == nullptr)
+			mesh->assimpBoneNode = assimpNode; // To be able to use the animator.cpp to the the correct for skinned pose matrices
 	}
-
-	vTempWeightsPerVertex->clear();
-	delete[] vTempWeightsPerVertex;
-	offsetMatrices->clear();
-	delete[] offsetMatrices;
-
-	/*for (unsigned int boneIndex = 0; assimpMesh->HasBones() && boneIndex < assimpMesh->mNumBones; boneIndex++) {
-		const aiBone * pBone = assimpMesh->mBones[boneIndex];
-
-		if (pBone->mNumWeights > 4)
-		{
-			string nodeName = "The node " + modelNode->name + " has more than four weights in the bone " + pBone->mName.C_Str() + ".";
-			Debugger::getInstance()->pause(nodeName.c_str());
-		}
-
-		for (unsigned int weightIndex = 0; weightIndex < pBone->mNumWeights;)
-		{
-			Mesh::Bone bone;
-
-			bone.index.x = pBone->mWeights[weightIndex].mVertexId;
-			bone.weight.x = pBone->mWeights[weightIndex++].mWeight;
-
-			bone.index.y = pBone->mWeights[weightIndex].mVertexId;
-			bone.weight.y = pBone->mWeights[weightIndex++].mWeight;
-
-			bone.index.z = pBone->mWeights[weightIndex].mVertexId;
-			bone.weight.z = pBone->mWeights[weightIndex++].mWeight;
-
-			bone.index.w = pBone->mWeights[weightIndex].mVertexId;
-			bone.weight.w = pBone->mWeights[weightIndex++].mWeight;
-
-			mesh->bones.push_back(bone);
-		}
-	}*/
+	
 
 	// Now loop through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
 	for (unsigned int i = 0; i < assimpMesh->mNumFaces; i++)

@@ -1,8 +1,8 @@
 #include "Mesh.hpp"
-#include "..\..\Shader.hpp"
-#include "..\..\Debug\MemoryLeakTracker.h"
-#include <iostream>
 #include <GLM\gtc\type_ptr.hpp>
+#include "..\ModelLoader.hpp"
+#include "..\..\Debug\Debugger.hpp"
+#include "..\..\Debug\MemoryLeakTracker.h"
 
 using namespace std;
 
@@ -33,36 +33,65 @@ void Mesh::link()
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(positionsLocation);
-	glVertexAttribPointer(positionsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
+	glVertexAttribPointer(positionsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
 	glEnableVertexAttribArray(normalsLocation);
-	glVertexAttribPointer(normalsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, normal));
+	glVertexAttribPointer(normalsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 	glEnableVertexAttribArray(uvLocation);
-	glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, texCoords));
+	glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+	glEnableVertexAttribArray(boneWeightLocation);
+	glVertexAttribPointer(boneWeightLocation, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, boneWeights));
 
 	glGenBuffers(1, &materialVBO); // RGB = optional color, if all are not zero the texture is unused, only vec4.a for shininess
 	glBindBuffer(GL_ARRAY_BUFFER, materialVBO);
 	glBufferData(GL_ARRAY_BUFFER, materials.size() * sizeof(materials[0]), &materials[0], GL_STATIC_DRAW); // Play with last param 4 performance
-	glVertexAttribPointer(materialLocation, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+	glVertexAttribPointer(materialLocation, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	glBindVertexArray(0); // Unbind VAO first!
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+glm::mat4 Mesh::assimpMatrix2GLM(aiMatrix4x4 mat)
+{
+	glm::mat4 converded;
+
+	converded[0][0] = mat.a1;
+	converded[0][1] = mat.b1;
+	converded[0][2] = mat.c1;
+	converded[0][3] = mat.d1;
+	converded[1][0] = mat.a2;
+	converded[1][1] = mat.b2;
+	converded[1][2] = mat.c2;
+	converded[1][3] = mat.d2;
+	converded[2][0] = mat.a3;
+	converded[2][1] = mat.b3;
+	converded[2][2] = mat.c3;
+	converded[2][3] = mat.d3;
+	converded[3][0] = mat.a4;
+	converded[3][1] = mat.b4;
+	converded[3][2] = mat.c4;
+	converded[3][3] = mat.d4;
+
+	return converded;
+}
+
 void Mesh::transmitBoneMatrix()
 {
-		vector<glm::mat4> boneMatrices;
+	if (assimpBoneNode != nullptr)
+	{
+		glm::mat4* boneMatrices = new glm::mat4[MAX_BONE_NUMER];
 
-		if (hasBones)
+		for (unsigned int meshIndex = 0; meshIndex < assimpBoneNode->mNumMeshes; meshIndex++)
 		{
-			 // TODO deliver hirachicalModelMatrix  from model node via method signature
-			for (Mesh::Bone bone : bones)
-				boneMatrices.push_back(hirachicalModelMatrix * glm::inverse(bone.offsetMatrix));
+			const std::vector<aiMatrix4x4>& vBoneMatrices = ModelLoader::getInstance()->animator->GetBoneMatrices(assimpBoneNode, meshIndex);
 
-			glUniformMatrix4fv(boneMatricesLocation, MAX_BONE_NUMER, GL_FALSE, glm::value_ptr(boneMatrices[0]));
+			for (unsigned int matrixIndex = 0; matrixIndex < vBoneMatrices.size(); matrixIndex++)
+				boneMatrices[matrixIndex] = assimpMatrix2GLM(vBoneMatrices[matrixIndex]);
 		}
 
-		boneMatrices.clear();
+		glUniformMatrix4fv(boneMatricesLocation, MAX_BONE_NUMER, GL_FALSE, glm::value_ptr(*boneMatrices));
+		delete boneMatrices;
+	}
 }
 
 /*Draws this mesh*/
@@ -83,12 +112,12 @@ void Mesh::draw(unsigned int drawMode)
 			}*/
 		}	
 
+		transmitBoneMatrix();
+
 		glBindVertexArray(VAO);
 
 		if (rl->fps)
 			rl->drawnTriangles += vertices.size() / 3;
-
-		transmitBoneMatrix();
 
 		glDrawElements(drawMode, indices.size(), GL_UNSIGNED_INT, 0); // Draw
 		glBindVertexArray(0);

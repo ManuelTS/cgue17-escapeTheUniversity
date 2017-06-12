@@ -15,16 +15,8 @@ public:
 		glm::vec3 position; // Position
 		glm::vec3 normal; // Normal
 		glm::vec2 texCoords; // TexCoords
+		glm::vec4 boneWeights; // The maximal four bone weights effecting this vertex read from corresponding aiBone in "assimpBoneNode" to deliver weights along with their vertex with VAO into the shader
 	};
-
-	struct Bone
-	{
-		glm::uvec4 index; // Index of the vertex which is influenced by the bone.
-		glm::vec4 weight; // The amount how the mesh is influenced
-		glm::mat4 offsetMatrix; // Matrix that transforms from mesh space to bone space in bind pose
-	};
-
-	bool hasBones = false; // True if at least one bone assigned 
 
 	/*Contains all texture ids, names, and paths.*/
 	struct Texture{
@@ -34,7 +26,7 @@ public:
 	};
 	
 	std::vector<Vertex> vertices; // Contains all vertices and their information
-	std::vector<Bone> bones; // Contains all bones and their weights and indices
+	aiNode* assimpBoneNode = nullptr; // Node as Bone referrence for the animator class
 	std::vector<unsigned int> indices; // Contains all indices of this mesh
 	std::vector<glm::vec4> materials; // Materials, rbg material values, a shininess
 	std::vector<Texture> textures; // Textures
@@ -61,7 +53,8 @@ private:
 	const unsigned int positionsLocation = 0; // In gBuffer.vert and stencil.vert
 	const unsigned int normalsLocation = 1; // In gBuffer.vert
 	const unsigned int uvLocation = 2; // UVs, In gBuffer.vert
-	const unsigned int materialLocation = 3; // In gBuffer.vert
+	const unsigned int boneWeightLocation = 3; // boneWeight, In gBuffer.vert
+	const unsigned int materialLocation = 4; // In gBuffer.vert
 	const unsigned int boneMatricesLocation = 16; // In gBuffer.vert
 
 	const unsigned int MAX_BONE_NUMER = 60; // Max bone number
@@ -69,4 +62,5 @@ private:
 	RenderLoop* rl = RenderLoop::getInstance(); // to set the drawn trianlges
 
 	void transmitBoneMatrix();// Transmits the bone matrices to the vertex shader
+	glm::mat4 assimpMatrix2GLM(aiMatrix4x4 mat); // Convertes the argument to the return type, delete the return pointer!
 };
