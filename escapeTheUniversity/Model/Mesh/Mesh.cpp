@@ -81,14 +81,13 @@ void Mesh::transmitBoneMatrix()
 {
 	if (assimpBoneNode != nullptr)
 	{
-		glm::mat4* boneMatrices = new glm::mat4[MAX_BONE_NUMER];
+		glm::mat4 boneMatrices[60]; //MAX_BONE_NUMER; cannot use a constant here... -.-
 		const std::vector<aiMatrix4x4>& vBoneMatrices = ModelLoader::getInstance()->animator->GetBoneMatrices(assimpBoneNode, meshIndex);
 
 		for (unsigned int matrixIndex = 0; matrixIndex < vBoneMatrices.size(); matrixIndex++)
 			boneMatrices[matrixIndex] = assimpMatrix2GLM(vBoneMatrices[matrixIndex]);
 
-		glUniformMatrix4fv(boneMatricesLocation, MAX_BONE_NUMER, GL_FALSE, glm::value_ptr(*boneMatrices));
-		delete boneMatrices;
+		glUniformMatrix4fv(boneMatricesLocation, MAX_BONE_NUMER, GL_FALSE, glm::value_ptr(boneMatrices[0]));
 	}
 }
 
@@ -110,7 +109,7 @@ void Mesh::draw(unsigned int drawMode)
 			}*/
 		}	
 
-		transmitBoneMatrix();
+		//transmitBoneMatrix();
 
 		glBindVertexArray(VAO);
 

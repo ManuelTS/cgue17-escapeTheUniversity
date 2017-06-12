@@ -113,19 +113,19 @@ private:
 	{
 		vec4 worldPosition = vec4(position, 1);
 
-		if(boneWeights.x != 0 || boneWeights.y != 0 || boneWeights.z != 0 || boneWeights.w != 0)
+		/*if(boneWeights.x > 0 || boneWeights.y > 0 || boneWeights.z > 0 || boneWeights.w > 0)
 		{
 			vec4 usedBoneWeights = boneWeights;
 			usedBoneWeights.w = 1.0 - dot(boneWeights.xyz, vec3(1.0, 1.0, 1.0));
 			
 			mat4 transformMatrix = usedBoneWeights.x * boneMatrices[int(boneIndices.x)]; // TODO: test if int cast is necessary
-			     transformMatrix += usedBoneWeights.y * boneMatrices[int(boneIndices.y)];
-			     transformMatrix += usedBoneWeights.z * boneMatrices[int(boneIndices.z)];
-			     transformMatrix += usedBoneWeights.w * boneMatrices[int(boneIndices.w)];
+			transformMatrix += usedBoneWeights.y * boneMatrices[int(boneIndices.y)];
+			transformMatrix += usedBoneWeights.z * boneMatrices[int(boneIndices.z)];
+			transformMatrix += usedBoneWeights.w * boneMatrices[int(boneIndices.w)];
 
 			worldPosition = model * transformMatrix * worldPosition;
 		}
-		else
+		else*/
 			worldPosition  = model * worldPosition;
 
 		fragmentPosition = worldPosition.xyz;

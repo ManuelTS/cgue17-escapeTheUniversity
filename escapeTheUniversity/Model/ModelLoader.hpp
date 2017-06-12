@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assimp\Importer.hpp>
 #include <assimp/scene.h>
 #include <GL\glew.h>
 #include <string>
@@ -42,7 +43,8 @@ private:
 public:
 	const std::string SMALL_WING = "SmallWing";
 	const std::string BIG_WING = "BigWing";
-	Node* root; // Root node of the scene graph
+	Node* root; // Root node of the scene 
+	Assimp::Importer* importer;
 	Animator* animator; // Is the animator for  vertex skinning animations
 
 	// Resource top folder directories

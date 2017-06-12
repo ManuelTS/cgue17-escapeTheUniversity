@@ -15,8 +15,8 @@ public:
 		glm::vec3 position; // Position
 		glm::vec3 normal; // Normal
 		glm::vec2 texCoords; // TexCoords
-		glm::uvec4 boneIndices; // Bone indices used for the correct boneMatrix in the shader
-		glm::vec4 boneWeights; // The maximal four bone weights effecting this vertex read from corresponding aiBone in "assimpBoneNode" to deliver weights along with their vertex with VAO into the shader
+		glm::uvec4 boneIndices = glm::uvec4(0); // Bone indices used for the correct boneMatrix in the shader
+		glm::vec4 boneWeights = glm::vec4(0); // The maximal four bone weights effecting this vertex read from corresponding aiBone in "assimpBoneNode" to deliver weights along with their vertex with VAO into the shader
 	};
 
 	/*Contains all texture ids, names, and paths.*/

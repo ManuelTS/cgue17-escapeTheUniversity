@@ -1,4 +1,3 @@
-#include <assimp\Importer.hpp>
 #include <assimp\postprocess.h>
 #include "ModelLoader.hpp"
 #include "Node\Node.hpp"
@@ -15,6 +14,8 @@ using namespace std;
 ModelLoader::~ModelLoader()
 {
 	delete root;
+	delete animator;
+	delete importer;
 }
 
 /*Loads recusrive the model with its objects, meshs, and textures.*/
@@ -24,14 +25,13 @@ void ModelLoader::load(string path)
 	{
 		path = MODEL_DIR + path;
 		loadModels = false; // Makes sure in the hole game that the models are loaded only once!
-		Assimp::Importer importer;// Read file via ASSIMP
-		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_LimitBoneWeights);
+		importer = new Assimp::Importer();// Read file via ASSIMP
+		const aiScene* scene = importer->ReadFile(path, aiProcess_Triangulate | aiProcess_LimitBoneWeights);
 
 		if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // Error check, if not zero
-			Debugger::getInstance()->pauseExit("ASSIMP " + *importer.GetErrorString());
+			Debugger::getInstance()->pauseExit("ASSIMP " + *importer->GetErrorString());
 
 		this->directory = path.substr(0, path.find_last_of('\\') + 1);// Retrieve the directory path of the filepath
-
 		this->linkLightUBO(); // Link light UBO in shader
 		
 		if (scene->HasAnimations())
@@ -273,7 +273,8 @@ Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, unsigned int meshIndex, const
 			}
 		}
 
-		mesh->assimpBoneNode = assimpNode; // To be able to use the animator.cpp to the the correct for skinned pose matrices
+		if(mesh->assimpBoneNode == nullptr && assimpNode != nullptr)
+			mesh->assimpBoneNode = assimpNode; // To be able to use the animator.cpp to the the correct for skinned pose matrices
 		mesh->meshIndex = meshIndex;
 	}
 	
