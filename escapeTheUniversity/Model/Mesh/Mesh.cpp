@@ -38,6 +38,8 @@ void Mesh::link()
 	glVertexAttribPointer(normalsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 	glEnableVertexAttribArray(uvLocation);
 	glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+	glEnableVertexAttribArray(boneIndicesLocation);
+	glVertexAttribPointer(boneIndicesLocation, 4, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, boneIndices));
 	glEnableVertexAttribArray(boneWeightLocation);
 	glVertexAttribPointer(boneWeightLocation, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, boneWeights));
 
@@ -80,14 +82,10 @@ void Mesh::transmitBoneMatrix()
 	if (assimpBoneNode != nullptr)
 	{
 		glm::mat4* boneMatrices = new glm::mat4[MAX_BONE_NUMER];
+		const std::vector<aiMatrix4x4>& vBoneMatrices = ModelLoader::getInstance()->animator->GetBoneMatrices(assimpBoneNode, meshIndex);
 
-		for (unsigned int meshIndex = 0; meshIndex < assimpBoneNode->mNumMeshes; meshIndex++)
-		{
-			const std::vector<aiMatrix4x4>& vBoneMatrices = ModelLoader::getInstance()->animator->GetBoneMatrices(assimpBoneNode, meshIndex);
-
-			for (unsigned int matrixIndex = 0; matrixIndex < vBoneMatrices.size(); matrixIndex++)
-				boneMatrices[matrixIndex] = assimpMatrix2GLM(vBoneMatrices[matrixIndex]);
-		}
+		for (unsigned int matrixIndex = 0; matrixIndex < vBoneMatrices.size(); matrixIndex++)
+			boneMatrices[matrixIndex] = assimpMatrix2GLM(vBoneMatrices[matrixIndex]);
 
 		glUniformMatrix4fv(boneMatricesLocation, MAX_BONE_NUMER, GL_FALSE, glm::value_ptr(*boneMatrices));
 		delete boneMatrices;

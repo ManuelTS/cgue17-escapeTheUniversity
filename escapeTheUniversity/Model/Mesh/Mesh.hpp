@@ -15,6 +15,7 @@ public:
 		glm::vec3 position; // Position
 		glm::vec3 normal; // Normal
 		glm::vec2 texCoords; // TexCoords
+		glm::uvec4 boneIndices; // Bone indices used for the correct boneMatrix in the shader
 		glm::vec4 boneWeights; // The maximal four bone weights effecting this vertex read from corresponding aiBone in "assimpBoneNode" to deliver weights along with their vertex with VAO into the shader
 	};
 
@@ -27,6 +28,7 @@ public:
 	
 	std::vector<Vertex> vertices; // Contains all vertices and their information
 	aiNode* assimpBoneNode = nullptr; // Node as Bone referrence for the animator class
+	unsigned int meshIndex; // Mesh this mesh index of assimpBoneNode
 	std::vector<unsigned int> indices; // Contains all indices of this mesh
 	std::vector<glm::vec4> materials; // Materials, rbg material values, a shininess
 	std::vector<Texture> textures; // Textures
@@ -53,8 +55,9 @@ private:
 	const unsigned int positionsLocation = 0; // In gBuffer.vert and stencil.vert
 	const unsigned int normalsLocation = 1; // In gBuffer.vert
 	const unsigned int uvLocation = 2; // UVs, In gBuffer.vert
-	const unsigned int boneWeightLocation = 3; // boneWeight, In gBuffer.vert
-	const unsigned int materialLocation = 4; // In gBuffer.vert
+	const unsigned int boneIndicesLocation = 3; // Bone indices inside all the bonde matrices on the shader
+	const unsigned int boneWeightLocation = 4; // boneWeight, In gBuffer.vert
+	const unsigned int materialLocation = 5; // In gBuffer.vert
 	const unsigned int boneMatricesLocation = 16; // In gBuffer.vert
 
 	const unsigned int MAX_BONE_NUMER = 60; // Max bone number

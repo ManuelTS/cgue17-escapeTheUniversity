@@ -33,11 +33,11 @@ void ModelLoader::load(string path)
 		this->directory = path.substr(0, path.find_last_of('\\') + 1);// Retrieve the directory path of the filepath
 
 		this->linkLightUBO(); // Link light UBO in shader
-
-		root = this->processNode(nullptr, scene->mRootNode, scene);// Process ASSIMP's root node recursively
 		
 		if (scene->HasAnimations())
 			animator = new Animator(scene, 0);
+
+		root = this->processNode(nullptr, scene->mRootNode, scene);// Process ASSIMP's root node recursively		
 		
 		loadedTextures.clear();
 		loadedMaterials.clear();
@@ -93,9 +93,8 @@ void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const ai
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		// The scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 		
-		if (mn != 0) {
-			mn->meshes.push_back(processMesh(mesh, scene, node, mn));
-		}
+		if (mn != 0)
+			mn->meshes.push_back(processMesh(mesh, i, scene, node, mn));
 	}
 
 	// After we've processed all of the meshes (if any) we then recursively process each of the children nodes
@@ -197,7 +196,7 @@ std::string ModelLoader::lightSourceTypeToString(aiLightSourceType type)
 		return "Unknown light enum type";
 }
 
-Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, const aiScene* scene, aiNode* assimpNode, ModelNode* modelNode)
+Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, unsigned int meshIndex, const aiScene* scene, aiNode* assimpNode, ModelNode* modelNode)
 {
 	Mesh* mesh = new Mesh(); // Our own mesh
 	mesh->modelNode = modelNode;
@@ -245,15 +244,28 @@ Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, const aiScene* scene, aiNode*
 		{
 			aiVertexWeight assimpVertexWeight = pBone->mWeights[weightIndex];
 			glm::vec4* pBoneWeight = &mesh->vertices.at(assimpVertexWeight.mVertexId).boneWeights;
+			glm::uvec4* pBoneIndices = &mesh->vertices.at(assimpVertexWeight.mVertexId).boneIndices;
 
 			if (pBoneWeight->x == 0.0f)
+			{
+				pBoneIndices->x = boneIndex;
 				pBoneWeight->x = assimpVertexWeight.mWeight;
+			}
 			else if (pBoneWeight->y == 0.0f)
+			{
+				pBoneIndices->y = boneIndex;
 				pBoneWeight->y = assimpVertexWeight.mWeight;
+			}
 			else if (pBoneWeight->z == 0.0f)
+			{
+				pBoneIndices->z = boneIndex;
 				pBoneWeight->z = assimpVertexWeight.mWeight;
+			}
 			else if (pBoneWeight->w == 0.0f)
+			{
+				pBoneIndices->w = boneIndex;
 				pBoneWeight->w = assimpVertexWeight.mWeight;
+			}
 			else
 			{ // Not more than four influcences on a bone are allowed
 				string nodeName = "The node " + modelNode->name + " has more than four weights in the bone " + pBone->mName.C_Str() + ".";
@@ -261,8 +273,8 @@ Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, const aiScene* scene, aiNode*
 			}
 		}
 
-		if(mesh->assimpBoneNode == nullptr)
-			mesh->assimpBoneNode = assimpNode; // To be able to use the animator.cpp to the the correct for skinned pose matrices
+		mesh->assimpBoneNode = assimpNode; // To be able to use the animator.cpp to the the correct for skinned pose matrices
+		mesh->meshIndex = meshIndex;
 	}
 	
 

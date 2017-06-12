@@ -95,13 +95,14 @@ private:
 	layout (location = 4)  uniform mat4 inverseModel;     // Usage in: ModelNode.hpp#draw()
 	layout (location = 8)  uniform mat4 view;	          // Usage in: RenderLoop.cpp#doDeferredShading()
 	layout (location = 12) uniform mat4 projection;       // Usage in: RenderLoop.cpp#doDeferredShading()
-	layout (location = 16) uniform mat4 boneMatrices[60]; // Usage in: Mesh.cpp#transmitBoneMatrix()
+	layout (location = 16) uniform mat4 boneMatrices[60]; // Usage in: Mesh.cpp#transmitBoneMatrix(), and max bones allowed
 
 	layout (location = 0) in vec3 position;    // Usage in: Mesh.cpp link();
 	layout (location = 1) in vec3 normal;      // Usage in: Mesh.cpp link();
 	layout (location = 2) in vec2 tc;          // Usage in: Mesh.cpp link();
-	layout (location = 3) in vec4 boneWeights; // Usage in: Mesh.cpp link();
-	layout (location = 4) in vec4 material;    // Usage in: Mesh.cpp link();, // rgb = optional color, if all are not zero the texture is unused, a = shininess value
+	layout (location = 3) in uvec4 boneIndices;// Usage in: Mesh.cpp link();
+	layout (location = 4) in vec4 boneWeights; // Usage in: Mesh.cpp link();
+	layout (location = 5) in vec4 material;    // Usage in: Mesh.cpp link();, // rgb = optional color, if all are not zero the texture is unused, a = shininess value
 
 	layout (location = 0) out vec3 fragmentPosition; // Usage in: gBuffer.frag in
 	layout (location = 1) out vec3 normalVector;     // Usage in: gBuffer.frag in
@@ -110,12 +111,25 @@ private:
 
 	void main()
 	{
-		vec4 worldPosition = vec4(model * vec4(position, 1.0));
+		vec4 worldPosition = vec4(position, 1);
+
+		if(boneWeights.x != 0 || boneWeights.y != 0 || boneWeights.z != 0 || boneWeights.w != 0)
+		{
+			vec4 usedBoneWeights = boneWeights;
+			usedBoneWeights.w = 1.0 - dot(boneWeights.xyz, vec3(1.0, 1.0, 1.0));
+			
+			mat4 transformMatrix = usedBoneWeights.x * boneMatrices[int(boneIndices.x)]; // TODO: test if int cast is necessary
+			     transformMatrix += usedBoneWeights.y * boneMatrices[int(boneIndices.y)];
+			     transformMatrix += usedBoneWeights.z * boneMatrices[int(boneIndices.z)];
+			     transformMatrix += usedBoneWeights.w * boneMatrices[int(boneIndices.w)];
+
+			worldPosition = model * transformMatrix * worldPosition;
+		}
+		else
+			worldPosition  = model * worldPosition;
+
 		fragmentPosition = worldPosition.xyz;
 		gl_Position = projection * view * worldPosition;
-
-		if(boneWeights.x =! 0 || boneWeights.y =! 0 || boneWeights.z =! 0 || boneWeights.w =! 0)
-			boneMatrices[59] *= boneWeights; // TODO
 
 		texCoords = tc;                             // Forward uv texel coordinates to the fragment shader
 		normalVector = mat3(inverseModel) * normal; // Forward normals to fragment shader
