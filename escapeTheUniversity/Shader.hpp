@@ -112,27 +112,30 @@ private:
 	void main()
 	{
 		vec4 worldPosition = vec4(position, 1);
+		vec3 usedNormal = normal;
 
-		/*if(boneWeights.x > 0 || boneWeights.y > 0 || boneWeights.z > 0 || boneWeights.w > 0)
-		{
+		if(boneWeights.x > 0 || boneWeights.y > 0 || boneWeights.z > 0 || boneWeights.w > 0)
+		{ // Calculate the skinning matrix for vertices which have bones, maximum are four bone influences
 			vec4 usedBoneWeights = boneWeights;
 			usedBoneWeights.w = 1.0 - dot(boneWeights.xyz, vec3(1.0, 1.0, 1.0));
 			
-			mat4 transformMatrix = usedBoneWeights.x * boneMatrices[int(boneIndices.x)]; // TODO: test if int cast is necessary
-			transformMatrix += usedBoneWeights.y * boneMatrices[int(boneIndices.y)];
-			transformMatrix += usedBoneWeights.z * boneMatrices[int(boneIndices.z)];
-			transformMatrix += usedBoneWeights.w * boneMatrices[int(boneIndices.w)];
+			mat4 boneMatrix = usedBoneWeights.x * boneMatrices[int(boneIndices.x)]; // TODO: test if int cast is necessary // Bone transformation matrix
+			boneMatrix += usedBoneWeights.y * boneMatrices[int(boneIndices.y)];
+			boneMatrix += usedBoneWeights.z * boneMatrices[int(boneIndices.z)];
+			boneMatrix += usedBoneWeights.w * boneMatrices[int(boneIndices.w)];
 
-			worldPosition = model * transformMatrix * worldPosition;
+			worldPosition = model * boneMatrix * worldPosition;
+
+			usedNormal = vec3(boneMatrix * vec4(normal, 0));
 		}
-		else*/
+		else // Normal world position calculation
 			worldPosition  = model * worldPosition;
 
 		fragmentPosition = worldPosition.xyz;
 		gl_Position = projection * view * worldPosition;
 
 		texCoords = tc;                             // Forward uv texel coordinates to the fragment shader
-		normalVector = mat3(inverseModel) * normal; // Forward normals to fragment shader
+		normalVector = mat3(inverseModel) * usedNormal; // Forward normals to fragment shader
 		materialDiffuseShininess = material;        // rgb = optional color, if all are not zero the texture is unused, a = shininess value
 	})glsl";
 	const char* GBUFFER_FRAG = R"glsl(
