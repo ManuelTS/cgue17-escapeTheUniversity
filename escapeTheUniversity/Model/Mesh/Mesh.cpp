@@ -53,28 +53,20 @@ void Mesh::link()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-glm::mat4 Mesh::assimpMatrix2GLM(aiMatrix4x4 mat)
+glm::mat4 Mesh::transposeAssimpMatrix2GLMColumnMajor(aiMatrix4x4 mat)
 {
-	glm::mat4 converded;
+	// Column and row major orders: https://en.wikipedia.org/wiki/Transpose
+	// OpenGL calls for matrices with GL_FALSE does not transpostion https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glUniform.xml
+	// OpenGL default order is column major, https://stackoverflow.com/questions/29191344/matrix-order-in-skeletal-animation-using-assimp
+	// GLM matrices are column major, http://glm.g-truc.net/0.9.8/glm-0.9.8.pdf
+	glm::mat4 transposed; 
 
-	converded[0][0] = mat.a1;
-	converded[0][1] = mat.b1;
-	converded[0][2] = mat.c1;
-	converded[0][3] = mat.d1;
-	converded[1][0] = mat.a2;
-	converded[1][1] = mat.b2;
-	converded[1][2] = mat.c2;
-	converded[1][3] = mat.d2;
-	converded[2][0] = mat.a3;
-	converded[2][1] = mat.b3;
-	converded[2][2] = mat.c3;
-	converded[2][3] = mat.d3;
-	converded[3][0] = mat.a4;
-	converded[3][1] = mat.b4;
-	converded[3][2] = mat.c4;
-	converded[3][3] = mat.d4;
+	transposed[0][0] = mat.a1;	transposed[0][1] = mat.b1;	transposed[0][2] = mat.c1;	transposed[0][3] = mat.d1;
+	transposed[1][0] = mat.a2;	transposed[1][1] = mat.b2;	transposed[1][2] = mat.c2;	transposed[1][3] = mat.d2;
+	transposed[2][0] = mat.a3;	transposed[2][1] = mat.b3;	transposed[2][2] = mat.c3;	transposed[2][3] = mat.d3;
+	transposed[3][0] = mat.a4;	transposed[3][1] = mat.b4;	transposed[3][2] = mat.c4;	transposed[3][3] = mat.d4;
 
-	return converded;
+	return transposed;
 }
 
 void Mesh::transmitBoneMatrix()
@@ -85,7 +77,7 @@ void Mesh::transmitBoneMatrix()
 		const std::vector<aiMatrix4x4>& vBoneMatrices = ModelLoader::getInstance()->animator->GetBoneMatrices(assimpBoneNode, meshIndex);
 
 		for (unsigned int matrixIndex = 0; matrixIndex < vBoneMatrices.size(); matrixIndex++)
-			boneMatrices[matrixIndex] = assimpMatrix2GLM(vBoneMatrices[matrixIndex]);
+			boneMatrices[matrixIndex] = transposeAssimpMatrix2GLMColumnMajor(vBoneMatrices[matrixIndex]);
 
 		glUniformMatrix4fv(boneMatricesLocation, MAX_BONE_NUMER, GL_FALSE, glm::value_ptr(boneMatrices[0]));
 	}
@@ -109,7 +101,7 @@ void Mesh::draw(unsigned int drawMode)
 			}*/
 		}	
 
-		//transmitBoneMatrix();
+		transmitBoneMatrix();
 
 		glBindVertexArray(VAO);
 
