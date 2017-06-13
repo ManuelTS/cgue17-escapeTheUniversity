@@ -125,7 +125,7 @@ public:
   *   transformation matrix.
   */
   const aiMatrix4x4& GetGlobalTransform(const aiNode* node) const;
-  const double ANIMATION_TICKS_PER_SECOND = 20; // How many animation keys per second
+  const double ANIMATION_TICKS_PER_SECOND = 10; // How many animation keys per second
 
 private:
   /** Recursively creates an internal node structure matching the 
