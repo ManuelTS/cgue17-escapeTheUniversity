@@ -404,13 +404,13 @@ void RenderLoop::calculateDeltaTime()
 	while (time.accumulator >= time.differentialDelta)
 		time.accumulator -= time.differentialDelta;
 	
-	// Sets the timing syncronization of bullet physics, deltaTime * 1000 is around 0.18
-	b->getDynamicsWorld()->stepSimulation(time.delta * 1000, 2, time.differentialDelta); // Params: deltaTime in seconds, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
+	// Sets the timing syncronization of bullet physics, deltaTime is around 0.18
+	b->getDynamicsWorld()->stepSimulation(time.delta, 2, 1.0f/60.0f); // Params: deltaTime, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
 	//Calculates the node transformations for the scene
-	a->UpdateAnimation(time.delta * 1000, a->ANIMATION_TICKS_PER_SECOND);
+	a->UpdateAnimation(time.delta * 5000, a->ANIMATION_TICKS_PER_SECOND);
 
-	const double alpha = time.accumulator / time.differentialDelta;
-	time.delta = time.now * alpha + time.past * (1 - alpha);
+	//const double alpha = time.accumulator / time.differentialDelta;
+	//time.delta = time.now * alpha + time.past * (1 - alpha);
 }
 
 /*Listens for user input.*/

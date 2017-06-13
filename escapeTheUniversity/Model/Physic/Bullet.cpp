@@ -170,8 +170,7 @@ void Bullet::createCamera(Camera* c)
 
 btDiscreteDynamicsWorld* Bullet::getDynamicsWorld()
 {
-	// Sets the timing syncronization of bullet physics, deltaTime * 1000 is around 0.18
-	dynamicsWorld->stepSimulation(deltaTime * 1000, 2, 0.1f); // Params: deltaTime in seconds, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
+	
 	return dynamicsWorld;
 }
 

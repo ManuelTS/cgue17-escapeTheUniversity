@@ -45,7 +45,7 @@ public:
 	void createAndAddBoundingObjects(Node* current); // Creates and adds the bounding volumes into the bullet world and to the nodes
 	void join();// Waits and removes all threads that where created for collision object creation
 	void createCamera(Camera* camera); // Creates the bounding object for the camera
-	btDiscreteDynamicsWorld* getDynamicsWorld(); // Sets the timing syncronization of bullet physics
+	btDiscreteDynamicsWorld* getDynamicsWorld();
 	void Bullet::debugDraw(); // Draws the whole debug world of bullet, see constructor and BulletDebugDraw.cpp and .hpp
 	btCollisionObject* createBox(float mass); // Creates a bounding box
 };
