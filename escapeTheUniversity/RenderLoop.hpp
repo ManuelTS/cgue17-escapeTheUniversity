@@ -16,9 +16,16 @@ class GBuffer;
 class RenderLoop{
 	private:
 		GLFWwindow* window;
-		// Time
-		double timePast; // Last, past time  in milliseconds
-		double timeNow; // New, current time in millisecond		
+		
+		struct Time // variables of this game, approach of http://gafferongames.com/game-physics/fix-your-timestep/
+		{
+			double past; // Last, past time  in mili or nano seconds, according to glfw its system dependend
+			double now; // New, current time in mili or nano seconds, according to glfw its system dependend
+			double delta; // Difference of variable timeNew and timeOld in mili or nano seconds, according to glfw its system dependend
+			const double differentialDelta = 0.01; //dt, The renderer produces time and the simulation consumes it in discrete dt sized chunks.
+			double accumulator = 0.0; // Notice that we only process with steps sized dt. Hence, in the common case we have some unsimulated time left over at the end of each frame passed on to the next frame via the accumulator variable and is not thrown away.
+
+		} time;
 	
 		RenderLoop(void){}; // Private constructor to allow only one instance
 		RenderLoop(RenderLoop const&); // Private constructor to prevent copies
@@ -58,13 +65,13 @@ class RenderLoop{
 		int textureSampling = 1; // Texture Sampling Quality: 0 = Nearest Neighbor, 1 = Bilinear, default: 1 see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping
 		int mipMapping = 2; // Maping-Quality: 0 = Off, 1 = Nearest Neigbor, 2 = Bilinear, default: 2
 		
-		double deltaTime; // Difference of variable timeNew and timeOld in nano seconds
 
 		~RenderLoop();
 		void start(); // Initializes and starts the actual renderloop
 		void renderText(); // Renders the FPS on the screen
 		void toggleFullscreen(); // Toggles the fullscreen
 		void changeQuality(); // Changes the quality of texture sampling and Mip Mapping, see variables mipMapping and textureSampling. True if texture, false if mip mapping
+		double getTimeDelta(); // Returns the current delta time
 
 		/*Returns the pointer to the unique instance of the render loop class.*/
 		static RenderLoop* RenderLoop::getInstance()

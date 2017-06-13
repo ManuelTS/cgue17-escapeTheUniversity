@@ -22,7 +22,7 @@ void TransformationNode::switchState()
 
 float TransformationNode::change(bool plus)
 {
-	float newRadiant = RADIANT * RenderLoop::getInstance()->deltaTime;
+	float newRadiant = RADIANT * RenderLoop::getInstance()->getTimeDelta();
 	
 	if (!plus)
 		newRadiant = -newRadiant;

@@ -250,8 +250,7 @@ void RenderLoop::start()
 
 		if (render)
 		{
-			doMovement(deltaTime);
-			ml->animator->UpdateAnimation(deltaTime, ml->animator->ANIMATION_TICKS_PER_SECOND);
+			doMovement(time.delta);
 			doDeferredShading(gBuffer, gBufferShader, deferredShader, ml);
 		}
 		else
@@ -368,7 +367,7 @@ void RenderLoop::pureDraw(Node* current) {
 void RenderLoop::renderText()
 { // It is important to leave the if else structure here as it is
 	if (fps)
-		Text::getInstance()->fps(timeNow, deltaTime, drawnTriangles);
+		Text::getInstance()->fps(time.now, time.delta, drawnTriangles);
 
 	if (wireFrameMode)
 		Text::getInstance()->wireframe();
@@ -384,18 +383,35 @@ void RenderLoop::renderText()
 	else if (!render)
 		Text::getInstance()->pause();
 	else if (Text::getInstance()->hasTimeLeft())
-		Text::getInstance()->removeTime(deltaTime);
+		Text::getInstance()->removeTime(time.delta);
 
 }
 
 // Calculates the delta time, e.g. the time between frames
 void RenderLoop::calculateDeltaTime()
 {
-	timeNow = glfwGetTime();
-	deltaTime = timeNow - timePast;
-	timePast = timeNow;
+	time.now = glfwGetTime();
+	time.delta = time.now - time.past;
 
-	Bullet::getInstance()->step(deltaTime);
+	if (time.delta > 0.25)
+		time.delta = 0.25;
+
+	time.past = time.now;
+
+	time.accumulator += time.delta;
+
+	Animator* a = ModelLoader::getInstance()->animator;
+	Bullet* b = Bullet::getInstance();
+
+	while (time.accumulator >= time.differentialDelta)
+	{
+		b->step(time.differentialDelta);
+		a->UpdateAnimation(time.differentialDelta, a->ANIMATION_TICKS_PER_SECOND);
+		time.accumulator -= time.differentialDelta;
+	}
+
+	const double alpha = time.accumulator / time.differentialDelta;
+	time.delta = time.now * alpha + time.past * (1 - alpha);
 }
 
 /*Listens for user input.*/
@@ -565,4 +581,9 @@ void RenderLoop::changeQuality()
 
 	ModelLoader* ml = ModelLoader::getInstance();
 	ml->setTextureState(ml->root, paramMin, paramMax);
+}
+
+double RenderLoop::getTimeDelta()
+{
+	return time.delta;
 }
