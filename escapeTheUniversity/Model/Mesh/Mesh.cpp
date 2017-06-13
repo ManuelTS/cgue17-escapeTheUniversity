@@ -39,7 +39,7 @@ void Mesh::link()
 	glEnableVertexAttribArray(uvLocation);
 	glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
 	glEnableVertexAttribArray(boneIndicesLocation);
-	glVertexAttribPointer(boneIndicesLocation, 4, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, boneIndices));
+	glVertexAttribIPointer(boneIndicesLocation, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void*)offsetof(Vertex, boneIndices));
 	glEnableVertexAttribArray(boneWeightLocation);
 	glVertexAttribPointer(boneWeightLocation, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, boneWeights));
 

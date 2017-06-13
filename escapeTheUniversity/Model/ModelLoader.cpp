@@ -412,8 +412,7 @@ unsigned int ModelLoader::loadPicture(string path)
 
 	if (error != IL_TRUE) {
 		ilDeleteImages(1, &ilHandle);
-		char* msg = "";
-		sprintf_s(msg, sizeof(msg),"Texture: Failed to load the image from %s , error code: %i", path.c_str(), error);
+		string msg = "Texture: Failed to load the image from " + path + " , error code: " + to_string(error) + ".";
 		Debugger::getInstance()->pauseExit(msg);
 	}
 

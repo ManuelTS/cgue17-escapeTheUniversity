@@ -65,5 +65,5 @@ private:
 	RenderLoop* rl = RenderLoop::getInstance(); // to set the drawn trianlges
 
 	void transmitBoneMatrix();// Transmits the bone matrices to the vertex shader
-	glm::mat4 assimpMatrix2GLM(aiMatrix4x4 mat); // Convertes the argument to the return type, delete the return pointer!
+	glm::mat4 transposeAssimpMatrix2GLMColumnMajor(aiMatrix4x4 mat); // Convertes the argument to the return type, delete the return pointer!
 };
