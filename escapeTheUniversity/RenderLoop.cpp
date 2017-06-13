@@ -392,23 +392,22 @@ void RenderLoop::calculateDeltaTime()
 {
 	time.now = glfwGetTime();
 	time.delta = time.now - time.past;
-
-	if (time.delta > 0.25)
-		time.delta = 0.25;
-
 	time.past = time.now;
-
-	time.accumulator += time.delta;
 
 	Animator* a = ModelLoader::getInstance()->animator;
 	Bullet* b = Bullet::getInstance();
 
+	time.accumulator += time.delta;
+
+	//printf("Delta: %")
+
 	while (time.accumulator >= time.differentialDelta)
-	{
-		b->step(time.differentialDelta);
-		a->UpdateAnimation(time.differentialDelta, a->ANIMATION_TICKS_PER_SECOND);
 		time.accumulator -= time.differentialDelta;
-	}
+	
+	// Sets the timing syncronization of bullet physics, deltaTime * 1000 is around 0.18
+	b->getDynamicsWorld()->stepSimulation(time.delta * 1000, 2, time.differentialDelta); // Params: deltaTime in seconds, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
+	//Calculates the node transformations for the scene
+	a->UpdateAnimation(time.delta * 1000, a->ANIMATION_TICKS_PER_SECOND);
 
 	const double alpha = time.accumulator / time.differentialDelta;
 	time.delta = time.now * alpha + time.past * (1 - alpha);

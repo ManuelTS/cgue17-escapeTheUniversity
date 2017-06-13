@@ -251,7 +251,7 @@ void Animator::UpdateAnimation(double lElapsedTime, double dTicksPerSecond)
 {
   if ((m_pCurrentAnimation) && (m_pCurrentAnimation->mDuration > 0.0))
   {
-	 lElapsedTime *= 1000; // Convert the miliseconds to seconds
+	// lElapsedTime should be in seconds right?
     //calculate current local transformations
     //extract ticks per second. Assume default value if not given
     double dTicksPerSecondCorrected = dTicksPerSecond != 0.0 ? dTicksPerSecond : ANIMATION_TICKS_PER_SECOND;

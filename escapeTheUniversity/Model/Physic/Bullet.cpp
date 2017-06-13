@@ -168,10 +168,11 @@ void Bullet::createCamera(Camera* c)
 	dynamicsWorld->addRigidBody(c->rigitBody);
 }
 
-void Bullet::step(const double deltaTime)
+btDiscreteDynamicsWorld* Bullet::getDynamicsWorld()
 {
-	// deltaTime * 1000 is around 0.18
-	dynamicsWorld->stepSimulation(deltaTime * 1000, 1, 0.2f); // Params: deltaTime in seconds, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
+	// Sets the timing syncronization of bullet physics, deltaTime * 1000 is around 0.18
+	dynamicsWorld->stepSimulation(deltaTime * 1000, 2, 0.1f); // Params: deltaTime in seconds, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
+	return dynamicsWorld;
 }
 
 Bullet::~Bullet()
