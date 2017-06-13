@@ -91,7 +91,7 @@ public:
   * array of transformation matrices afterwards by calling GetTransformations().
   * @param lElapsedTime Elapsed time since animation start in ms.
   */
-  void UpdateAnimation(long lElapsedTime, double dTicksPerSecond);
+  void UpdateAnimation(double lElapsedTime, double dTicksPerSecond);
 
   //----------------------------------------------------------------------------
   /** Calculates the bone matrices for the given mesh.
@@ -125,7 +125,7 @@ public:
   *   transformation matrix.
   */
   const aiMatrix4x4& GetGlobalTransform(const aiNode* node) const;
-  const double ANIMATION_TICKS_PER_SECOND = 10; // How many animation keys per second
+  const double ANIMATION_TICKS_PER_SECOND = 20; // How many animation keys per second
 
 private:
   /** Recursively creates an internal node structure matching the 

@@ -247,10 +247,11 @@ const aiMatrix4x4& Animator::GetGlobalTransform(const aiNode * node) const {
 
 //------------------------------------------------------------------------------------------------
 //Calculates the node transformations for the scene. 
-void Animator::UpdateAnimation(long lElapsedTime, double dTicksPerSecond) {
-  if ((m_pCurrentAnimation) && (m_pCurrentAnimation->mDuration > 0.0)) {
-    double dTime = ((double) lElapsedTime) / 1000.0;
-
+void Animator::UpdateAnimation(double lElapsedTime, double dTicksPerSecond)
+{
+  if ((m_pCurrentAnimation) && (m_pCurrentAnimation->mDuration > 0.0))
+  {
+	 lElapsedTime *= 1000; // Convert the miliseconds to seconds
     //calculate current local transformations
     //extract ticks per second. Assume default value if not given
     double dTicksPerSecondCorrected = dTicksPerSecond != 0.0 ? dTicksPerSecond : ANIMATION_TICKS_PER_SECOND;
@@ -258,11 +259,13 @@ void Animator::UpdateAnimation(long lElapsedTime, double dTicksPerSecond) {
     //map into anim's duration
     double dTimeInTicks = 0.0f;
 
-    if (m_pCurrentAnimation->mDuration > 0.0) {
-      dTimeInTicks = fmod(dTime * dTicksPerSecondCorrected, m_pCurrentAnimation->mDuration);
+    if (m_pCurrentAnimation->mDuration > 0.0)
+	{
+      dTimeInTicks = fmod(lElapsedTime * dTicksPerSecondCorrected, m_pCurrentAnimation->mDuration); // Returns the floating-point remainder of numer/denom (rounded towards zero):
     }
 
-    if (m_vTransforms.size() != m_pCurrentAnimation->mNumChannels) {
+    if (m_vTransforms.size() != m_pCurrentAnimation->mNumChannels)
+	{
       m_vTransforms.resize(m_pCurrentAnimation->mNumChannels);
     }
 
