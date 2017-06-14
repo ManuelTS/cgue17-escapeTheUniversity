@@ -52,7 +52,7 @@ void ModelNode::draw()
 
 	if (size > 0)
 	{
-		if(bounding && rigidBody)
+		if(bounding && rigidBody) // Bounding = VHACD generated and rigitBody = movable object in bullet
 		{
 			btTransform trans;
 			rigidBody->getMotionState()->getWorldTransform(trans);

@@ -41,15 +41,14 @@ private:
 	std::vector<Mesh::Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::vector<glm::vec4>* materials);// Loads all materials and the textures
 	void linkLightUBO(); // Generates the Light UBO handle
 public:
-	const std::string SMALL_WING = "SmallWing";
-	const std::string BIG_WING = "BigWing";
+	const std::string MODEL_DIR = ".\\Model\\";// Resource top folder directories
+	const unsigned int LIGHT_NUMBER = 10;// Max number of lights 
+
+	const std::string IMMOVABLE_SUFFIX = "_i"; // Suffix for immovable objects in bullet
+
 	Node* root; // Root node of the scene 
 	Assimp::Importer* importer;
 	Animator* animator; // Is the animator for  vertex skinning animations
-
-	// Resource top folder directories
-	const std::string MODEL_DIR = ".\\Model\\";
-	const unsigned int LIGHT_NUMBER = 10;// Max number of lights 
 
 	/*Returns the pointer to the unique instance of this class.*/
 	static ModelLoader* ModelLoader::getInstance()
