@@ -45,17 +45,6 @@ float TransformationNode::change(bool plus)
 		}
 	}
 
-
-	//Calculates the node transformations for the scene
-
-	//if (time.animate)
-	//{
-	//	Animator* a = ModelLoader::getInstance()->animator;
-	//	// Argument is here the time inside the animation, not time delta!
-	//	a->UpdateAnimation(time.temp += 0.001, a->ANIMATION_TICKS_PER_SECOND);
-	//	time.animate = false;
-	//}
-
 	return newRadiant;
 }
 

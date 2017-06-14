@@ -1,11 +1,11 @@
 #include "SoundManager.hpp"
-#include "Model/ModelLoader.hpp"
 #include "Camera/Frustum.hpp"
-#include "Model/Node/Node.hpp"
-#include "Model/Node/ModelNode.hpp"
-#include "Model/Node/LightNode.hpp"
-#include "Model/Node/TransformationNode.hpp"
 #include "RenderLoop.hpp"
+#include "Model\ModelLoader.hpp"
+#include "Model/Node/Node.hpp"
+#include "Model/Node/LightNode.hpp"
+#include "Model/Node/ModelNode.hpp"
+#include "Model/Node/AnimatNode.hpp"
 #include "Camera/Camera.hpp"
 #include "GBuffer.hpp"
 #include "Shader.hpp"
@@ -351,14 +351,22 @@ void RenderLoop::draw(Node* current)
 			// ... render only when the model node schould be rendered
 
 			if (mn->render && (frustum || Frustum::getInstance()->sphereInFrustum(mn->hirachicalModelMatrix[3], mn->radius) > -1)) // World position is [3]
+			{
+				AnimatNode* an = dynamic_cast<AnimatNode*>(mn);
+
+				if (an) 
+					an->timeAccumulator += time.delta;
+
 				pureDraw(current);
+			}
 		}
 		else // If no model node render anyway
 			pureDraw(current);
 	}
 }
 
-void RenderLoop::pureDraw(Node* current) {
+void RenderLoop::pureDraw(Node* current)
+{
 	current->draw();
 
 	for (Node* child : current->children)
