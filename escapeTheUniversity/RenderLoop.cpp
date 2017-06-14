@@ -57,7 +57,6 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			rl->textureSampling++;
 			rl->changeQuality();
 		}
-			
 		else if (key == GLFW_KEY_F5)
 		{
 			rl->mipMapping++;
@@ -104,7 +103,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 		else if (key == GLFW_KEY_Q)
 		{
-			rl->time.animate = true;
+		
 		}
 		else if (key == GLFW_KEY_O) {
 			Text::getInstance()->addText2Display(Text::GAME_OVER);
@@ -395,15 +394,6 @@ void RenderLoop::calculateDeltaTime()
 
 	// Sets the timing syncronization of bullet physics, deltaTime is around 0.18
 	Bullet::getInstance()->getDynamicsWorld()->stepSimulation(time.delta, 2, 0.16f); // Params: deltaTime, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
-	//Calculates the node transformations for the scene
-
-	if (time.animate)
-	{
-		Animator* a = ModelLoader::getInstance()->animator;
-		// Argument is here the time inside the animation, not time delta!
-		a->UpdateAnimation(time.temp += 0.001, a->ANIMATION_TICKS_PER_SECOND);
-		time.animate = false;
-	}
 }
 
 /*Listens for user input.*/

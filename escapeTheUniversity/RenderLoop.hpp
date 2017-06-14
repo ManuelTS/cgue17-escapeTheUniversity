@@ -36,9 +36,6 @@ class RenderLoop{
 			double past; // Last, past time  in mili or nano seconds, according to glfw its system dependend
 			double now; // New, current time in mili or nano seconds, according to glfw its system dependend
 			double delta; // Difference of variable timeNew and timeOld in mili or nano seconds, according to glfw its system dependend
-			bool animate = false;
-			double temp = 0.0;
-
 		} time;
 
 		Camera* camera;
