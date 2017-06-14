@@ -17,10 +17,13 @@ class DoorNode;
 class ModelLoader
 {
 private:
-	const std::string DOOR_SUFFIX = "_door"; // Door xxx names
-	const std::string ANGLE_SUFFIX = "_angle";
-	const std::string LIGHT_SUFFIX = "_light"; // Light nodes
+	const std::string ANGLE_SUFFIX = "_angle"; // Door parent on their pivot point
 	const std::string BOUNDING_SUFFIX = "_bounding"; // Suffix to calculate bounding volumes for
+	const std::string ANIMATION_SUFFIX = "_c"; // Suffix for animat nodes
+	const std::string DOOR_SUFFIX = "_door"; // Door xxx names
+	const std::string LIGHT_SUFFIX = "_light"; // Light nodes
+
+	const std::string CYBOG_FEMALE = "MilitaryWoman"; // Name of the military female cybog
 
 	bool loadModels = true; // Set this variable only once!
 	std::string directory;// Relative path to all models

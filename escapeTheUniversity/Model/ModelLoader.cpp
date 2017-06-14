@@ -4,6 +4,7 @@
 #include "Node\ModelNode.hpp"
 #include "Node\LightNode.hpp"
 #include "Node\TransformationNode.hpp"
+#include "Node\AnimatNode.hpp"
 #include "Mesh\Mesh.hpp"
 #include <IL\il.h>
 #include <IL\ilu.h>  // for image creation and manipulation funcs.
@@ -62,7 +63,14 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 		return processLightNode(&name, parent, node, scene);
 	else // Normal node and transformation processing
 	{
-		ModelNode* current = string::npos != name.find(ANGLE_SUFFIX) ? new TransformationNode : new ModelNode();
+		ModelNode* current = nullptr;
+		
+		if (string::npos != name.find(ANGLE_SUFFIX))
+			current = new TransformationNode();
+		if (string::npos != name.find(ANIMATION_SUFFIX) || string::npos != name.find(CYBOG_FEMALE))
+			current = new AnimatNode();
+		else
+			current = new ModelNode();
 
 		current->name = name;
 

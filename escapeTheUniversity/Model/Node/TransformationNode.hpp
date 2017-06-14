@@ -4,7 +4,7 @@
 #include "ModelNode.hpp"
 
 class TransformationNode : public ModelNode
-{
+{ // TODO split this to a door node
 	private:
 		const float RADIANT = degreesToRadians(90.0f); // Value is in angle, result in radiants
 		const float MAX_ROTATION_RADIANT = degreesToRadians(140.0f); // Value is in angle, result in radiants

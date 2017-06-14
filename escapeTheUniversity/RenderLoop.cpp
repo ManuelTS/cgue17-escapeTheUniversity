@@ -1,11 +1,11 @@
 #include "SoundManager.hpp"
-#include "Model/ModelLoader.hpp"
 #include "Camera/Frustum.hpp"
-#include "Model/Node/Node.hpp"
-#include "Model/Node/ModelNode.hpp"
-#include "Model/Node/LightNode.hpp"
-#include "Model/Node/TransformationNode.hpp"
 #include "RenderLoop.hpp"
+#include "Model\ModelLoader.hpp"
+#include "Model/Node/Node.hpp"
+#include "Model/Node/LightNode.hpp"
+#include "Model/Node/ModelNode.hpp"
+#include "Model/Node/AnimatNode.hpp"
 #include "Camera/Camera.hpp"
 #include "GBuffer.hpp"
 #include "Shader.hpp"
@@ -57,7 +57,6 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			rl->textureSampling++;
 			rl->changeQuality();
 		}
-			
 		else if (key == GLFW_KEY_F5)
 		{
 			rl->mipMapping++;
@@ -93,18 +92,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 				ln->light.diffuse.a += minus ? -0.01f : 0.01f;
 		}
 		else if (key == GLFW_KEY_E)
-		{
-			/*for (Node* n : ModelLoader::getInstance()->getAllNodes())
-			{
-				TransformationNode* dn = dynamic_cast<TransformationNode*>(n);
-
-				if (dn)
-					dn->switchState();
-			}*/
-		}
+			rl->move(ModelLoader::getInstance()->root);
 		else if (key == GLFW_KEY_Q)
 		{
-			rl->time.animate = true;
+		
 		}
 		else if (key == GLFW_KEY_O) {
 			Text::getInstance()->addText2Display(Text::GAME_OVER);
@@ -117,6 +108,17 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		else if (key == GLFW_KEY_BACKSLASH)
 			rl->showCamCoords = !rl->showCamCoords;
 	}
+}
+
+void RenderLoop::move(Node* current)
+{
+	TransformationNode* dn = dynamic_cast<TransformationNode*>(current);
+
+	if (dn)
+		dn->switchState();
+
+	for (Node*child : current->children)
+		move(child);
 }
 
 /*Callback function for windowresize, set viewport to the entire window.
@@ -349,14 +351,22 @@ void RenderLoop::draw(Node* current)
 			// ... render only when the model node schould be rendered
 
 			if (mn->render && (frustum || Frustum::getInstance()->sphereInFrustum(mn->hirachicalModelMatrix[3], mn->radius) > -1)) // World position is [3]
+			{
+				AnimatNode* an = dynamic_cast<AnimatNode*>(mn);
+
+				if (an) 
+					an->timeAccumulator += time.delta;
+
 				pureDraw(current);
+			}
 		}
 		else // If no model node render anyway
 			pureDraw(current);
 	}
 }
 
-void RenderLoop::pureDraw(Node* current) {
+void RenderLoop::pureDraw(Node* current)
+{
 	current->draw();
 
 	for (Node* child : current->children)
@@ -395,15 +405,6 @@ void RenderLoop::calculateDeltaTime()
 
 	// Sets the timing syncronization of bullet physics, deltaTime is around 0.18
 	Bullet::getInstance()->getDynamicsWorld()->stepSimulation(time.delta, 2, 0.16f); // Params: deltaTime, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
-	//Calculates the node transformations for the scene
-
-	if (time.animate)
-	{
-		Animator* a = ModelLoader::getInstance()->animator;
-		// Argument is here the time inside the animation, not time delta!
-		a->UpdateAnimation(time.temp += 0.001, a->ANIMATION_TICKS_PER_SECOND);
-		time.animate = false;
-	}
 }
 
 /*Listens for user input.*/
