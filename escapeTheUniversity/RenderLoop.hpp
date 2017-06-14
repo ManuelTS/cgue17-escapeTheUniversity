@@ -17,15 +17,7 @@ class RenderLoop{
 	private:
 		GLFWwindow* window;
 		
-		struct Time // variables of this game, approach of http://gafferongames.com/game-physics/fix-your-timestep/
-		{
-			double past; // Last, past time  in mili or nano seconds, according to glfw its system dependend
-			double now; // New, current time in mili or nano seconds, according to glfw its system dependend
-			double delta; // Difference of variable timeNew and timeOld in mili or nano seconds, according to glfw its system dependend
-			const double differentialDelta = 0.01; //dt, The renderer produces time and the simulation consumes it in discrete dt sized chunks.
-			double accumulator = 0.0; // Notice that we only process with steps sized dt. Hence, in the common case we have some unsimulated time left over at the end of each frame passed on to the next frame via the accumulator variable and is not thrown away.
 
-		} time;
 	
 		RenderLoop(void){}; // Private constructor to allow only one instance
 		RenderLoop(RenderLoop const&); // Private constructor to prevent copies
@@ -39,6 +31,16 @@ class RenderLoop{
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
  		
 	public:
+		struct Time // variables of this game, approach of http://gafferongames.com/game-physics/fix-your-timestep/
+		{
+			double past; // Last, past time  in mili or nano seconds, according to glfw its system dependend
+			double now; // New, current time in mili or nano seconds, according to glfw its system dependend
+			double delta; // Difference of variable timeNew and timeOld in mili or nano seconds, according to glfw its system dependend
+			bool animate = false;
+			double temp = 0.0;
+
+		} time;
+
 		Camera* camera;
 		Initialization* initVar;
 

@@ -104,7 +104,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 		else if (key == GLFW_KEY_Q)
 		{
-			// TODO
+			rl->time.animate = true;
 		}
 		else if (key == GLFW_KEY_O) {
 			Text::getInstance()->addText2Display(Text::GAME_OVER);
@@ -209,12 +209,11 @@ void RenderLoop::initGLFWandGLEW() {
 
 void RenderLoop::start()
 { // Init all
+	time.past = glfwGetTime();
 	ModelLoader* ml = ModelLoader::getInstance();
 	SoundManager* sm = SoundManager::getInstance();
-	#if _DEBUG	
 	sm->initFileName("Music\\Jahzzar_-_01_-_The_last_ones.mp3"); // Init SM with music file to play while loading
 	sm->playSound();
-	#endif
 
 	initVar = new Initialization();
 
@@ -394,23 +393,17 @@ void RenderLoop::calculateDeltaTime()
 	time.delta = time.now - time.past;
 	time.past = time.now;
 
-	Animator* a = ModelLoader::getInstance()->animator;
-	Bullet* b = Bullet::getInstance();
-
-	time.accumulator += time.delta;
-
-	//printf("Delta: %")
-
-	while (time.accumulator >= time.differentialDelta)
-		time.accumulator -= time.differentialDelta;
-	
 	// Sets the timing syncronization of bullet physics, deltaTime is around 0.18
-	b->getDynamicsWorld()->stepSimulation(time.delta, 2, 1.0f/60.0f); // Params: deltaTime, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
+	Bullet::getInstance()->getDynamicsWorld()->stepSimulation(time.delta, 2, 0.16f); // Params: deltaTime, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
 	//Calculates the node transformations for the scene
-	a->UpdateAnimation(time.delta * 5000, a->ANIMATION_TICKS_PER_SECOND);
 
-	//const double alpha = time.accumulator / time.differentialDelta;
-	//time.delta = time.now * alpha + time.past * (1 - alpha);
+	if (time.animate)
+	{
+		Animator* a = ModelLoader::getInstance()->animator;
+		// Argument is here the time inside the animation, not time delta!
+		a->UpdateAnimation(time.temp += 0.001, a->ANIMATION_TICKS_PER_SECOND);
+		time.animate = false;
+	}
 }
 
 /*Listens for user input.*/
