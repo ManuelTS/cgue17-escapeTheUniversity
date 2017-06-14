@@ -92,15 +92,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 				ln->light.diffuse.a += minus ? -0.01f : 0.01f;
 		}
 		else if (key == GLFW_KEY_E)
-		{
-			/*for (Node* n : ModelLoader::getInstance()->getAllNodes())
-			{
-				TransformationNode* dn = dynamic_cast<TransformationNode*>(n);
-
-				if (dn)
-					dn->switchState();
-			}*/
-		}
+			rl->move(ModelLoader::getInstance()->root);
 		else if (key == GLFW_KEY_Q)
 		{
 		
@@ -116,6 +108,17 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		else if (key == GLFW_KEY_BACKSLASH)
 			rl->showCamCoords = !rl->showCamCoords;
 	}
+}
+
+void RenderLoop::move(Node* current)
+{
+	TransformationNode* dn = dynamic_cast<TransformationNode*>(current);
+
+	if (dn)
+		dn->switchState();
+
+	for (Node*child : current->children)
+		move(child);
 }
 
 /*Callback function for windowresize, set viewport to the entire window.

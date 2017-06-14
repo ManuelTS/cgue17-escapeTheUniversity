@@ -72,6 +72,8 @@ class RenderLoop{
 		void changeQuality(); // Changes the quality of texture sampling and Mip Mapping, see variables mipMapping and textureSampling. True if texture, false if mip mapping
 		double getTimeDelta(); // Returns the current delta time
 
+		void move(Node* current);//temp method to move all doors
+
 		/*Returns the pointer to the unique instance of the render loop class.*/
 		static RenderLoop* RenderLoop::getInstance()
 		{

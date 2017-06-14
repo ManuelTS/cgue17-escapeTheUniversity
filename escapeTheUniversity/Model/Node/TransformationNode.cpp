@@ -33,13 +33,15 @@ float TransformationNode::change(bool plus)
 
 		if (mn)
 		{
-			mn->hirachicalModelMatrix = glm::translate(mn->hirachicalModelMatrix, -mn->position); // Translate to origin to rotate there
+			glm::vec3 pos = glm::vec3(hirachicalModelMatrix[3]);
+			mn->hirachicalModelMatrix = glm::translate(mn->hirachicalModelMatrix, -pos); // Translate to origin to rotate there
 			mn->hirachicalModelMatrix = glm::rotate(mn->hirachicalModelMatrix, newRadiant, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it only on y axis
-			mn->hirachicalModelMatrix = glm::translate(mn->hirachicalModelMatrix, mn->position); // Translate rotated matrix bock to position
+			mn->hirachicalModelMatrix = glm::translate(mn->hirachicalModelMatrix, pos); // Translate rotated matrix bock to position
 			// - rotate is faster than inverseTranspose
-			mn->inverseHirachicalModelMatrix = glm::translate(mn->inverseHirachicalModelMatrix, -mn->position); // Translate to origin to rotate there
+			pos = glm::vec3(hirachicalModelMatrix[3]);
+			mn->inverseHirachicalModelMatrix = glm::translate(mn->inverseHirachicalModelMatrix, -pos); // Translate to origin to rotate there
 			mn->inverseHirachicalModelMatrix = glm::rotate(mn->inverseHirachicalModelMatrix, newRadiant, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it only on y axis
-			mn->inverseHirachicalModelMatrix = glm::translate(mn->inverseHirachicalModelMatrix, mn->position); // Translate rotated matrix bock to position
+			mn->inverseHirachicalModelMatrix = glm::translate(mn->inverseHirachicalModelMatrix, pos); // Translate rotated matrix bock to position
 		}
 	}
 
