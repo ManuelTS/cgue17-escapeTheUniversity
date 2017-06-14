@@ -75,7 +75,7 @@ void Bullet::removeFinished(vector<future<bool>>* threads)
 
 bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 {
-	if (mn->name.find(ModelLoader::getInstance()->IMMOVABLE_SUFFIX))
+	if (mn->name.find(ModelLoader::getInstance()->IMMOVABLE_SUFFIX) != string::npos)
 		createBuilding(mn);
 	else
 	{
