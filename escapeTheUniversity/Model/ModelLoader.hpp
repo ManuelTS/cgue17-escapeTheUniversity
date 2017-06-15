@@ -23,8 +23,6 @@ private:
 	const std::string DOOR_SUFFIX = "_door"; // Door xxx names
 	const std::string LIGHT_SUFFIX = "_light"; // Light nodes
 
-	const std::string CYBOG_FEMALE = "MilitaryWoman"; // Name of the military female cybog
-
 	bool loadModels = true; // Set this variable only once!
 	std::string directory;// Relative path to all models
 	std::vector<Mesh::Texture> loadedTextures; // Contains all already loaded textures

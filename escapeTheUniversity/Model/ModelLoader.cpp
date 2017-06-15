@@ -67,7 +67,7 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 		
 		if (string::npos != name.find(ANGLE_SUFFIX))
 			current = new TransformationNode();
-		if (string::npos != name.find(ANIMATION_SUFFIX) || string::npos != name.find(CYBOG_FEMALE))
+		if (string::npos != name.find(ANIMATION_SUFFIX) )
 			current = new AnimatNode();
 		else
 			current = new ModelNode();
