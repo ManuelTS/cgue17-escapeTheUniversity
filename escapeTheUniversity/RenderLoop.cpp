@@ -291,6 +291,10 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		const float sphereRadius = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
 
 		ln->light.position.w = frustum->sphereInFrustum(vec3(ln->light.position), sphereRadius);// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
+
+		//if (ln->light.position.w > -1) // Light volume intersects or is in frustum, render shadow map for light
+			//realmOfShadows->renderDepthMap(ml->root, ln, sphereRadius, initVar->zoom, width, height); // far plane is the spheres radius
+
 		renderingLights.push_back(ln->light);
 	}
 
@@ -305,7 +309,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to white
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	const float* projectionMatrixP = glm::value_ptr(glm::perspective((float)camera->zoom, (float)width / (float)height, frustum->nearD, frustum->farD));
+	const float* projectionMatrixP = glm::value_ptr(glm::perspective(frustum->degreesToRadians(camera->zoom), (float)width / (float)height, frustum->nearD, frustum->farD));
 	const float* viewMatrixP = glm::value_ptr(camera->getViewMatrix());
 	gBufferShader->useProgram();
 	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, projectionMatrixP);

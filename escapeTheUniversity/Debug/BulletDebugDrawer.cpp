@@ -92,7 +92,7 @@ void BulletDebugDrawer::draw()
 
 		drawer->link();
 
-		drawer->draw(GL_LINES);
+		drawer->draw(GL_LINES, false);
 		delete drawer;
 		container->clear();
 		index = 0;

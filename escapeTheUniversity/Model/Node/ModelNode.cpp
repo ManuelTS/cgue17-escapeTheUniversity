@@ -59,7 +59,7 @@ void ModelNode::draw()
 			glm::mat4 temp = hirachicalModelMatrix;
 			trans.getOpenGLMatrix(glm::value_ptr(hirachicalModelMatrix)); // Get transformed position from bullet
 
-			if(temp != hirachicalModelMatrix)
+			if(!shadow && temp != hirachicalModelMatrix)
 			{
 				position = (temp - hirachicalModelMatrix)[3]; // Get changed position from bullet in object space
 				modelMatrix[3] = glm::vec4(position, 1.0f);
@@ -67,16 +67,18 @@ void ModelNode::draw()
 			}
 			
 			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(hirachicalModelMatrix));
-			glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseHirachicalModelMatrix));
+			if(!shadow)
+				glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseHirachicalModelMatrix));
 		}
 		else
 		{
 			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(hirachicalModelMatrix));
-			glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseHirachicalModelMatrix));
+			if (!shadow)
+				glUniformMatrix4fv(inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseHirachicalModelMatrix));
 		}
 
 		for (unsigned int i = 0; i < size; i++)
-			meshes[i]->draw(GL_TRIANGLES);
+			meshes[i]->draw(GL_TRIANGLES, shadow);
 	}
 }
 

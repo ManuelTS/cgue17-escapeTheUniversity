@@ -11,6 +11,10 @@ public:
 	const int projectionLocation = 12; // Matrix, gBuffer.vert
 	// deferredShader location constants
 	const int viewPositionLocation = 0; // defferredShader.frag
+	// shadowShader location constants
+	const unsigned int SHADOW_LIGHT_POSITION_LOCATION = 0; // shadowShader.vert
+	const unsigned int SHADOW_MODEL_MATRIX_LOCATION = 0; // shadowShader.vert
+	const unsigned int SHADOW_LIGHT_SPACE_MATRIX_LOCATION = 1; // shadowShader.vert
 
 	unsigned int programHandle; // Shader handle
 
@@ -97,7 +101,7 @@ private:
 	layout (location = 12) uniform mat4 projection;       // Usage in: RenderLoop.cpp#doDeferredShading()
 	layout (location = 16) uniform mat4 boneMatrices[60]; // Usage in: Mesh.cpp#transmitBoneMatrix(), and max bones allowed
 
-	layout (location = 0) in vec3 position;    // Usage in: Mesh.cpp link();
+	layout (location = 0) in vec3 position;    // Usage in: Mesh.cpp link(); correlates in location value with shadow.vert
 	layout (location = 1) in vec3 normal;      // Usage in: Mesh.cpp link();
 	layout (location = 2) in vec2 tc;          // Usage in: Mesh.cpp link();
 	layout (location = 3) in uvec4 boneIndices;// Usage in: Mesh.cpp link();
@@ -279,6 +283,24 @@ private:
 
 			gl_FragColor = vec4(color, 1.0f);
 		}
+	})glsl";
+	const char* SHADOW_VERT = R"glsl(
+	#version 430 core
+
+	layout (location = 0) in vec3 position;              // of the rendered vertex, correlates in location value with gbuffer.vert
+
+	layout (location = 0) uniform mat4 model;            // Model matrix of the rendered object
+	layout (location = 1) uniform mat4 lightSpaceMatrix; // Light space transformation matrix that transforms each world-space vector into the space as visible from the light source
+
+	void main()
+	{
+		gl_Position = lightSpaceMatrix * model * vec4(position, 1.0f);
+	})glsl";
+	const char* SHADOW_FRAG = R"glsl(
+	#version 430 core
+
+	void main()	{
+		// gl_FragDepth = gl_FragCoord.z;
 	})glsl";
 	const char* DEPTH_VERT = R"glsl(
 	#version 430 core

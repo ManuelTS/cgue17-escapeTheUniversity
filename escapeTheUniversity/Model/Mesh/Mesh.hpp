@@ -39,7 +39,7 @@ public:
 	~Mesh();
 	
 	void link(); // Creates and links the VAO for this mesh
-	void draw(unsigned int drawMode = GL_TRIANGLES);
+	void draw(unsigned int drawMode, bool shadow); // drawMode is the openGl draw mode of glDrawElements, shadow is true if data is writting into shado shaders, false if in normal shaders
 	void clear(); // Clears all vectors
 	vector<int>* getAllIndices(); // Returns a pointer to all vertex indices of all meshes in this node. Dont' delete vector after usage!
 	vector<float>* getAllVertices(); // Returns a pointer to all vertices of all meshes in this node. Delete vector after usage!

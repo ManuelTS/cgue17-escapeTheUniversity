@@ -82,3 +82,8 @@ int Frustum::sphereInFrustum(const glm::vec3 sphereCenter, const float radius)
 
 	return result;
 }
+
+float Frustum::degreesToRadians(float degrees)
+{
+	return degrees * (3.141592f / 180.0f); // Use this for radiant calculation, the GLM one does not work!
+}

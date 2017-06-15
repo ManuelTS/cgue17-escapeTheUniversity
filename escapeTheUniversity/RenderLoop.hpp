@@ -1,4 +1,5 @@
 #pragma once
+#define GLM_FORCE_RADIANS // Use this for radiant calculation, the GLM one does not work!
 
 #include "Initialization.hpp"
 #include "ShadowLight\GBuffer.hpp"
