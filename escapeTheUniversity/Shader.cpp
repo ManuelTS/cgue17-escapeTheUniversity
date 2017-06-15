@@ -25,6 +25,11 @@ Shader::Shader(const char* shader)
 		loadShader(DEFERRED_SHADING_VERT, GL_VERTEX_SHADER, vertexHandle);
 		loadShader(DEFERRED_SHADING_FRAG, GL_FRAGMENT_SHADER, fragmentHandle);
 	}
+	else if (strcmp(shader, "shadow") == 0)
+	{
+		loadShader(SHADOW_VERT, GL_VERTEX_SHADER, vertexHandle);
+		loadShader(SHADOW_FRAG, GL_FRAGMENT_SHADER, fragmentHandle);
+	}
 	else if (strcmp(shader, "image") == 0)
 	{
 		loadShader(IMAGE_VERT, GL_VERTEX_SHADER, vertexHandle);
@@ -43,7 +48,7 @@ Shader::~Shader()
 }
 
 /*Checks if the handle has another value than zero, if not displays an error message.*/
-void Shader::check(GLuint handle, const string& name){
+void Shader::check(unsigned int handle, const string& name){
 	if (handle == 0)
 		Debugger::getInstance()->pauseExit("Invalid " + name + " handle value");
 }
@@ -55,7 +60,7 @@ void Shader::useProgram() const
 }
 
 /*Loads the shader, sets its source, compiles it and logs errors. Handle receives the internal openGL number.*/
-void Shader::loadShader(const char* shader, GLenum shaderType, GLuint& handle)
+void Shader::loadShader(const char* shader, GLenum shaderType, unsigned int& handle)
 {
 		handle = glCreateShader(shaderType);
 		check(handle, "shader");

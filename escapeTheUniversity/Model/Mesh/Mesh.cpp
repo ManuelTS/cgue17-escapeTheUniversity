@@ -38,7 +38,8 @@ void Mesh::link()
 	glVertexAttribPointer(normalsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 	glEnableVertexAttribArray(uvLocation);
 	glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
-	glEnableVertexAttribArray(boneIndicesLocation);
+
+	glEnableVertexAttribArray(boneIndicesLocation); // Must be bound here, only possible without zeros if an other shader is used
 	glVertexAttribIPointer(boneIndicesLocation, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void*)offsetof(Vertex, boneIndices));
 	glEnableVertexAttribArray(boneWeightLocation);
 	glVertexAttribPointer(boneWeightLocation, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, boneWeights));
@@ -84,8 +85,30 @@ void Mesh::transmitBoneMatrix()
 }
 
 /*Draws this mesh*/
-void Mesh::draw(unsigned int drawMode)
+void Mesh::draw(unsigned int drawMode, bool shadow)
 {		
+	if (shadow)
+	{// Shadow draw with shadow shaders
+		glBindVertexArray(VAO); // Only the vertex positions are programmed (and used) in the shader
+
+		glDisableVertexAttribArray(normalsLocation); // Disable all other bound vertex attributes 
+		glDisableVertexAttribArray(uvLocation);
+		glDisableVertexAttribArray(boneIndicesLocation); 
+		glDisableVertexAttribArray(boneWeightLocation);
+		glDisableVertexAttribArray(materialLocation);
+
+		glDrawElements(drawMode, indices.size(), GL_UNSIGNED_INT, 0); // Draw
+
+		glEnableVertexAttribArray(normalsLocation); // Enable all other bound vertex attributes for further "normal" rendering
+		glEnableVertexAttribArray(uvLocation);
+		glEnableVertexAttribArray(boneIndicesLocation);
+		glEnableVertexAttribArray(boneWeightLocation);
+		glEnableVertexAttribArray(materialLocation);
+
+		glBindVertexArray(0);
+	}
+	else
+	{ // Normal draw
 		for (unsigned int i = 0; i < textures.size() && i < maxTextureUnits; i++)// Bind textures
 		{
 			if (textures[i].name == "textureDiffuse") //Spectrail in frag shader anyways
@@ -116,6 +139,7 @@ void Mesh::draw(unsigned int drawMode)
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
+	}
 }
 
 void Mesh::clear() {

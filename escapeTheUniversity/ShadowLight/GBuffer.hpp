@@ -1,7 +1,9 @@
 #pragma once
-#include "Model\Node\LightNode.hpp"
 
-/*Gbuffer used for deferred shading.*/
+#include "..\Model\Node\LightNode.hpp"
+#include "..\Shader.hpp"
+
+/*Gbuffer used for deferred rendering in the renderLoop.*/
 class GBuffer
 {
 private:
@@ -17,6 +19,9 @@ private:
 	const int deferredShadingColorTextureCount = 2; // Texture count used in this gBuffer
 public:
 	unsigned int handle;
+
+	Shader* gBufferShader = new Shader("gBuffer"); // Set up schaders
+	Shader* deferredShader = new Shader("deferredShading");
 
 	GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT);
 	~GBuffer();

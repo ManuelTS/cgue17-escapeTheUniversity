@@ -1,5 +1,4 @@
 #pragma once
-#define degreesToRadians(x) x*(3.141592f/180.0f) // Use this for radiant calculation, the GLM one does not work!
 #include <GLM\glm.hpp>
 
 // Calculates if a point or shepre is in, out, or intersects the view frustum with the radar approach
@@ -29,6 +28,7 @@ public:
 	void setCamDef(glm::vec3 camPos, glm::vec3 front, glm::vec3 up);
 	int pointInFrustum(glm::vec3 p); // Returns -1 if the point is on the outside, 0 if on the frustum borders, and 1 if in the frustum
 	int sphereInFrustum(const glm::vec3 sphereCenter, const float radius); // Returns -1 if the sphere is on the outside, 0 if on the frustum borders, and 1 if in the frustum
+	float degreesToRadians(float degrees); // Argument in degrees, returns the radians for it
 };
 
 

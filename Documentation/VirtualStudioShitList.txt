@@ -33,4 +33,5 @@ Shit in VS 15:
 - Ctrl + Shift + Left or Right Arrow key selects until an blank character, it is not camel case sensitive.
 - Right click in the solution menü on a subfolder "Add/Class..." adds a class to the solution folder but not to the right clicked subfolder.
 - Drag and Drop from the system explorer adds files to the top directory in the solution explorer but not in the dropped target folder. After that the files cannot be moved by another drag and drop.
+- Copying lines with Strg + C + V overwrites the clipboard, in atom or eclipse for example it does not.
 - All this with 8+ GB disc space
