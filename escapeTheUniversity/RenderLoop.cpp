@@ -113,9 +113,17 @@ void RenderLoop::move(Node* current)
 {
 	TransformationNode* dn = dynamic_cast<TransformationNode*>(current); 
 	
-	if (dn && dn->name.find(ModelLoader::getInstance()->ANGLE_SUFFIX))// != string::npos && Frustum::getInstance()->sphereInFrustum(vec3(dn->position), 2) >-1)//has to be TransformationNode, only open doors "_angle" not animation nodes
-		dn->switchState();
-
+	if (dn && (dn->name.find(ModelLoader::getInstance()->ANGLE_SUFFIX) != string::npos)) {// != string::npos && Frustum::getInstance()->sphereInFrustum(vec3(dn->position), 2) >-1)//has to be TransformationNode, only open doors "_angle" not animation nodes
+		 //get the according door
+		for (Node*child : current->children) {
+			ModelNode* mn = dynamic_cast<ModelNode*>(child);
+			if (mn) {
+				if (Frustum::getInstance()->inActionRadius(vec3(mn->hirachicalModelMatrix[3])) == 1) // here we use the hirachicalModelMatrix of the according door for interaction
+					//	if(Frustum::getInstance()->sphereInFrustum(vec3(dn->hirachicalModelMatrix[3]), 2.5) >-1)
+					dn->switchState();
+			}	
+		} //boy, that's ugly but working
+	}
 	for (Node*child : current->children)
 		move(child);
 }
