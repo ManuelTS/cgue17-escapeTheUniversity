@@ -17,7 +17,6 @@ class DoorNode;
 class ModelLoader
 {
 private:
-	const std::string ANGLE_SUFFIX = "_angle"; // Door parent on their pivot point
 	const std::string BOUNDING_SUFFIX = "_bounding"; // Suffix to calculate bounding volumes for
 	const std::string ANIMATION_SUFFIX = "_c"; // Suffix for animat nodes
 	const std::string DOOR_SUFFIX = "_door"; // Door xxx names
@@ -42,6 +41,7 @@ private:
 	std::vector<Mesh::Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::vector<glm::vec4>* materials);// Loads all materials and the textures
 	void linkLightUBO(); // Generates the Light UBO handle
 public:
+	const std::string ANGLE_SUFFIX = "_angle"; // Door parent on their pivot point
 	const std::string MODEL_DIR = ".\\Model\\";// Resource top folder directories
 	const unsigned int LIGHT_NUMBER = 10;// Max number of lights 
 

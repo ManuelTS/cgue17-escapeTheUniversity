@@ -111,21 +111,11 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void RenderLoop::move(Node* current)
 {
-	ModelNode* mn = dynamic_cast<ModelNode*>(current); //first we need a ModelNode
+	TransformationNode* dn = dynamic_cast<TransformationNode*>(current); 
 	
-	if (mn)     //class Modelnode found
-	{	//we dont want to have animatNodes
-		if (mn->name.find("_angle"))  //TODO: why is a public ANGLE_SUFFIX declaration not working  
-		{
-			TransformationNode* dn = dynamic_cast<TransformationNode*>(mn); //has to be TransformationNode
+	if (dn && dn->name.find(ModelLoader::getInstance()->ANGLE_SUFFIX))// != string::npos && Frustum::getInstance()->sphereInFrustum(vec3(dn->position), 2) >-1)//has to be TransformationNode, only open doors "_angle" not animation nodes
+		dn->switchState();
 
-			if (dn) {  //if class is transformationnode  
-				//for contraining the "actionarea" of the player
-				if(Frustum::getInstance()->sphereInFrustum(vec3(dn->position), 2) >-1)   //TODO: FIX buggy Frustum
-					dn->switchState();
-			}
-		}
-	}
 	for (Node*child : current->children)
 		move(child);
 }
