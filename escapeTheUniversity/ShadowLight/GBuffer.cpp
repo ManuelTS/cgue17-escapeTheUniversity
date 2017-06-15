@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 #include "GBuffer.hpp"
-#include "Initialization.hpp"
-#include "./Debug/Debugger.hpp"
+#include "../Initialization.hpp"
+#include "../Debug/Debugger.hpp"
 
 /*Gbuffer used for deferred shading.*/
 GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
@@ -82,4 +82,7 @@ GBuffer::~GBuffer()
 	glDeleteFramebuffers(1, &handle);
 	glDeleteBuffers(1, &quadVBO);
 	glDeleteVertexArrays(1, &quadVAO);
+
+	delete gBufferShader;
+	delete deferredShader;
 }

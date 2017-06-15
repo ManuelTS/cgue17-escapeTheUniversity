@@ -7,7 +7,6 @@
 #include "Model/Node/ModelNode.hpp"
 #include "Model/Node/AnimatNode.hpp"
 #include "Camera/Camera.hpp"
-#include "GBuffer.hpp"
 #include "Shader.hpp"
 #include "Text.hpp"
 #include "Model\Physic\Bullet.hpp"
@@ -228,9 +227,6 @@ void RenderLoop::start()
 	initGLFWandGLEW();
 	displayLoadingScreen(ml);
 
-	Shader* gBufferShader = new Shader("gBuffer"); // Set up schaders
-	Shader* deferredShader = new Shader("deferredShading");
-
 	ml->load("Playground.dae"); // Load Models
 
 	Bullet* b = Bullet::getInstance(); // Calculate bouding volumes, no pointer deletion since it is a singelton!
@@ -242,6 +238,7 @@ void RenderLoop::start()
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
 	GBuffer* gBuffer = new GBuffer(initVar->maxWidth, initVar->maxHeight);
+	ShadowMapping* realmOfShadows = new ShadowMapping();
 
 	sm->stopAll(); // Stop loading sound
 	while (!glfwWindowShouldClose(window)) // Start rendering
@@ -252,7 +249,7 @@ void RenderLoop::start()
 		if (render)
 		{
 			doMovement(time.delta);
-			doDeferredShading(gBuffer, gBufferShader, deferredShader, ml);
+			doDeferredShading(gBuffer, realmOfShadows, ml);
 		}
 		else
 		{
@@ -270,12 +267,13 @@ void RenderLoop::start()
 	Sleep(1600);
 
 	// TODO: Write with initVar game statistics, play time etc...
+	delete realmOfShadows;
 	delete gBuffer;
 	glfwDestroyWindow(window);
 	glfwTerminate();
 }
 
-void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shader* deferredShader, ModelLoader* ml)
+void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShadows, ModelLoader* ml)
 {
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -284,6 +282,19 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 		drawnTriangles = 0;
 
 	Frustum* frustum = Frustum::getInstance();
+
+	vector<LightNode::Light> renderingLights; // Contains the rendered lights
+
+	for (unsigned int i = 0; i < ml->lights.size(); i++) // Look which lights intersect or are in the frustum
+	{
+		LightNode* ln = ml->lights.at(i);
+		const float sphereRadius = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
+
+		ln->light.position.w = frustum->sphereInFrustum(vec3(ln->light.position), sphereRadius);// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
+		renderingLights.push_back(ln->light);
+	}
+
+	Shader* gBufferShader = gBuffer->gBufferShader;
 
 	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->handle); // Must be first!
@@ -308,25 +319,14 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 	glDisable(GL_DEPTH_TEST);	
 
 	// Light pass, point lights:
+	Shader* deferredShader = gBuffer->deferredShader;
 	deferredShader->useProgram();
 	gBuffer->bindTextures();
-
-	vector<LightNode::Light> temp;
-
-	for (unsigned int i = 0; i < ml->lights.size(); i++)
-	{
-		LightNode* ln = ml->lights.at(i);
-		const float sphereRadius = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
-
-		ln->light.position.w = frustum->sphereInFrustum(vec3(ln->light.position), sphereRadius);// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
-		temp.push_back(ln->light);
-	}
-
-	// Set light parameters
+	// Write light data to deferred shader
 	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
 	glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
 	glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, temp.size() * sizeof(temp[0]), &temp[0]);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, renderingLights.size() * sizeof(renderingLights[0]), &renderingLights[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	// Now would come the directional light pass
@@ -336,7 +336,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, Shader* gBufferShader, Shad
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	gBuffer->renderQuad(); // Render 2D quad to screen
-	temp.clear();
+	renderingLights.clear();
 }
 
 void RenderLoop::draw(Node* current)

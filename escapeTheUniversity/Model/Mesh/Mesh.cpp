@@ -38,7 +38,8 @@ void Mesh::link()
 	glVertexAttribPointer(normalsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 	glEnableVertexAttribArray(uvLocation);
 	glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
-	glEnableVertexAttribArray(boneIndicesLocation);
+
+	glEnableVertexAttribArray(boneIndicesLocation); // Must be bound here, only possible without zeros if an other shader is used
 	glVertexAttribIPointer(boneIndicesLocation, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void*)offsetof(Vertex, boneIndices));
 	glEnableVertexAttribArray(boneWeightLocation);
 	glVertexAttribPointer(boneWeightLocation, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, boneWeights));
