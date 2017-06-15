@@ -50,13 +50,25 @@ int Frustum::pointInFrustum(glm::vec3 p)
 	return 1;
 }
 
+/* This function checks, if a door is in in ActionRadius and therefor rotates or not*/
+int Frustum::inActionRadius(const glm::vec3 actionTarget) 
+{
+	int isInRadius = -1;
+	const glm::vec3 distanceToCamera = actionTarget - camPos; // Calculate distance
+	
+	if (abs(distanceToCamera.x) <= actionRadius && abs(distanceToCamera.y) <= actionRadius && abs(distanceToCamera.z) <= actionRadius) //take absolute value, since we only want the shortest distance
+		isInRadius = 1;
+	return isInRadius;
+}
+
+
 int Frustum::sphereInFrustum(const glm::vec3 sphereCenter, const float radius)
 {
 	int result = 1; // Return value, 1 inside the frustum, 0 intersction, -1 outside the frustum
 	const glm::vec3 fromCam2Center = sphereCenter - camPos; // Calculate distance
 	const float az = glm::dot(front, fromCam2Center);
 
-	if (az > farD + radius || az < nearD - radius)
+	if (az > farD + radius || az < nearD - radius) //if the point is not 
 		return -1;
 
 	const float ax = glm::dot(fromCam2Center, right);
@@ -72,14 +84,14 @@ int Frustum::sphereInFrustum(const glm::vec3 sphereCenter, const float radius)
 	
 	if (ay > zz2 + distance2 || ay < -zz2 - distance2)
 		return -1;
-
+	
 	if (az > farD - radius || az < nearD + radius)
 		result = 0;
 	if (ay > zz2 - distance2 || ay < -zz2 + distance2)
 		result = 0;
 	if (ax > zz1 - distance1 || ax < -zz1 + distance1)
 		result = 0;
-
+	
 	return result;
 }
 

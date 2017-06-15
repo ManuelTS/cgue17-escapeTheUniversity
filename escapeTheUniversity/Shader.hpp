@@ -229,7 +229,6 @@ private:
 		// Finally, multiply it by the rim color which is here simply the light diffuse color
 		return rimFactor * light.diffuse.rgb;
 	}
-
 	
 	float calculateShadow(vec3 fragmentPosition, vec3 lightDirection, vec3 normal)
 	{
@@ -282,7 +281,7 @@ private:
 		specularColor *= attenuation;
 
 		//Calculate shadow
-	    float shadow = 0.0f; //calculateShadow(fragmentPosition, lightDirection, norm);  
+	    float shadow = calculateShadow(fragmentPosition, lightDirection, norm);  
 
 		// Calculate Final color	
 		return ambientColor + ((diffuseColor + specularColor) * (1.0f - shadow));// + calculateRim(norm, viewDirection);

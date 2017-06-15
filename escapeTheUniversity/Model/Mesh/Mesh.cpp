@@ -27,7 +27,7 @@ void Mesh::link()
 
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(GLuint), &this->indices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(unsigned int), &this->indices[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
@@ -52,6 +52,32 @@ void Mesh::link()
 	glBindVertexArray(0); // Unbind VAO first!
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	// Shadow VAO
+	glGenVertexArrays(1, &shadowVAO); // Generate and setup normal VAO and VBO
+	glGenBuffers(1, &shadowVBO);
+	glGenBuffers(1, &shadowEBO); // Multiple VAOS can refer to the same element buffer
+
+	glBindVertexArray(shadowVAO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, shadowEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(unsigned int), &this->indices[0], GL_STATIC_DRAW);
+
+	vector<glm::vec3> positions; // the shadow shader only needs the positions
+
+	for (Vertex v : vertices)
+		positions.push_back(v.position);
+
+	glBindBuffer(GL_ARRAY_BUFFER, shadowVBO);
+	glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), &positions[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(positionsLocation);
+	glVertexAttribPointer(positionsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+
+	glBindVertexArray(0); // Unbind VAO first!
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	positions.clear();
 }
 
 glm::mat4 Mesh::transposeAssimpMatrix2GLMColumnMajor(aiMatrix4x4 mat)
@@ -89,21 +115,9 @@ void Mesh::draw(unsigned int drawMode, bool shadow)
 {		
 	if (shadow)
 	{// Shadow draw with shadow shaders
-		glBindVertexArray(VAO); // Only the vertex positions are programmed (and used) in the shader
-
-		glDisableVertexAttribArray(normalsLocation); // Disable all other bound vertex attributes 
-		glDisableVertexAttribArray(uvLocation);
-		glDisableVertexAttribArray(boneIndicesLocation); 
-		glDisableVertexAttribArray(boneWeightLocation);
-		glDisableVertexAttribArray(materialLocation);
+		glBindVertexArray(shadowVAO); // Only the vertex positions are programmed (and used) in the shader
 
 		glDrawElements(drawMode, indices.size(), GL_UNSIGNED_INT, 0); // Draw
-
-		glEnableVertexAttribArray(normalsLocation); // Enable all other bound vertex attributes for further "normal" rendering
-		glEnableVertexAttribArray(uvLocation);
-		glEnableVertexAttribArray(boneIndicesLocation);
-		glEnableVertexAttribArray(boneWeightLocation);
-		glEnableVertexAttribArray(materialLocation);
 
 		glBindVertexArray(0);
 	}
