@@ -1,7 +1,7 @@
 #include "SoundManager.hpp"
 #include "Camera/Frustum.hpp"
 #include "RenderLoop.hpp"
-#include "Model\ModelLoader.hpp"
+#include "Model/ModelLoader.hpp"
 #include "Model/Node/Node.hpp"
 #include "Model/Node/LightNode.hpp"
 #include "Model/Node/ModelNode.hpp"
@@ -112,11 +112,21 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void RenderLoop::move(Node* current)
 {
-	TransformationNode* dn = dynamic_cast<TransformationNode*>(current);
+	ModelNode* mn = dynamic_cast<ModelNode*>(current); //first we need a ModelNode
+	
+	if (mn)     //class Modelnode found
+	{	//we dont want to have animatNodes
+		if (mn->name.find("_angle"))  //TODO: why is a public ANGLE_SUFFIX declaration not working  
+		{
+			TransformationNode* dn = dynamic_cast<TransformationNode*>(mn); //has to be TransformationNode
 
-	if (dn)
-		dn->switchState();
-
+			if (dn) {  //if class is transformationnode  
+				//for contraining the "actionarea" of the player
+				if(Frustum::getInstance()->sphereInFrustum(vec3(dn->position), 2) >-1)   //TODO: FIX buggy Frustum
+					dn->switchState();
+			}
+		}
+	}
 	for (Node*child : current->children)
 		move(child);
 }

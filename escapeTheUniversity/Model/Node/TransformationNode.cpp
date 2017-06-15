@@ -30,15 +30,16 @@ float TransformationNode::change(bool plus)
 	for (Node* child : children)
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(child);
+		ModelNode* mnParent = dynamic_cast<ModelNode*>(mn->parent);
 
 		if (mn)
 		{
-			glm::vec3 pos = glm::vec3(hirachicalModelMatrix[3]);
+			glm::vec3 pos = mn->position;
 			mn->hirachicalModelMatrix = glm::translate(mn->hirachicalModelMatrix, -pos); // Translate to origin to rotate there
 			mn->hirachicalModelMatrix = glm::rotate(mn->hirachicalModelMatrix, newRadiant, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it only on y axis
 			mn->hirachicalModelMatrix = glm::translate(mn->hirachicalModelMatrix, pos); // Translate rotated matrix bock to position
 			// - rotate is faster than inverseTranspose
-			pos = glm::vec3(hirachicalModelMatrix[3]);
+			//pos = glm::vec3(hirachicalModelMatrix[3]);
 			mn->inverseHirachicalModelMatrix = glm::translate(mn->inverseHirachicalModelMatrix, -pos); // Translate to origin to rotate there
 			mn->inverseHirachicalModelMatrix = glm::rotate(mn->inverseHirachicalModelMatrix, newRadiant, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it only on y axis
 			mn->inverseHirachicalModelMatrix = glm::translate(mn->inverseHirachicalModelMatrix, pos); // Translate rotated matrix bock to position
