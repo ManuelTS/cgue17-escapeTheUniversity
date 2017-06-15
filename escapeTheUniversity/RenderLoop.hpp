@@ -7,14 +7,14 @@
 #include <GLM\glm.hpp>
 #include <vector>
 
-class Initialization;
 class Camera;
 class Node;
 class ModelNode;
 class ModelLoader;
 
 /*Manages all parts of the game and contains the render loop. This class has the singelton design pattern implemented.*/
-class RenderLoop{
+class RenderLoop
+{
 	private:
 		GLFWwindow* window;
 	

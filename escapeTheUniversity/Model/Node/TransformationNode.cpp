@@ -1,4 +1,6 @@
 #pragma once
+
+#include "../../SoundManager.hpp"
 #include "TransformationNode.hpp"
 #include <GLM/gtc/matrix_transform.hpp>
 #include <GLM/gtc/matrix_inverse.hpp>
@@ -23,9 +25,14 @@ void TransformationNode::switchState()
 float TransformationNode::change(bool plus)
 {
 	float newRadiant = RADIANT * RenderLoop::getInstance()->getTimeDelta();
-	
+
 	if (!plus)
+	{
+		//SoundManager::getInstance()->playSound("close_interior_wood_door.mp3"); // only display sound if only one door is open or closed!
 		newRadiant = -newRadiant;
+	}
+	else
+		//SoundManager::getInstance()->playSound("open_interior_wood_door_with_squeak.mp3");
 
 	for (Node* child : children)
 	{

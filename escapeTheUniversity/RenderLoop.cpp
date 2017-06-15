@@ -113,7 +113,7 @@ void RenderLoop::move(Node* current)
 {
 	TransformationNode* dn = dynamic_cast<TransformationNode*>(current); 
 	
-	if (dn && dn->name.find(ModelLoader::getInstance()->ANGLE_SUFFIX))// != string::npos && Frustum::getInstance()->sphereInFrustum(vec3(dn->position), 2) >-1)//has to be TransformationNode, only open doors "_angle" not animation nodes
+	if (dn && dn->name.find(ModelLoader::getInstance()->ANGLE_SUFFIX) != string::npos)// && Frustum::getInstance()->sphereInFrustum(vec3(dn->position), 2) >-1)//has to be TransformationNode, only open doors "_angle" not animation nodes
 		dn->switchState();
 
 	for (Node*child : current->children)
@@ -292,12 +292,13 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 
 		ln->light.position.w = frustum->sphereInFrustum(vec3(ln->light.position), sphereRadius);// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
 
-		//if (ln->light.position.w > -1) // Light volume intersects or is in frustum, render shadow map for light
-			//realmOfShadows->renderDepthMap(ml->root, ln, sphereRadius, initVar->zoom, width, height); // far plane is the spheres radius
+		if (ln->light.position.w > -1) // Light volume intersects or is in frustum, render shadow map for light
+			realmOfShadows->renderInDepthMap(ml->root, ln, sphereRadius, initVar->zoom, width, height); // far plane is the spheres radius
 
 		renderingLights.push_back(ln->light);
 	}
 
+	// Deferred Shading
 	Shader* gBufferShader = gBuffer->gBufferShader;
 
 	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
@@ -334,12 +335,17 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	// Now would come the directional light pass
+
+	//Write shadow data to deferredShader.frag. 
+	realmOfShadows->bindTexture(); // Link depth map into deferred Shader fragment
+	glUniformMatrix4fv(realmOfShadows->SHADOW_LIGHT_SPACE_MATRIX_LOCATION, 1, GL_FALSE, glm::value_ptr(realmOfShadows->lightSpaceMatrix)); // Write the light space matrix to the deferred shader
 	
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	gBuffer->renderQuad(); // Render 2D quad to screen
+	
 	renderingLights.clear();
 }
 

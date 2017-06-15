@@ -14,7 +14,7 @@ public:
 	// shadowShader location constants
 	const unsigned int SHADOW_LIGHT_POSITION_LOCATION = 0; // shadowShader.vert
 	const unsigned int SHADOW_MODEL_MATRIX_LOCATION = 0; // shadowShader.vert
-	const unsigned int SHADOW_LIGHT_SPACE_MATRIX_LOCATION = 1; // shadowShader.vert
+	const unsigned int SHADOW_LIGHT_SPACE_MATRIX_LOCATION = 1; // in the shadowShader.vert
 
 	unsigned int programHandle; // Shader handle
 
@@ -192,8 +192,11 @@ private:
 
 	layout (location = 0) uniform vec3 viewPosition; // from RenderLoop.cpp#renderloop
 
+	layout (location = 1) uniform mat4 lightSpaceMatrix; // Light space transformation matrix that transforms each world-space vector into the space as visible from the light source
+
 	layout (binding = 0) uniform usampler2D colorAndNormalTex;      // From gBuffer.frag, attachment0
 	layout (binding = 1) uniform sampler2D positionAndShininessTex; // From gBuffer.frag, attachment1
+	layout (binding = 2) uniform sampler2D depthMap;                // From shadowMapping, depth map, shadowMapping#bindTexture()
 
 	struct LightStruct 
 	{ // Same as LightNode.hpp#Light
@@ -203,7 +206,7 @@ private:
 		vec4 shiConLinQua; // x = shininess, y = constant attentuation, z = linear attentuation, w = quadratic attentuation value
 	};
 
-	const int LIGHT_NUMBER = 10; // Correlates with ModelLoader.hpp#LIGHT_NUMBER
+	const int LIGHT_NUMBER = 1; // Correlates with ModelLoader.hpp#LIGHT_NUMBER
 	layout (std140, binding = 2, index = 0) uniform LightBlock 
 	{
 		LightStruct light[LIGHT_NUMBER];
@@ -225,6 +228,33 @@ private:
 
 		// Finally, multiply it by the rim color which is here simply the light diffuse color
 		return rimFactor * light.diffuse.rgb;
+	}
+
+	
+	float calculateShadow(vec3 fragmentPosition, vec3 lightDirection, vec3 normal)
+	{
+		vec4 fragPosLightSpace = lightSpaceMatrix * vec4(fragmentPosition, 1.0f); // fragmentPosition is in world coords
+		vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;            // perform perspective divide
+	    projCoords = projCoords * 0.5 + 0.5;                                      // Because the depth from the depth map is in the range [0,1] and we also want to use projCoords to sample from the depth map so we transform the NDC coordinates to the range [0,1]
+	    float closestDepth = texture(depthMap, projCoords.xy).r;                  // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+		float currentDepth = projCoords.z;                                        // To get the current depth at the fragment we simply retrieve the projected vector's z coordinate which equals the depth of the fragment from the light's perspective.
+		float bias = max(0.05 * (1.0 - dot(normal, lightDirection)), 0.005);      // Fight shadow acne, Here we have a maximum bias of 0.05 and a minimum of 0.005 based on the surface's normal and light direction. This way surfaces like the floor that are almost perpendicular to the light source get a small bias, while surfaces like the cube's side-faces get a much larger bias. 
+		float shadow = 0.0f;												      // PCF, percentage-closer filtering. The idea is to sample more than once from the depth map, each time with slightly different texture coordinates. 
+		vec2 texelSize = 1.0 / textureSize(depthMap, 0);
+		
+		for(int x = -1; x <= 1; ++x)
+			for(int y = -1; y <= 1; ++y)
+			{
+	            float pcfDepth = texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+		        shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
+			}    
+		
+		shadow /= 9.0;
+	
+		if(projCoords.z > 1.0) // Avoid over sampling: Keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+			shadow = 0.0;
+
+		return shadow; // 0 in shadow, 1 not in shadow
 	}
 
 	// Blinn Phong light
@@ -251,8 +281,11 @@ private:
 		diffuseColor *= attenuation;
 		specularColor *= attenuation;
 
+		//Calculate shadow
+	    float shadow = 0.0f; //calculateShadow(fragmentPosition, lightDirection, norm);  
+
 		// Calculate Final color	
-		return ambientColor + diffuseColor + specularColor;// + calculateRim(norm, viewDirection);
+		return ambientColor + ((diffuseColor + specularColor) * (1.0f - shadow));// + calculateRim(norm, viewDirection);
 	}
 
 	void main()
@@ -296,11 +329,17 @@ private:
 	{
 		gl_Position = lightSpaceMatrix * model * vec4(position, 1.0f);
 	})glsl";
-	const char* SHADOW_FRAG = R"glsl(
+	const char* SHADOW_FRAG = R"glsl( // Uncomment all for debugging
 	#version 430 core
 
-	void main()	{
-		// gl_FragDepth = gl_FragCoord.z;
+	//layout (location = 0) in vec2 texCoords;
+
+	//layout (binding = 0) uniform sampler2D depthMap;
+
+	void main()
+	{             
+		//float depthValue = texture(depthMap, texCoords).r;
+		//gl_FragColor = vec4(vec3(depthValue), 1.0);
 	})glsl";
 	const char* DEPTH_VERT = R"glsl(
 	#version 430 core

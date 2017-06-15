@@ -1,28 +1,26 @@
 #include "ShadowMapping.hpp"
 #include "../Model/Node/ModelNode.hpp"
 #include "../Camera/Frustum.hpp"
-#include <GLM\glm.hpp>
 #include <GLM\gtc\type_ptr.hpp>
 
 ShadowMapping::ShadowMapping()
 {
 	// create depth texture
-	unsigned int depthMap;
-	glGenTextures(1, &depthMap);
-	glBindTexture(GL_TEXTURE_2D, depthMap);
+	glGenTextures(1, &dephMapTextureHandle);
+	glBindTexture(GL_TEXTURE_2D, dephMapTextureHandle);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 }; // Avoid shadow map over sampling
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 	// attach depth texture as FBO's depth buffer
 	glGenFramebuffers(1, &depthFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
-	glDrawBuffer(GL_NONE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dephMapTextureHandle, 0);
+	glDrawBuffer(GL_NONE); // No color buffers are needed
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -32,7 +30,7 @@ ShadowMapping::~ShadowMapping()
 	delete shadowShader;
 }
 
-void ShadowMapping::renderDepthMap(Node* root, LightNode* ln, const float farPlane, const float FOV, const unsigned int screenWidth, const unsigned int screenHeight)
+void ShadowMapping::renderInDepthMap(Node* root, LightNode* ln, const float farPlane, const float FOV, const unsigned int screenWidth, const unsigned int screenHeight)
 {
 	const float near_plane = 1.0f;
 	Frustum* frustum = Frustum::getInstance();
@@ -43,7 +41,7 @@ void ShadowMapping::renderDepthMap(Node* root, LightNode* ln, const float farPla
 	glm::vec3 lightFront = glm::vec3(0.0f);
 	glm::vec3 lightUp = glm::vec3(0.0, 1.0, 0.0);
 	glm::mat4 lightView = glm::lookAt(lightPosition, lightFront, lightUp);
-	glm::mat4 lightSpaceMatrix = lightProjection * lightView; // Combining these two gives us a light space transformation matrix that transforms each world-space vector into the space as visible from the light source; exactly what we need to render the depth map.
+	lightSpaceMatrix = lightProjection * lightView; // Combining these two gives us a light space transformation matrix that transforms each world-space vector into the space as visible from the light source; exactly what we need to render the depth map.
 
 	shadowShader->useProgram();
 	glUniformMatrix4fv(shadowShader->SHADOW_LIGHT_SPACE_MATRIX_LOCATION, 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
@@ -80,4 +78,11 @@ void ShadowMapping::draw(Node* current)
 
 	for (Node* child : current->children)
 		draw(child);
+}
+
+void ShadowMapping::bindTexture()
+{
+	glActiveTexture(GL_TEXTURE0 + textureUnit);
+	// TODO glUniform1i(locationOfTextureinDeferredShader.frag, i);
+	glBindTexture(GL_TEXTURE_2D, dephMapTextureHandle);
 }
