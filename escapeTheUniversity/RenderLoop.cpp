@@ -368,7 +368,7 @@ void RenderLoop::draw(Node* current)
 			// If model node and (no frustum or transformationNode or modelNode bounding frustum sphere (modelNode center, radius) inside frustum):
 			// ... render only when the model node schould be rendered
 
-			if (mn->render && (frustum || Frustum::getInstance()->sphereInFrustum(mn->hirachicalModelMatrix[3], mn->radius) > -1)) // World position is [3]
+			if (mn->render && (frustum || Frustum::getInstance()->sphereInFrustum(mn->hirachicalModelMatrix * vec4(mn->position, 1.0f), mn->radius) > -1)) // World position is [3]
 			{
 				AnimatNode* an = dynamic_cast<AnimatNode*>(mn);
 
