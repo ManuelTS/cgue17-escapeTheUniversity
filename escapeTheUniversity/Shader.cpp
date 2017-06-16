@@ -30,6 +30,11 @@ Shader::Shader(const char* shader)
 		loadShader(SHADOW_VERT, GL_VERTEX_SHADER, vertexHandle);
 		loadShader(SHADOW_FRAG, GL_FRAGMENT_SHADER, fragmentHandle);
 	}
+	else if (strcmp(shader, "shadowDebug") == 0)
+	{
+		loadShader(SHADOW_DEBUG_VERT, GL_VERTEX_SHADER, vertexHandle);
+		loadShader(SHADOW_DEBUG_FRAG, GL_FRAGMENT_SHADER, fragmentHandle);
+	}
 	else if (strcmp(shader, "image") == 0)
 	{
 		loadShader(IMAGE_VERT, GL_VERTEX_SHADER, vertexHandle);

@@ -12,12 +12,12 @@ class ShadowMapping
 private:
 	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024; // Size of the shadow (depth) map texture
 	unsigned int depthFBO; // Handle of our shadow (depth) map
-	unsigned int dephMapTextureHandle; // texture unit handle of the shadow (depth) map
 	unsigned int textureUnit = 2; // for the depth map, deferred shading uses already texture unit number 0 and 1
 	
 public:
 	const unsigned int SHADOW_LIGHT_SPACE_MATRIX_LOCATION = 1; // in the deferredShading.frag
 	Shader* shadowShader = new Shader("shadow");
+	unsigned int dephMapTextureHandle; // texture unit handle of the shadow (depth) map
 	glm::mat4 lightSpaceMatrix;  // Combining these two gives us a light space transformation matrix that transforms each world-space vector into the space as visible from the light source; exactly what we need to render the depth map.
 
 	ShadowMapping();

@@ -378,6 +378,7 @@ void Text::help()
 	i = copyInBuffer(help, i, (const unsigned char*) "Scroll Lock= Toogle bounding volume edges", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "# = Toggle cam pos/front/right/up values", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "ß = Toggle light source bounding sphere rendering", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Num Enter = Toggle shadow map rendering", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Num + = Increase ambient light", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Num - = Decrease ambient light", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "All other keys have surprises for you.", true);
