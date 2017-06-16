@@ -9,22 +9,23 @@ a window is resized, this function should be called as well.*/
 void Frustum::setCamInternals(float angle, int width, int height)
 {
 	ratio = ((float)width) * 1.0 / ((float)height); // Calculate the ratio
-	angle = degreesToRadians(angle) / 2;
+	float radians = degreesToRadians(angle) / 2;
 	// compute width and height of the near and far plane sections
-	tang = tan(angle);
+	tang = tan(radians);
 
-	sphereFactorY = 1.0 / cos(angle); // Only for spheres, compute a part of the distance and multiply it later with the sphere radius
+	sphereFactorY = 1.0 / cos(radians); // Only for spheres, compute a part of the distance and multiply it later with the sphere radius
 	// compute half of the the horizontal field of view and sphereFactorX
 	const float anglex = atan(tang * ratio);
 	sphereFactorX = 1.0 / cos(anglex);
 }
 
 /*This function takes three vectors that contain the information about the current camera, see Camera.cpp for more information.*/
-void Frustum::setCamDef(glm::vec3 camPos, glm::vec3 front, glm::vec3 up) {
+void Frustum::setCamDef(glm::vec3 camPos, glm::vec3 front, glm::vec3 right, glm::vec3 up)
+{
 	this->camPos = camPos;
-	this->front = glm::normalize(front - camPos);
-	this->right = glm::normalize(glm::cross(this->front, up));
-	this->up = glm::cross(this->right, this->front);
+	this->front = front;
+	this->right = right;
+	this->up = up;
 }
 
 int Frustum::pointInFrustum(glm::vec3 p)

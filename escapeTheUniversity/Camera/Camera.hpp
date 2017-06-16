@@ -1,4 +1,6 @@
 #pragma once
+#define GLM_FORCE_RADIANS // Use this for radiant calculation, the GLM one does not work!
+
 // Std. Includes
 #include <vector>
 // GL Includes

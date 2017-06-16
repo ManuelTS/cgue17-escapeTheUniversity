@@ -51,12 +51,6 @@ private:
 	unsigned int VBO;
 	unsigned int materialVBO;
 
-	// Shared handles
-	unsigned int shadowEBO;
-	// Normal handles
-	unsigned int shadowVAO;
-	unsigned int shadowVBO;
-
 	int maxTextureUnits = 0;
 	const unsigned int positionsLocation = 0; // In gBuffer.vert and stencil.vert
 	const unsigned int normalsLocation = 1; // In gBuffer.vert

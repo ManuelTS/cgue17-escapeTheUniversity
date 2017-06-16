@@ -284,7 +284,7 @@ private:
 	    float shadow = calculateShadow(fragmentPosition, lightDirection, norm);  
 
 		// Calculate Final color	
-		return ambientColor + ((diffuseColor + specularColor) * (1.0f - shadow));// + calculateRim(norm, viewDirection);
+		return ambientColor + ((diffuseColor + specularColor) * (1.0f - shadow * 0.0f));// + calculateRim(norm, viewDirection);
 	}
 
 	void main()
