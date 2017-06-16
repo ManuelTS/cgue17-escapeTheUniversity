@@ -13,7 +13,65 @@
 
 using namespace std;
 
-Debugger::~Debugger() {}
+Debugger::~Debugger()
+{
+	if (shadowDebug != nullptr)
+		delete shadowDebug;
+
+	if(quadVAO != 0)
+	{
+		glDeleteBuffers(1, &quadVBO);
+		glDeleteVertexArrays(1, &quadVAO);
+	}
+}
+
+void Debugger::renderShadowMap(float farPlane, unsigned int depthMapTextureHandle)
+{
+	if (shadowDebug == nullptr)
+		shadowDebug = new Shader("shadowDebug");
+
+	const unsigned int NEAR_PLANE_LOCATION = 0; // in shadow_debug_frag
+	const unsigned int FAR_PLANE_LOCATION = 1;
+	const unsigned int DEPTH_MAP_LOCATION = 0;
+
+	shadowDebug->useProgram();
+
+	glUniform1f(NEAR_PLANE_LOCATION, 1.0f);
+	glUniform1f(FAR_PLANE_LOCATION, farPlane);
+	glActiveTexture(GL_TEXTURE0 + DEPTH_MAP_LOCATION);
+	glBindTexture(GL_TEXTURE_2D, depthMapTextureHandle);
+
+	if (quadVAO == 0) // if not generated generate
+	{
+		const unsigned int POSITON_LOCATION = 0; // in shadow_debug_vert
+		const unsigned int IN_TEXT_COORDS_LOCATION = 1;
+		const float quadVertices[] = {
+			// positions        // texture Coords
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		};
+
+		glGenVertexArrays(1, &quadVAO);		// setup plane VAO
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(quadVAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(POSITON_LOCATION);
+		glVertexAttribPointer(POSITON_LOCATION, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(IN_TEXT_COORDS_LOCATION);
+		glVertexAttribPointer(IN_TEXT_COORDS_LOCATION, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	}
+
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+	glActiveTexture(GL_TEXTURE0 + DEPTH_MAP_LOCATION);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
 
 void Debugger::drawLightBoundingSpheres() // Draws the light spheres based on their location and intensity radius
 {

@@ -104,10 +104,12 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			SoundManager::getInstance()->playSound("Dialog\\burp.mp3");
 		else if (key == GLFW_KEY_PRINT_SCREEN)
 			Text::getInstance()->addText2Display(Text::SCREENY);
-		else if (key == GLFW_KEY_BACKSLASH)
+		else if (key == GLFW_KEY_BACKSLASH) // # in german keyboard
 			rl->showCamCoords = !rl->showCamCoords;
-		else if (key == GLFW_KEY_MINUS)
+		else if (key == GLFW_KEY_MINUS) // ß in german keyboard
 			rl->drawLightBoundingSpheres = !rl->drawLightBoundingSpheres;
+		else if (key == GLFW_KEY_KP_ENTER) // Num enter on german keyboard
+			rl->drawShadowMap = !rl->drawShadowMap;
 	}
 }
 
@@ -295,7 +297,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	Frustum* frustum = Frustum::getInstance();
 	vector<LightNode::Light> renderingLights; // Contains the rendered lights
 	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE); // Must be before glClearColor, otherwise it remains untouched
+	glDepthMask(GL_TRUE); // Must be before glClearColor and ShadowMapping, otherwise it remains untouched
+	unsigned int lightShadowMapDrawIndex = 0; // For debugging, draws the shadowMap of a light
 
 	for (unsigned int i = 0; i < ml->lights.size(); i++) // Look which lights intersect or are in the frustum
 	{
@@ -304,60 +307,65 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		ln->light.position.w = frustum->sphereInFrustum(vec3(ln->light.position), ln->light.specular.w);// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
 
 		if (ln->light.position.w > -1) // Light volume intersects or is in frustum, render shadow map for light
+		{
+			lightShadowMapDrawIndex = i;
 			realmOfShadows->renderInDepthMap(ml->root, ln, initVar->zoom, width, height); // far plane is the spheres radius
+		}
 
 		renderingLights.push_back(ln->light);
 	}
 
-	// Deferred Shading
-	Shader* gBufferShader = gBuffer->gBufferShader;
+	if (drawShadowMap) // Renders one shadow map on screen
+		Debugger::getInstance()->renderShadowMap(renderingLights.at(lightShadowMapDrawIndex).specular.w, realmOfShadows->dephMapTextureHandle);
+	else
+	{
+		// Deferred Shading
+		Shader* gBufferShader = gBuffer->gBufferShader;
 
-	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->handle); // Must be first!
-	glViewport(0, 0, width, height);
-	glDepthFunc(GL_LEQUAL);
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to white
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	const float* projectionMatrixP = glm::value_ptr(glm::perspective(frustum->degreesToRadians(camera->zoom), (float)width / (float)height, frustum->nearD, frustum->farD));
-	const float* viewMatrixP = glm::value_ptr(camera->getViewMatrix());
-	gBufferShader->useProgram();
-	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, projectionMatrixP);
-	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
-	draw(ml->root); // Draw all nodes except light ones
+		// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->handle); // Must be first!
+		glViewport(0, 0, width, height);
+		glDepthFunc(GL_LEQUAL);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to white
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		const float* projectionMatrixP = glm::value_ptr(glm::perspective(frustum->degreesToRadians(camera->zoom), (float)width / (float)height, frustum->nearD, frustum->farD));
+		const float* viewMatrixP = glm::value_ptr(camera->getViewMatrix());
+		gBufferShader->useProgram();
+		glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, projectionMatrixP);
+		glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
+		draw(ml->root); // Draw all nodes except light ones
 
-	if (drawBulletDebug) // Draws the bullet debug context, see bullet.cpp#bullet
-		Bullet::getInstance()->debugDraw();
+		if (drawBulletDebug) // Draws the bullet debug context, see bullet.cpp#bullet
+			Bullet::getInstance()->debugDraw();
 
-	if (drawLightBoundingSpheres) // Draws the light bounding sphere of all lights
-		Debugger::getInstance()->drawLightBoundingSpheres();
+		if (drawLightBoundingSpheres) // Draws the light bounding sphere of all lights
+			Debugger::getInstance()->drawLightBoundingSpheres();
 
-	glDepthMask(GL_FALSE);
-	glDisable(GL_DEPTH_TEST);	
+		//glDepthMask(GL_FALSE); // prevents depth reading
+		glDisable(GL_DEPTH_TEST);	
 
-	// Light pass, point lights:
-	Shader* deferredShader = gBuffer->deferredShader;
-	deferredShader->useProgram();
-	gBuffer->bindTextures();
-	// Write light data to deferred shader
-	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);
-	//Write shadow data to deferredShader.frag. 
-	realmOfShadows->bindTexture(); // Link depth map into deferred Shader fragment
-	glUniformMatrix4fv(realmOfShadows->SHADOW_LIGHT_SPACE_MATRIX_LOCATION, 1, GL_FALSE, glm::value_ptr(realmOfShadows->lightSpaceMatrix)); // Write the light space matrix to the deferred shader
+		// Light pass, point lights:
+		Shader* deferredShader = gBuffer->deferredShader;
+		deferredShader->useProgram();
+		gBuffer->bindTextures();
+		glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);// Write light data to deferred shader
+		realmOfShadows->bindTexture(); 	//Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
+		glUniformMatrix4fv(realmOfShadows->SHADOW_LIGHT_SPACE_MATRIX_LOCATION, 1, GL_FALSE, glm::value_ptr(realmOfShadows->lightSpaceMatrix)); // Write the light space matrix to the deferred shader
+		glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
+		glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, renderingLights.size() * sizeof(renderingLights[0]), &renderingLights[0]);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
-	glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, renderingLights.size() * sizeof(renderingLights[0]), &renderingLights[0]);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	// Now would come the directional light pass
+		// Now would come the directional light pass
 	
-	if (wireFrameMode)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		if (wireFrameMode)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	gBuffer->renderQuad(); // Render 2D quad to screen
-	realmOfShadows->unbindTexture();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		gBuffer->renderQuad(); // Render 2D quad to screen
+		realmOfShadows->unbindTexture();
+	}
 	renderingLights.clear();
 }
 

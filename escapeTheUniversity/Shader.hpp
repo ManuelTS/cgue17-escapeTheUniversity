@@ -328,17 +328,46 @@ private:
 	{
 		gl_Position = lightSpaceMatrix * model * vec4(position, 1.0f);
 	})glsl";
-	const char* SHADOW_FRAG = R"glsl( // Uncomment all for debugging
+	const char* SHADOW_FRAG = R"glsl( // Empty shader vor normal depthMap rendering
+	#version 430 core
+	
+	void main()
+	{
+	})glsl";
+	const char* SHADOW_DEBUG_VERT = R"glsl(
+	#version 430 core
+	
+	layout (location = 0) in vec3 position;    // in debugger.cpp#renderShadowMap of the pixel on screen [0,1]
+	layout (location = 1) in vec2 inTextCoords; // in debugger.cpp#renderShadowMap of the depth map [0,1] rendered on screen
+
+	layout (location = 0) out vec2 outTexCoords; // of the depth map [0,1] rendered on screen for the fragment shader
+
+	void main()
+	{
+		outTexCoords = inTextCoords;
+		gl_Position = vec4(position, 1.0);
+	})glsl";
+	const char* SHADOW_DEBUG_FRAG = R"glsl(
 	#version 430 core
 
-	//layout (location = 0) in vec2 texCoords;
+	layout (location = 0) in vec2 texCoords; // of the depth map [0,1] rendered on screen
 
-	//layout (binding = 0) uniform sampler2D depthMap;
+	layout (location = 0) uniform float near_plane; // in debugger.cpp#renderShadowMap
+	layout (location = 1) uniform float far_plane;  // in debugger.cpp#renderShadowMap
+
+	layout (binding = 0) uniform sampler2D depthMap; // in debugger.cpp#renderShadowMap, depthMap rendered with shaodw_vert shader
+
+	float linearizeDepth(float depth)
+	{
+		float z = depth * 2.0 - 1.0; // Back to NDC 
+		return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));
+	}
 
 	void main()
 	{             
-		//float depthValue = texture(depthMap, texCoords).r;
-		//gl_FragColor = vec4(vec3(depthValue), 1.0);
+		float depthValue = texture(depthMap, texCoords).r;
+		gl_FragColor = vec4(vec3(linearizeDepth(depthValue) / far_plane), 1.0); // perspective
+		// gl_FragColor = vec4(vec3(depthValue), 1.0); // orthographic
 	})glsl";
 	const char* DEPTH_VERT = R"glsl(
 	#version 430 core

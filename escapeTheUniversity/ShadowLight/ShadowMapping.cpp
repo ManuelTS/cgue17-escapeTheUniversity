@@ -35,7 +35,7 @@ void ShadowMapping::renderInDepthMap(Node* root, LightNode* ln, const float FOV,
 	const float near_plane = 1.0f;
 	Frustum* frustum = Frustum::getInstance();
 	// Calculate light space matirx
-	glm::mat4 lightProjection = glm::perspective(frustum->degreesToRadians(FOV), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, 7.5f); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
+	glm::mat4 lightProjection = glm::perspective(frustum->degreesToRadians(FOV), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, ln->light.specular.w); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
 	glm::vec3 lightPosition = glm::vec3(ln->light.position);
 	glm::vec3 lightFront = glm::vec3(0);
 	glm::vec3 lightUp = glm::vec3(0, -1, 0); // look down
@@ -45,6 +45,7 @@ void ShadowMapping::renderInDepthMap(Node* root, LightNode* ln, const float FOV,
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
 	shadowShader->useProgram();
+	bindTexture();
 	glUniformMatrix4fv(shadowShader->SHADOW_LIGHT_SPACE_MATRIX_LOCATION, 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glCullFace(GL_FRONT);
@@ -55,6 +56,7 @@ void ShadowMapping::renderInDepthMap(Node* root, LightNode* ln, const float FOV,
 	draw(root);
 
 	glCullFace(GL_BACK);
+	unbindTexture();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	// reset viewport
 	glViewport(0, 0, screenWidth, screenHeight);
