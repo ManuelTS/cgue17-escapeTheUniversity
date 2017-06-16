@@ -35,6 +35,7 @@ void Bullet::createAndAddBoundingObjects(Node* current)
 
 	if (mn && mn->bounding && mn->meshes.size() > 0)
 	{
+
 		if (CONCURENT_THREADS_SUPPORTED == 0) // Hyperthreading unsupported, calculate normally
 			distributeBoundingGeneration(mn);
 		else  // Hyperthreaded bounding volume generation
@@ -93,8 +94,8 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		
 		btTransform trans;
 		trans.setIdentity();
-		trans.setFromOpenGLMatrix((btScalar*)&mn->hirachicalModelMatrix);
-
+		trans.setFromOpenGLMatrix((btScalar*)&mn->hirachicalModelMatrix);  
+	
 		btDefaultMotionState* myMotionState = new btDefaultMotionState(trans);
 		btRigidBody::btRigidBodyConstructionInfo ci(mass, myMotionState, shape, localInertia);
 		btRigidBody* rB = new btRigidBody(ci);
@@ -138,7 +139,7 @@ void Bullet::createBuilding(ModelNode* mn)
 
 	btTransform trans;
 	trans.setIdentity();
-	trans.setFromOpenGLMatrix((btScalar*) &mn->hirachicalModelMatrix);
+	trans.setFromOpenGLMatrix((btScalar*) &mn->hirachicalModelMatrix); //InverseHirachical causes perfectly skinned, but only for 1 building-colission mesh (last)
 	mn->collisionObject->setWorldTransform(trans);
 			
 	shapes.push_back(shape);
