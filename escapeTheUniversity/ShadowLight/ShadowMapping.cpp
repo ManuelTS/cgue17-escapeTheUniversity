@@ -30,17 +30,16 @@ ShadowMapping::~ShadowMapping()
 	delete shadowShader;
 }
 
-void ShadowMapping::renderInDepthMap(Node* root, LightNode* ln, float farPlane, const float FOV, const unsigned int screenWidth, const unsigned int screenHeight)
+void ShadowMapping::renderInDepthMap(Node* root, LightNode* ln, const float FOV, const unsigned int screenWidth, const unsigned int screenHeight)
 {
 	const float near_plane = 1.0f;
-	farPlane = 7.5f;
 	Frustum* frustum = Frustum::getInstance();
 	// Calculate light space matirx
-	glm::mat4 lightProjection = glm::perspective(frustum->degreesToRadians(FOV), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, farPlane); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
+	glm::mat4 lightProjection = glm::perspective(frustum->degreesToRadians(FOV), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, 7.5f); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
 	glm::vec3 lightPosition = glm::vec3(ln->light.position);
-	glm::vec3 lightFront = glm::vec3(-0.444f, -0.896f, -0.023f);
-	glm::vec3 lightUp = glm::vec3(-0.894f, 0.445f, -0.047f);
-	glm::mat4 lightView = glm::lookAt(lightPosition, lightPosition + lightFront, lightUp);
+	glm::vec3 lightFront = glm::vec3(0);
+	glm::vec3 lightUp = glm::vec3(0, -1, 0); // look down
+	glm::mat4 lightView = glm::lookAt(lightPosition, lightFront, lightUp);
 	lightSpaceMatrix = lightProjection * lightView; // Combining these two gives us a light space transformation matrix that transforms each world-space vector into the space as visible from the light source; exactly what we need to render the depth map.
 
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);

@@ -109,7 +109,7 @@ void Mesh::draw(unsigned int drawMode, bool shadow)
 
 		glBindVertexArray(VAO);
 
-		if (rl->fps)
+		if (!shadow && rl->fps)
 			rl->drawnTriangles += vertices.size() / 3;
 
 		glDrawElements(drawMode, indices.size(), GL_UNSIGNED_INT, 0); // Draw

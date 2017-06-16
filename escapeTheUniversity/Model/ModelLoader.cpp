@@ -67,8 +67,7 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 		
 		if (string::npos != name.find(ANGLE_SUFFIX))
 			current = new TransformationNode();
-		else
-		if (string::npos != name.find(ANIMATION_SUFFIX) )
+		else if (string::npos != name.find(ANIMATION_SUFFIX))
 			current = new AnimatNode();
 		else
 			current = new ModelNode();
@@ -77,6 +76,9 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 
 		if (string::npos != name.find(BOUNDING_SUFFIX))
 			current->bounding = true;
+
+		if (string::npos != name.find(SPHERE_01_NAME))
+			sphere01 = current;
 
 		current->parent = parent;
 		processMeshesAndChildren(current, node, scene);

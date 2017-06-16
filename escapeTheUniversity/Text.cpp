@@ -356,7 +356,15 @@ void Text::help()
 	char help[1024] = "Keybindings";
 	write(help, -1.0, 0.9, 0.7, 0.0f);
 
-	unsigned int i = copyInBuffer(help, 0, (const unsigned char*) " F1= Help", true);
+	unsigned int i = copyInBuffer(help, 0, (const unsigned char*) "W/Upper arrow = Move forwards", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "S/Lower arrow = Move backwards", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "A/Left arrow = Move left", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "D/Right arrow = Move right", true); 
+	i = copyInBuffer(help, i, (const unsigned char*) "Left click = interaction", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Right click = ?", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Print = Screenshot", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Escape/End = Close game", true);
+	i = copyInBuffer(help, i, (const unsigned char*) " F1= Help", true);
 	i = copyInBuffer(help, i, (const unsigned char*) " F2= Toggle FPS and triangle count", true);
 	i = copyInBuffer(help, i, (const unsigned char*) " F3= Toggle wireframe", true);
 	i = copyInBuffer(help, i, (const unsigned char*) " F4= Texture-Sampling-Quality: Off/Nearest Neighbor/Bilinear", true);
@@ -368,15 +376,10 @@ void Text::help()
 	i = copyInBuffer(help, i, (const unsigned char*) "F10= Toggle stenicl buffer usage", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "F11= Fullscreen", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Scroll Lock= Toogle bounding volume edges", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "Escape/End = Close game", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "W/Upper arrow = Move forwards", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "S/Lower arrow = Move backwards", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "A/Left arrow = Move left", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "D/Right arrow = Move right", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "Left click = interaction", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "Right click = ?", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "Print = Screenshot", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "# = Toggle cam pos/front/right/up values", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "ß = Toggle light source bounding sphere rendering", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Num + = Increase ambient light", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Num - = Decrease ambient light", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "All other keys have surprises for you.", true);
 
 	write(help, -1.0, 0.8, 0.5, 0.0f);
