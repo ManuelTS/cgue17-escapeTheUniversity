@@ -202,7 +202,7 @@ private:
 	{ // Same as LightNode.hpp#Light
 		vec4 position;     // xyz = world coord position of light, w = flag if it should be drawn or not 1.0 = true = yes, otherwise false = no.
 		vec4 diffuse;      // rgb = diffuse light, a = ambient coefficient
-		vec4 specular;     // w unused
+		vec4 specular;     // rgb = rgb of diffuse light, a = light Sphere radius calculated in gBuffer#calcPointLightBSphere
 		vec4 shiConLinQua; // x = shininess, y = constant attentuation, z = linear attentuation, w = quadratic attentuation value
 	};
 

@@ -26,7 +26,6 @@ class RenderLoop
 		void doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShadows, ModelLoader* ml); // Does the deferred shading gemetry and lighning pass and draws the screen quad afterwards
 		void calculateDeltaTime(); // Calculates the delta time, e.g. the time between frames
 		void draw(Node* current); // Draws all lights which checking their dependencies and condition (no Light Node drawing, frustum culling, flag setting)
-		void pureDraw(Node* current); // Draws the argument node without any checks and calls draw for its children again
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
  		
 	public:
@@ -58,6 +57,7 @@ class RenderLoop
 		bool stencil = true; // Toogle usage of the stencil buffer, default true
 		bool fullscreen = false; // Toogle fullscreen mode, default false
 		bool showCamCoords = false; // Toggle the rendering of the camera coords on the screen, default false
+		bool drawLightBoundingSpheres = false; // Toogle the rendering of the light sources bounding spheres, default false
 		bool drawBulletDebug = false; // Toggle the drawing of the bullet world debug, default false
 		// Sampling states
 		int textureSampling = 1; // Texture Sampling Quality: 0 = Nearest Neighbor, 1 = Bilinear, default: 1 see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping
@@ -66,6 +66,7 @@ class RenderLoop
 
 		~RenderLoop();
 		void start(); // Initializes and starts the actual renderloop
+		void pureDraw(Node* current); // Draws the argument node without any checks and calls draw for its children again
 		void renderText(); // Renders the FPS on the screen
 		void toggleFullscreen(); // Toggles the fullscreen
 		void changeQuality(); // Changes the quality of texture sampling and Mip Mapping, see variables mipMapping and textureSampling. True if texture, false if mip mapping

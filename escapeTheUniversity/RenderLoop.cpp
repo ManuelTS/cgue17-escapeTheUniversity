@@ -81,7 +81,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		else if (key == GLFW_KEY_F11)
 			rl->toggleFullscreen();
 		//else if (key == GLFW_KEY_F12) // Causes an error
-		else if(key == GLFW_KEY_SCROLL_LOCK)
+		else if (key == GLFW_KEY_SCROLL_LOCK)
 			rl->drawBulletDebug = !rl->drawBulletDebug;
 		else if (key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT || key == GLFW_KEY_RIGHT_BRACKET || key == GLFW_KEY_KP_ADD)
 		{ // slash is german minus and right bracket is german plus on a german keyboard
@@ -94,7 +94,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			rl->move(ModelLoader::getInstance()->root);
 		else if (key == GLFW_KEY_Q)
 		{
-		
+
 		}
 		else if (key == GLFW_KEY_O) {
 			Text::getInstance()->addText2Display(Text::GAME_OVER);
@@ -106,6 +106,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			Text::getInstance()->addText2Display(Text::SCREENY);
 		else if (key == GLFW_KEY_BACKSLASH)
 			rl->showCamCoords = !rl->showCamCoords;
+		else if (key == GLFW_KEY_MINUS)
+			rl->drawLightBoundingSpheres = !rl->drawLightBoundingSpheres;
 	}
 }
 
@@ -298,12 +300,11 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	for (unsigned int i = 0; i < ml->lights.size(); i++) // Look which lights intersect or are in the frustum
 	{
 		LightNode* ln = ml->lights.at(i);
-		const float sphereRadius = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
-
-		ln->light.position.w = frustum->sphereInFrustum(vec3(ln->light.position), sphereRadius);// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
+		ln->light.specular.w = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
+		ln->light.position.w = frustum->sphereInFrustum(vec3(ln->light.position), ln->light.specular.w);// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
 
 		if (ln->light.position.w > -1) // Light volume intersects or is in frustum, render shadow map for light
-			realmOfShadows->renderInDepthMap(ml->root, ln, sphereRadius, initVar->zoom, width, height); // far plane is the spheres radius
+			realmOfShadows->renderInDepthMap(ml->root, ln, initVar->zoom, width, height); // far plane is the spheres radius
 
 		renderingLights.push_back(ln->light);
 	}
@@ -325,8 +326,11 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
 	draw(ml->root); // Draw all nodes except light ones
 
-	if (drawBulletDebug)
+	if (drawBulletDebug) // Draws the bullet debug context, see bullet.cpp#bullet
 		Bullet::getInstance()->debugDraw();
+
+	if (drawLightBoundingSpheres) // Draws the light bounding sphere of all lights
+		Debugger::getInstance()->drawLightBoundingSpheres();
 
 	glDepthMask(GL_FALSE);
 	glDisable(GL_DEPTH_TEST);	

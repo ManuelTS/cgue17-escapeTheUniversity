@@ -21,6 +21,7 @@ private:
 	const std::string ANIMATION_SUFFIX = "_c"; // Suffix for animat nodes
 	const std::string DOOR_SUFFIX = "_door"; // Door xxx names
 	const std::string LIGHT_SUFFIX = "_light"; // Light nodes
+	const std::string SPHERE_01_NAME = "sphere01";
 
 	bool loadModels = true; // Set this variable only once!
 	std::string directory;// Relative path to all models
@@ -48,6 +49,7 @@ public:
 	const std::string IMMOVABLE_SUFFIX = "_i"; // Suffix for immovable objects in bullet
 
 	Node* root; // Root node of the scene 
+	ModelNode* sphere01; // Pointer to sphere 01 for spherical bounding volume rendering
 	Assimp::Importer* importer;
 	Animator* animator; // Is the animator for  vertex skinning animations
 
