@@ -31,7 +31,7 @@ float TransformationNode::change(bool plus)
 		//SoundManager::getInstance()->playSound("close_interior_wood_door.mp3"); // only display sound if only one door is open or closed!
 		newRadiant = -newRadiant;
 	}
-	else
+	//else
 		//SoundManager::getInstance()->playSound("open_interior_wood_door_with_squeak.mp3");
 
 	for (Node* child : children)
