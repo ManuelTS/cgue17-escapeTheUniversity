@@ -32,10 +32,11 @@ ShadowMapping::~ShadowMapping()
 
 void ShadowMapping::renderInDepthMap(Node* root, LightNode* ln, const float FOV, const unsigned int screenWidth, const unsigned int screenHeight)
 {
-	const float near_plane = 1.0f;
+	const float near_plane = 0.1f; // Check debugger.cpp#renderShadowMap
 	Frustum* frustum = Frustum::getInstance();
 	// Calculate light space matirx
-	glm::mat4 lightProjection = glm::perspective(frustum->degreesToRadians(FOV), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, ln->light.specular.w); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
+	glm::mat4 lightProjection = glm::perspective(frustum->degreesToRadians(110.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, ln->light.specular.w); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
+	//lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, ln->light.specular.w);
 	glm::vec3 lightPosition = glm::vec3(ln->light.position);
 	glm::vec3 lightFront = glm::vec3(0);
 	glm::vec3 lightUp = glm::vec3(0, -1, 0); // look down

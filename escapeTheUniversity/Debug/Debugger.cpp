@@ -36,7 +36,7 @@ void Debugger::renderShadowMap(float farPlane, unsigned int depthMapTextureHandl
 
 	shadowDebug->useProgram();
 
-	glUniform1f(NEAR_PLANE_LOCATION, 1.0f);
+	glUniform1f(NEAR_PLANE_LOCATION, 0.1f); // Check also shadowMapping#renderInDepthMap
 	glUniform1f(FAR_PLANE_LOCATION, farPlane);
 	glActiveTexture(GL_TEXTURE0 + DEPTH_MAP_LOCATION);
 	glBindTexture(GL_TEXTURE_2D, depthMapTextureHandle);

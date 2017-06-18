@@ -365,9 +365,9 @@ private:
 
 	void main()
 	{             
-		float depthValue = texture(depthMap, texCoords).r;
+		float depthValue = texture(depthMap, texCoords).r; // .r is correct got it tested with a little depth visualization
 		gl_FragColor = vec4(vec3(linearizeDepth(depthValue) / far_plane), 1.0); // perspective
-		// gl_FragColor = vec4(vec3(depthValue), 1.0); // orthographic
+		//gl_FragColor = vec4(vec3(depthValue), 1.0); // orthographic
 	})glsl";
 	const char* DEPTH_VERT = R"glsl(
 	#version 430 core
