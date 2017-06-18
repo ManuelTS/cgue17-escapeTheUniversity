@@ -36,80 +36,109 @@ RenderLoop::~RenderLoop()
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (action == GLFW_PRESS)
+	RenderLoop* rl = RenderLoop::getInstance();
+
+	if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_END) && action == GLFW_PRESS) // See Text.cpp#help for keybindings
+		glfwSetWindowShouldClose(window, GL_TRUE);
+	else if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
 	{
-		RenderLoop* rl = RenderLoop::getInstance();
+		rl->render = !rl->render;
+		rl->help = !rl->help;
+	}
+	else if (key == GLFW_KEY_F2 && action == GLFW_PRESS)
+		rl->fps = !rl->fps;
+	else if (key == GLFW_KEY_F3 && action == GLFW_PRESS)
+		rl->wireFrameMode = !rl->wireFrameMode;
+	else if (key == GLFW_KEY_F4 && action == GLFW_PRESS)
+	{
+		rl->textureSampling++;
+		rl->changeQuality();
+	}
+	else if (key == GLFW_KEY_F5 && action == GLFW_PRESS)
+	{
+		rl->mipMapping++;
+		rl->changeQuality();
+	}
+	else if (key == GLFW_KEY_F6 && action == GLFW_PRESS)
+		cout << "TODO: Visualizing the depth buffer." << endl; // TODO Visualizing the depth buffer http://learnopengl.com/#!Advanced-OpenGL/Depth-testing, swith shaders to depth ones
+	else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE && action == GLFW_PRESS)
+		rl->render = !rl->render;
+	else if (key == GLFW_KEY_F8 && action == GLFW_PRESS)
+	{
+		rl->frustum = !rl->frustum;
+		cout << "Switching Frustum Culling to ";
+		if (rl->frustum)
+			cout << "disabled." << endl;
+		else
+			cout << "enabled." << endl;
+	}
+	else if (key == GLFW_KEY_F9 && action == GLFW_PRESS)
+		rl->blending = !rl->blending;
+	else if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
+		rl->stencil = !rl->stencil;
+	else if (key == GLFW_KEY_F11 && action == GLFW_PRESS)
+		rl->toggleFullscreen();
+	//else if (key == GLFW_KEY_F12) // Causes an error
+	else if (key == GLFW_KEY_SCROLL_LOCK && action == GLFW_PRESS)
+		rl->drawBulletDebug = !rl->drawBulletDebug;
+	else if ((key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT || key == GLFW_KEY_RIGHT_BRACKET || key == GLFW_KEY_KP_ADD) && (action == GLFW_PRESS || action == GLFW_REPEAT))
+	{ // slash is german minus and right bracket is german plus on a german keyboard
+		bool minus = key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT; // In- or decrease ambient light coefficient
 
-		if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_END)) // See Text.cpp#help for keybindings
-			glfwSetWindowShouldClose(window, GL_TRUE);
-		else if (key == GLFW_KEY_F1)
-		{
-			rl->render = !rl->render;
-			rl->help = !rl->help;
-		}
-		else if (key == GLFW_KEY_F2)
-			rl->fps = !rl->fps;
-		else if (key == GLFW_KEY_F3)
-			rl->wireFrameMode = !rl->wireFrameMode;
-		else if (key == GLFW_KEY_F4)
-		{
-			rl->textureSampling++;
-			rl->changeQuality();
-		}
-		else if (key == GLFW_KEY_F5)
-		{
-			rl->mipMapping++;
-			rl->changeQuality();
-		}
-		else if (key == GLFW_KEY_F6)
-			cout << "TODO: Visualizing the depth buffer." << endl; // TODO Visualizing the depth buffer http://learnopengl.com/#!Advanced-OpenGL/Depth-testing, swith shaders to depth ones
-		else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE)
-			rl->render = !rl->render;
-		else if (key == GLFW_KEY_F8)
-		{
-			rl->frustum = !rl->frustum;
-			cout << "Switching Frustum Culling to ";
-			if (rl->frustum)
-				cout << "disabled." << endl;
-			else
-				cout << "enabled." << endl;
-		}
-		else if (key == GLFW_KEY_F9)
-			rl->blending = !rl->blending;
-		else if (key == GLFW_KEY_F10)
-			rl->stencil = !rl->stencil;
-		else if (key == GLFW_KEY_F11)
-			rl->toggleFullscreen();
-		//else if (key == GLFW_KEY_F12) // Causes an error
-		else if (key == GLFW_KEY_SCROLL_LOCK) 			
-			rl->drawBulletDebug = !rl->drawBulletDebug;
-		else if (key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT || key == GLFW_KEY_RIGHT_BRACKET || key == GLFW_KEY_KP_ADD)
-		{ // slash is german minus and right bracket is german plus on a german keyboard
-			bool minus = key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT; // In- or decrease ambient light coefficient
+		for (LightNode* ln : ModelLoader::getInstance()->lights)
+			ln->light.diffuse.a += minus ? -0.01f : 0.01f;
+	}
+	else if (key == GLFW_KEY_E && action == GLFW_PRESS)
+		rl->move(ModelLoader::getInstance()->root);
+	else if (key == GLFW_KEY_LEFT_BRACKET && action == GLFW_PRESS) // ü on german keyboard, ü is for überflieger
+		rl->freeCamera = !rl->freeCamera;
+	else if (key == GLFW_KEY_O && action == GLFW_PRESS)
+	{
+		Text::getInstance()->addText2Display(Text::GAME_OVER);
+		SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
+	}
+	else if (key == GLFW_KEY_B && action == GLFW_PRESS)
+		SoundManager::getInstance()->playSound("Dialog\\burp.mp3");
+	else if (key == GLFW_KEY_PRINT_SCREEN && action == GLFW_PRESS)
+		Text::getInstance()->addText2Display(Text::SCREENY);
+	else if (key == GLFW_KEY_BACKSLASH && action == GLFW_PRESS) // # in german keyboard
+		rl->showCamCoords = !rl->showCamCoords;
+	else if (key == GLFW_KEY_MINUS && action == GLFW_PRESS) // ß in german keyboard
+		rl->drawLightBoundingSpheres = !rl->drawLightBoundingSpheres;
+	else if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) // Num enter on german keyboard
+		rl->drawShadowMap = !rl->drawShadowMap;
+}
 
-			for (LightNode* ln : ModelLoader::getInstance()->lights)
-				ln->light.diffuse.a += minus ? -0.01f : 0.01f;
-		}
-		else if (key == GLFW_KEY_E)
-			rl->move(ModelLoader::getInstance()->root);
-		else if (key == GLFW_KEY_Q)
-		{
+/*Listens for user input.*/
+void RenderLoop::doMovement(double timeDelta)
+{
+	btTransform trans = camera->rigitBody->getCenterOfMassTransform();
+	mat4 matrix;
 
-		}
-		else if (key == GLFW_KEY_O) {
-			Text::getInstance()->addText2Display(Text::GAME_OVER);
-			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
-		}
-		else if (key == GLFW_KEY_B)
-			SoundManager::getInstance()->playSound("Dialog\\burp.mp3");
-		else if (key == GLFW_KEY_PRINT_SCREEN)
-			Text::getInstance()->addText2Display(Text::SCREENY);
-		else if (key == GLFW_KEY_BACKSLASH) // # in german keyboard
-			rl->showCamCoords = !rl->showCamCoords;
-		else if (key == GLFW_KEY_MINUS) // ß in german keyboard
-			rl->drawLightBoundingSpheres = !rl->drawLightBoundingSpheres;
-		else if (key == GLFW_KEY_KP_ENTER) // Num enter on german keyboard
-			rl->drawShadowMap = !rl->drawShadowMap;
+	if (!freeCamera) // Constrains camera movement to bullet physics
+	{ //Set camera postion after the physics from the last frame were calculated
+		trans.getOpenGLMatrix(glm::value_ptr(matrix));
+		camera->position = vec3(matrix[3]); // only update the position of the camera!
+	}
+
+	//Camera controls
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		camera->processKeyboard(camera->FORWARD, timeDelta);
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera->processKeyboard(camera->BACKWARD, timeDelta);
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera->processKeyboard(camera->LEFT, timeDelta);
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		camera->processKeyboard(camera->RIGHT, timeDelta);
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+		camera->processKeyboard(camera->UP, timeDelta);
+
+	if (!freeCamera)
+	{
+		matrix = mat4(); // No yaw or pitch
+		matrix[3] = vec4(camera->position, 1.0f); // Set the new position to the bounding camera object
+		trans.setFromOpenGLMatrix(glm::value_ptr(matrix));
+		camera->rigitBody->getMotionState()->setWorldTransform(trans);
 	}
 }
 
@@ -235,7 +264,7 @@ void RenderLoop::start()
 	height = initVar->height;
 	glViewport(0, 0, width, height);
 
-	camera = new Camera(glm::vec3(8,5,3), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
+	camera = new Camera(glm::vec3(8,8,3), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
 
 	initGLFWandGLEW();
 	displayLoadingScreen(ml);
@@ -246,7 +275,7 @@ void RenderLoop::start()
 	b->init();
 	b->createAndAddBoundingObjects(ml->root); // Sets pointers of rigitBodies in all nodes of the scene graph
 	b->join();
-	//b->createCamera(camera); // Create cam bounding cylinder
+	b->createCamera(camera); // Create cam bounding cylinder
 
 	//glEnable(GL_FRAMEBUFFER_SRGB); // Gamma correction
 
@@ -443,30 +472,7 @@ void RenderLoop::calculateDeltaTime()
 	Bullet::getInstance()->getDynamicsWorld()->stepSimulation(time.delta, 2, 0.16f); // Params: deltaTime, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
 }
 
-/*Listens for user input.*/
-void RenderLoop::doMovement(double timeDelta)
-{
-	//Set camera postion after the physics from the last frame were calculated
-	btTransform trans;
-	//camera->rigitBody->getMotionState()->getWorldTransform(trans);
-	mat4 matrix;
-	//trans.getOpenGLMatrix(glm::value_ptr(matrix));
-	//camera->position = matrix[3];
 
-	// Camera controls
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera->processKeyboard(camera->FORWARD, timeDelta);
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera->processKeyboard(camera->BACKWARD, timeDelta);
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera->processKeyboard(camera->LEFT, timeDelta);
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera->processKeyboard(camera->RIGHT, timeDelta);
-
-	//matrix[3] = vec4(camera->position, 1.0f); // Set the new position to the bounding camera object
-	//trans.setFromOpenGLMatrix(glm::value_ptr(matrix));
-	//camera->rigitBody->getMotionState()->setWorldTransform(trans);
-}
 
 // Displays the ETU loading screen with music, source https://open.gl/textures
 void RenderLoop::displayLoadingScreen(ModelLoader* ml) {

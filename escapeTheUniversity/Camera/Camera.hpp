@@ -21,7 +21,8 @@ class Camera{
 			FORWARD,
 			BACKWARD,
 			LEFT,
-			RIGHT
+			RIGHT,
+			UP
 		};
 
 		// Camera Attributes
@@ -31,8 +32,8 @@ class Camera{
 		vec3 right; // represents the positive x-axis of the camera space
 		vec3 worldUp;
 		// Eular Angles
-		double yaw = -90.0; //The yaw and pitch values are obtained from mouse (or controller/joystick) movement where horizontal mouse-movement affects the yaw and vertical mouse-movement affects the pitch.
-		double pitch = 0.0;
+		double yaw = -90.0; //The yaw and pitch values are obtained from mouse (or controller/joystick) movement where horizontal mouse-movement affects the yaw
+		double pitch = 0.0; // and vertical mouse - movement affects the pitch
 		double lastX = 400; // Last x position of the mouse
 		double lastY = 300; // Last y position of the mouse
 		bool firstMouse = true; // True if the mouse is used for the first time, false if not

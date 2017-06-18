@@ -93,7 +93,7 @@ btConvexHullShape* Bullet::pureBulletConvexHullGeneration(ModelNode* mn)
 	vertices->clear();
 	delete vertices;
 
-	return btShape;
+	return btShape; // Max 100 vertices
 }
 
 bool Bullet::distributeBoundingGeneration(ModelNode* mn)
@@ -168,7 +168,7 @@ void Bullet::createBuilding(ModelNode* mn)
 
 void Bullet::createCamera(Camera* c) 
 {
-	btCylinderShape* shape= new btCylinderShape(btVector3(1, 2, 1));
+	btCylinderShape* shape= new btCylinderShape(btVector3(0.7f, 1.4f, 0.2f));
 	shape->setMargin(DEFAULT_COLLISION_MARGIN);
 	const float mass = 10.0;
 	btVector3 localInertia = btVector3(0, 0, 0);
