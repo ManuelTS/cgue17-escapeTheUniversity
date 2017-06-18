@@ -17,7 +17,7 @@ void Bullet::init()
 		//the default constraint solver. For parallel processing you can use a different solver(see Extras / BulletMultiThreaded)
 		solver = new btSequentialImpulseConstraintSolver;
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-		dynamicsWorld->setGravity(btVector3(0, -5, 0));
+		dynamicsWorld->setGravity(btVector3(0, -1.0f, 0));
 		
 		#if _DEBUG
 			debugDrawer = new BulletDebugDrawer();

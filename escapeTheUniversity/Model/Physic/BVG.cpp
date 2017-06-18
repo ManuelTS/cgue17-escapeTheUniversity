@@ -90,8 +90,10 @@ btConvexHullShape* BVG::nodeCalculation(ModelNode* modelNode)
 		point.setX(*(vhacdConvexHull.m_points + i++));
 		point.setY(*(vhacdConvexHull.m_points + i++));
 		point.setZ(*(vhacdConvexHull.m_points + i++));
-		btShape->addPoint(point);
+		btShape->addPoint(point, false);
 	}
+
+	btShape->recalcLocalAabb();
 
 	// release memory
 	interfaceVHACD->Clean();
