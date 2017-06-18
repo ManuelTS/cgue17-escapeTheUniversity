@@ -1,8 +1,9 @@
+#include "BulletDebugDrawer.hpp"
 #include <iostream>
 #include <vector>
-#include "../Model/Mesh/Mesh.hpp"
+
 #include "../Text.hpp"
-#include "BulletDebugDrawer.hpp"
+#include "../Model/ModelLoader.hpp"
 
 using namespace std;
 
@@ -10,9 +11,12 @@ using namespace std;
 BulletDebugDrawer::BulletDebugDrawer()
 {
 	container = new Mesh(); // Empty container mesh, no VAO generated only for data container
+	
+	ModelLoader* ml = ModelLoader::getInstance();
 }
 
-BulletDebugDrawer::~BulletDebugDrawer(){
+BulletDebugDrawer::~BulletDebugDrawer()
+{
 	delete container;
 }
 
@@ -24,13 +28,15 @@ void BulletDebugDrawer::BulletDebugDrawer::drawLine(const btVector3 &from, const
 
 	fromV.position = glm::vec3(from.getX(), from.getY(), from.getZ());
 	toV.position = glm::vec3(to.getX(), to.getY(), to.getZ());
+	fromV.texCoords = glm::vec2(1, 1);
+	toV.texCoords = glm::vec2(1, 1);
 
 	container->vertices.push_back(fromV);
 	container->vertices.push_back(toV);
 	container->indices.push_back(index++);
 	container->indices.push_back(index++);
-	container->materials.push_back(glm::vec4(1, 0, 0, 1)); // Draw lines red
-	container->materials.push_back(glm::vec4(1, 0, 0, 1));
+	container->materials.push_back(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	container->materials.push_back(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 }
 
 void BulletDebugDrawer::drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &fromColor, const btVector3 &toColor)
@@ -85,7 +91,6 @@ void BulletDebugDrawer::draw()
 	{ 
 		Mesh* drawer = new Mesh(); // Generate and link VAO only here since it can change a in size
 
-		drawer->textures = container->textures;
 		drawer->materials = container->materials;
 		drawer->indices = container->indices;
 		drawer->vertices = container->vertices;

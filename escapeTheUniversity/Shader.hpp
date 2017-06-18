@@ -106,7 +106,7 @@ private:
 	layout (location = 2) in vec2 tc;          // Usage in: Mesh.cpp link();
 	layout (location = 3) in uvec4 boneIndices;// Usage in: Mesh.cpp link();
 	layout (location = 4) in vec4 boneWeights; // Usage in: Mesh.cpp link();
-	layout (location = 5) in vec4 material;    // Usage in: Mesh.cpp link();, // rgb = optional color, if all are not zero the texture is unused, a = shininess value
+	layout (location = 5) in vec4 material;    // Usage in: Mesh.cpp link();, // rgb = unused, a = shininess value
 
 	layout (location = 0) out vec3 fragmentPosition; // Usage in: gBuffer.frag in
 	layout (location = 1) out vec3 normalVector;     // Usage in: gBuffer.frag in
@@ -152,29 +152,20 @@ private:
 	layout (location = 2) in vec2 texCoords;        // Usage in: gBuffer.vert out
 	layout (location = 3) in vec4 materialDiffuseShininess; // Usage in: gBuffer.vert out, rgb = optional color, if one is not zero the texture is unused, a = shininess value
 
-	layout (location = 0) out uvec4 gColorNormal;        // Usage in: deferredShading.frag in
-	layout (location = 1) out vec4 gPositionAndShininess;// Usage in: deferredShading.frag in, normalized
-
-	// Check in master texture manaagment, google for uniform color in def. shading
+	layout (location = 0) out uvec4 gColorNormal; // Usage in: deferredShading.frag in
+	layout (location = 1) out vec4 gPosition;     // Usage in: deferredShading.frag in, normalized
 
 	void main()
 	{
-		vec3 color = materialDiffuseShininess.rgb;
-		uint textureLookup = 0; // Handle to know in the deferred frag shader if only a color value or a texture is used
-
-		if(materialDiffuseShininess.r == 0 && materialDiffuseShininess.g == 0 && materialDiffuseShininess.b == 0) // rgb = optional color, if one is not zero the texture is unused, a = shininess 
-		{
-			color = texture(textureDiffuse, texCoords).rgb;
-			textureLookup = 1; // Handle to know in the deferred frag shader if only a color value or a texture is used
-		}
+		vec3 color = texture(textureDiffuse, texCoords).rgb;
 		
 		gColorNormal.x = packHalf2x16(color.xy);
 		gColorNormal.y = packHalf2x16(vec2(color.z,normalVector.x));
 		gColorNormal.z = packHalf2x16(normalVector.yz);
-		gColorNormal.w = textureLookup; // Handle to know in the deferred frag shader if only a color value or a texture is used
+		gColorNormal.w = packHalf2x16(vec2(materialDiffuseShininess.a, 0.0f)); // x = shininess value, y unused
 
-		gPositionAndShininess.xyz = fragmentPosition;
-		gPositionAndShininess.w = materialDiffuseShininess.a; // a is the material shininess value
+		gPosition.xyz = fragmentPosition;
+		gPosition.w = 0.0f; // w Unused
 	})glsl";
 	const char* DEFERRED_SHADING_VERT = R"glsl(
 	#version 430 core
@@ -194,9 +185,9 @@ private:
 
 	layout (location = 1) uniform mat4 lightSpaceMatrix; // Light space transformation matrix that transforms each world-space vector into the space as visible from the light source
 
-	layout (binding = 0) uniform usampler2D colorAndNormalTex;      // From gBuffer.frag, attachment0
-	layout (binding = 1) uniform sampler2D positionAndShininessTex; // From gBuffer.frag, attachment1
-	layout (binding = 2) uniform sampler2D depthMap;                // From shadowMapping, depth map, shadowMapping#bindTexture()
+	layout (binding = 0) uniform usampler2D colorAndNormalTex; // From gBuffer.frag, attachment0
+	layout (binding = 1) uniform sampler2D positionTex;        // From gBuffer.frag, attachment1
+	layout (binding = 2) uniform sampler2D depthMap;           // From shadowMapping, depth map, shadowMapping#bindTexture()
 
 	struct LightStruct 
 	{ // Same as LightNode.hpp#Light
@@ -288,33 +279,27 @@ private:
 	}
 
 	void main()
-	{
-		//Unpack GBuffer
+	{ //Unpack GBuffer
 		uvec4 gColorAndNormal = texelFetch(colorAndNormalTex, ivec2(gl_FragCoord.xy), 0);
-		vec4 gPositionAndShininess = texelFetch(positionAndShininessTex, ivec2(gl_FragCoord.xy), 0);
+		vec4 gPosition = texelFetch(positionTex, ivec2(gl_FragCoord.xy), 0); // w unused
 		vec2 temp = unpackHalf2x16(gColorAndNormal.y);
 
 		vec3 diffuse = vec3(unpackHalf2x16(gColorAndNormal.x), temp.x);
-		float directColor = gColorAndNormal.w; // Handle to know in the deferred frag shader if only a color value or a texture is used
-		
-		if(directColor == 0) // Handle to know in the deferred frag shader if only a color value or a texture is used
-			gl_FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
-		else
-		{
-			float specular = gPositionAndShininess.w;
-			vec3 norm = normalize(vec3(temp.y, unpackHalf2x16(gColorAndNormal.z)));
-			vec3 fragmentPosition = gPositionAndShininess.xyz;
-			vec3 viewDirection = normalize(viewPosition - fragmentPosition);
+		vec2 shininess = unpackHalf2x16(gColorAndNormal.w); // x = shininess color value, y = unused
 
-			//Calculate light
-			vec3 color = vec3(0.0f);
+		float specular = shininess.x;
+		vec3 norm = normalize(vec3(temp.y, unpackHalf2x16(gColorAndNormal.z)));
+		vec3 fragmentPosition = gPosition.xyz;
+		vec3 viewDirection = normalize(viewPosition - fragmentPosition);
 
-			for(int i = 0; i < LIGHT_NUMBER; i++)
-				if(l.light[i].position.w > -1)
-					color += calculateLight(l.light[i], diffuse, specular, norm, fragmentPosition, viewDirection);
+		//Calculate color with light
+		vec3 color = vec3(0.0f);
 
-			gl_FragColor = vec4(color, 1.0f);
-		}
+		for(int i = 0; i < LIGHT_NUMBER; i++)
+			if(l.light[i].position.w > -1)
+				color += calculateLight(l.light[i], diffuse, specular, norm, fragmentPosition, viewDirection);
+
+		gl_FragColor = vec4(color, 1.0f);
 	})glsl";
 	const char* SHADOW_VERT = R"glsl(
 	#version 430 core

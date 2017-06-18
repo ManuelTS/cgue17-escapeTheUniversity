@@ -324,7 +324,7 @@ Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, unsigned int meshIndex, const
 vector<Mesh::Texture> ModelLoader::loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, vector<glm::vec4>* materials)
 {
 	//Read materials
-	glm::vec4 m; // For new only one material! Has already standard values set if none found
+	float shininess = 0; // For new only one material! Has already standard values set if none found
 
 	for (unsigned int i = 0; i < mat->mNumProperties; i++)
 	{
@@ -349,7 +349,7 @@ vector<Mesh::Texture> ModelLoader::loadMaterialTextures(aiMaterial* mat, aiTextu
 				int length = (prop->mDataLength * sizeof(char)) / sizeof(float);
 
 				if (length == 1 && data[0] != 0.0f && found == 0) // Shininess
-					m.a = data[0];
+					shininess = data[0];
 				else if (length == 4 && data[0] != 0.0f && data[1] != 0.0f && data[2] != 0.0f)
 				{
 					if (found == 1) // Ambient
@@ -358,9 +358,9 @@ vector<Mesh::Texture> ModelLoader::loadMaterialTextures(aiMaterial* mat, aiTextu
 					}
 					else if (found == 2) // Diffuse, UNUSED IN SHADER! 
 					{
-						m.r = data[0];
-						m.g = data[1];
-						m.b = data[2];
+						//m.r = data[0];
+						//m.g = data[1];
+						//m.b = data[2];
 					}
 					else if (found == 3) // Specular
 					{ // Not used in shaders and mesh.cpp
@@ -371,16 +371,11 @@ vector<Mesh::Texture> ModelLoader::loadMaterialTextures(aiMaterial* mat, aiTextu
 		}
 	}
 
-	bool loaded = false;
-
-	for (unsigned int i = 0; !loaded && i < materials->size(); i++)
-		loaded = materials->at(i) == m;
-
-	if (!loaded)
-		materials->push_back(m);
+	materials->push_back(glm::vec4(0.0f ,0.0f ,0.0f, shininess));
 
 	//Read and load textures
 	vector<Mesh::Texture> textures;
+	bool loaded = false;
 
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
