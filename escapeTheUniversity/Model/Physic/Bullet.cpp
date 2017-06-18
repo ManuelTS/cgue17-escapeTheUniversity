@@ -74,19 +74,39 @@ void Bullet::removeFinished(vector<future<bool>>* threads)
 		}
 }
 
+btConvexHullShape* Bullet::pureBulletConvexHullGeneration(ModelNode* mn)
+{
+	btConvexHullShape* btShape = new btConvexHullShape();//This constructor does not work (btScalar*)vhacdConvexHull.m_points, vhacdConvexHull.m_nPoints / 3, 3 * sizeof(double));
+	vector<float>* vertices = mn->getAllVertices();
+
+	for (int i = 0; i < vertices->size();)
+	{
+		btVector3 point;
+		point.setX(vertices->at(i++));
+		point.setY(vertices->at(i++));
+		point.setZ(vertices->at(i++));
+		btShape->addPoint(point, false);
+	}
+
+	btShape->optimizeConvexHull();
+	btShape->recalcLocalAabb();
+	vertices->clear();
+	delete vertices;
+
+	return btShape; // Max 100 vertices
+}
+
 bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 {
 	if (mn->name.find(ModelLoader::getInstance()->IMMOVABLE_SUFFIX) != string::npos)
 		createBuilding(mn);
 	else
 	{
-		BVG* bvg = new BVG(); // VHACD calculation
-		btConvexHullShape* shape = bvg->nodeCalculation(mn); // Max 100 vertices
-		delete bvg;
+		//BVG* bvg = new BVG(); // VHACD calculation
+		btConvexHullShape* shape = pureBulletConvexHullGeneration(mn); // bvg->nodeCalculation(mn); // Buggy, false parameters? Max 100 vertices
+		//delete bvg;
 		
-		//shape->optimizeConvexHull();
 		shape->initializePolyhedralFeatures(); // Changing the collision shape now bad idea,  That will make the debug rendering more pretty, but doesn't change anything related to collision detection etc. http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11385&p=38354&hilit=initializePolyhedralFeatures#p38354
-		// test hulls with http://www.bulletphysics.org/mediawiki-1.5.8/index.php/BtShapeHull_vertex_reduction_utility
 		const float mass = 5.0;
 		btVector3 localInertia = btVector3(0, 0, 0);
 		shape->calculateLocalInertia(mass, localInertia);
@@ -148,7 +168,7 @@ void Bullet::createBuilding(ModelNode* mn)
 
 void Bullet::createCamera(Camera* c) 
 {
-	btCylinderShape* shape= new btCylinderShape(btVector3(1, 2, 1));
+	btCylinderShape* shape= new btCylinderShape(btVector3(0.7f, 1.4f, 0.2f));
 	shape->setMargin(DEFAULT_COLLISION_MARGIN);
 	const float mass = 10.0;
 	btVector3 localInertia = btVector3(0, 0, 0);

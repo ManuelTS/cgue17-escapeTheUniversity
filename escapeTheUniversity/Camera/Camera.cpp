@@ -21,7 +21,7 @@ glm::mat4 Camera::getViewMatrix()
 // Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
 void Camera::processKeyboard(Camera_Movement direction, double deltaTime)
 {
-	GLfloat velocity = movementSpeed * deltaTime;
+	float velocity = movementSpeed * deltaTime;
 
 	if (direction == FORWARD)
 		position += front * velocity;
@@ -31,6 +31,8 @@ void Camera::processKeyboard(Camera_Movement direction, double deltaTime)
 		position -= glm::normalize(glm::cross(front, up)) * velocity;
 	if (direction == RIGHT)
 		position += glm::normalize(glm::cross(front, up)) * velocity;
+	if (direction == UP)
+		position.y += 1.5f;
 
 	Frustum::getInstance()->setCamDef(position, front, right, up);
 }
