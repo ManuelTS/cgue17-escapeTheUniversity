@@ -197,7 +197,7 @@ private:
 		vec4 shiConLinQua; // x = shininess, y = constant attentuation, z = linear attentuation, w = quadratic attentuation value
 	};
 
-	const int LIGHT_NUMBER = 1; // Correlates with ModelLoader.hpp#LIGHT_NUMBER
+	const int LIGHT_NUMBER = 10; // Correlates with ModelLoader.hpp#LIGHT_NUMBER
 	layout (std140, binding = 2, index = 0) uniform LightBlock 
 	{
 		LightStruct light[LIGHT_NUMBER];
