@@ -81,7 +81,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		else if (key == GLFW_KEY_F11)
 			rl->toggleFullscreen();
 		//else if (key == GLFW_KEY_F12) // Causes an error
-		else if (key == GLFW_KEY_SCROLL_LOCK)
+		else if (key == GLFW_KEY_SCROLL_LOCK) 			
 			rl->drawBulletDebug = !rl->drawBulletDebug;
 		else if (key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT || key == GLFW_KEY_RIGHT_BRACKET || key == GLFW_KEY_KP_ADD)
 		{ // slash is german minus and right bracket is german plus on a german keyboard
@@ -267,7 +267,9 @@ void RenderLoop::start()
 		else
 		{
 			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to 
+
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
+
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 
@@ -327,7 +329,11 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		glViewport(0, 0, width, height);
 		glDepthFunc(GL_LEQUAL);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to white
+		/**DEBUGGING */
+		if (!this->drawBulletDebug)
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
+		else
+			glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		const float* projectionMatrixP = glm::value_ptr(glm::perspective(frustum->degreesToRadians(camera->zoom), (float)width / (float)height, frustum->nearD, frustum->farD));
 		const float* viewMatrixP = glm::value_ptr(camera->getViewMatrix());
