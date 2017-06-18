@@ -31,7 +31,8 @@ private:
 
 	void removeFinished(vector<future<bool>>* threads); // Removes all finished threads from the argument vector
 	bool distributeBoundingGeneration(ModelNode* mn); // Chooses the correct method to calculate the bounding volume for this model node
-	void Bullet::createBuilding(ModelNode* mn); // Creates a big static btBvhTriangleMeshShape 
+	void createBuilding(ModelNode* mn); // Creates a big static btBvhTriangleMeshShape 
+	btConvexHullShape* pureBulletConvexHullGeneration(ModelNode* mn); // Puts all points into bullet and generates an optimized convex hull from it
 public:
 	/*Returns the pointer to the unique instance of this class.*/
 	static Bullet* Bullet::getInstance()
