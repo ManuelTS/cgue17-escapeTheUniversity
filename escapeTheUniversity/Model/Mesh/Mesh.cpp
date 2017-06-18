@@ -38,7 +38,6 @@ void Mesh::link()
 	glVertexAttribPointer(normalsLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 	glEnableVertexAttribArray(uvLocation);
 	glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
-
 	glEnableVertexAttribArray(boneIndicesLocation); // Must be bound here, only possible without zeros if an other shader is used
 	glVertexAttribIPointer(boneIndicesLocation, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void*)offsetof(Vertex, boneIndices));
 	glEnableVertexAttribArray(boneWeightLocation);
@@ -47,6 +46,7 @@ void Mesh::link()
 	glGenBuffers(1, &materialVBO); // RGB = optional color, if all are not zero the texture is unused, only vec4.a for shininess
 	glBindBuffer(GL_ARRAY_BUFFER, materialVBO);
 	glBufferData(GL_ARRAY_BUFFER, materials.size() * sizeof(materials[0]), &materials[0], GL_STATIC_DRAW); // Play with last param 4 performance
+	glEnableVertexAttribArray(materialLocation);
 	glVertexAttribPointer(materialLocation, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	glBindVertexArray(0); // Unbind VAO first!

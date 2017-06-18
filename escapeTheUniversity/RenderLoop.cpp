@@ -359,10 +359,10 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		glDepthFunc(GL_LEQUAL);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		/**DEBUGGING */
-		if (!this->drawBulletDebug)
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
-		else
+		if (this->drawBulletDebug)
 			glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
+		else
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		const float* projectionMatrixP = glm::value_ptr(glm::perspective(frustum->degreesToRadians(camera->zoom), (float)width / (float)height, frustum->nearD, frustum->farD));
 		const float* viewMatrixP = glm::value_ptr(camera->getViewMatrix());
@@ -371,7 +371,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
 		draw(ml->root); // Draw all nodes except light ones
 
-		if (drawBulletDebug) // Draws the bullet debug context, see bullet.cpp#bullet
+		if (drawBulletDebug) // Draws the bullet debug context, see bullet.cpp#bulle
 			Bullet::getInstance()->debugDraw();
 
 		if (drawLightBoundingSpheres) // Draws the light bounding sphere of all lights

@@ -34,6 +34,7 @@ private:
 	void createBuilding(ModelNode* mn); // Creates a big static btBvhTriangleMeshShape 
 	btConvexHullShape* pureBulletConvexHullGeneration(ModelNode* mn); // Puts all points into bullet and generates an optimized convex hull from it
 public:
+	const unsigned int FLAG_LOCATION = 256; // Flag to use texture or material color
 	/*Returns the pointer to the unique instance of this class.*/
 	static Bullet* Bullet::getInstance()
 	{

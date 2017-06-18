@@ -1,5 +1,6 @@
 #pragma once
 #include "Bullet/btBulletDynamicsCommon.h"
+#include "../Model/Mesh/Mesh.hpp"
 
 class BulletDebugDrawer : public btIDebugDraw
 {
