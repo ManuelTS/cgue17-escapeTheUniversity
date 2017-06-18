@@ -5,7 +5,6 @@ Programming (Manuel):
 render generated bounding Shapes:
 Uncomment camera setting in #doMovement method
 
-
 Skymap, with a beautiful night sky von NASA deep field image full of stars in OGLSB as cube map on page 640. Before doing that check "seamless cube map / sky box2".
 
 Game over screen, If the player fails, show a game over screen with text, sound, or music, and restart.
@@ -13,8 +12,6 @@ Game over screen, If the player fails, show a game over screen with text, sound,
 Fade for sound
 
 check vertical sync impact on the game
-
-Omnidirectional shadows
 
 in stencil and gbuffer vertex shader combine this parameters with using only vec4 s
 layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link(); // Of a point of the light sphere, used in .cpp, w is unused and must be one
@@ -35,7 +32,7 @@ update all external libs
 Optimization:
 Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines
 http://leifnode.com/2015/05/tiled-deferred-shading/
-
+try to run all in VS 2017
 
 
 Textures (Stefan):
