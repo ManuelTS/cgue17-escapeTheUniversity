@@ -310,7 +310,7 @@ private:
 			vec3 color = vec3(0.0f);
 
 			for(int i = 0; i < LIGHT_NUMBER; i++)
-				if(l.light[i].position.w >= -1.0f)
+				if(l.light[i].position.w > -1)
 					color += calculateLight(l.light[i], diffuse, specular, norm, fragmentPosition, viewDirection);
 
 			gl_FragColor = vec4(color, 1.0f);

@@ -390,13 +390,13 @@ void RenderLoop::draw(Node* current)
 			{
 				AnimatNode* an = dynamic_cast<AnimatNode*>(mn);
 
-				if (an) 
+				if (an)  // Add delta animation time
 					an->timeAccumulator += time.delta;
 
 				pureDraw(current);
 			}
 		}
-		else // If no model node render anyway
+		else // If no model node render immediatley
 			pureDraw(current);
 	}
 }

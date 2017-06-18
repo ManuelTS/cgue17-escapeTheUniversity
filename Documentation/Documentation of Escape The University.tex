@@ -44,7 +44,7 @@
 \begin{center}
  \textbf{\Huge Escape the University} \\
   \vspace{3mm}
- {\Large Submission 1 Documentation Document\\
+ {\Large Submission 2 Documentation Document\\
   \vspace{3mm}
   \today}
  \vspace{5mm}
@@ -52,8 +52,8 @@
   \centering
   \begin{tabular}{c c}
 	\textbf{Manuel T. Schrempf}  &   \textbf{Stefan Wilker}\\
-	\href{mailto:e0920136@student.tuwien.ac.at}{e0920136@student.tuwien.ac.at}&
-	\href{mailto:e0920293@student.tuwien.ac.at}{e0920293@student.tuwien.ac.at}\\
+	\href{mailto:00920136@student.tuwien.ac.at}{00920136@student.tuwien.ac.at}&
+	\href{mailto:00920293@student.tuwien.ac.at}{00920293@student.tuwien.ac.at}\\
   \end{tabular}
 \end{table}
 
@@ -64,10 +64,13 @@
 Class: 186.831 UE Computergraphics}
 \end{center}
 \end{titlepage}
+
 \tableofcontents % Erzeugt Inhaltsangabe
 %\listoffigures
 %\listoftables
 %\lstlistoflistings
+
+\thispagestyle{empty}
 \newpage
 \pagestyle{plain}
 \setcounter{page}{1}
@@ -76,78 +79,77 @@ Class: 186.831 UE Computergraphics}
 
 \begin{table}[h!]
   \centering
-  \label{table1}
-  \begin{tabular}{p{3cm} c c}
-Key & Function\\
-    \hline
-W & Walk forwards	\\
-A & Strafe left \\
-S & Walk backwards \\
-D & Strafe right \\
-E & Open doors\\
-O & You have been caught. EXMATRICULATED! \\
-
-Mouse & Look around\\
-
- ESC or END & Quit game \\
- F3 & Wireframe mode on or off \\
- F6 & Depth visualization on or off\\ % https://learnopengl.com/#!Advanced-OpenGL/Depth-testing
- F7 & Pause or Resume game \\
+  \label{Controls}
+  \begin{tabular}{l|l}
+    \textbf{Key} & \textbf{Function}\\ \hline
+        W/Upper arrow & Move forwards\\ \hline
+       	S/Lower arrow & Move backwards\\ \hline
+       	A/Left arrow & Move left\\ \hline
+       	D/Right arrow & Move right\\ \hline
+       	Left click & interaction\\ \hline
+       	Right click & ?\\ \hline
+       	Print & Screenshot\\ \hline
+       	Escape/End & Close game\\ \hline
+       	 F1& Help\\ \hline
+       	 F2& Toggle FPS and triangle count\\ \hline
+       	 F3& Toggle wireframe\\ \hline
+       	 F4& Texture-Sampling-Quality: Off/Nearest Neighbor/Bilinear\\ \hline
+       	 F5& Mip Maping-Quality: Off/Nearest Neighbour/Linear\\ \hline
+       	 F6& Depth buffer visualization\\ \hline
+       	 F7& Toggle pause game\\ \hline
+       	 F8& Toggle view frustum culling\\ \hline
+       	 F9& Toggle blending\\ \hline
+       	F10& Toggle stenicl buffer usage\\ \hline
+       	F11& Fullscreen\\ \hline
+       	Scroll Lock& Toogle bounding volume edges\\ \hline
+       	\# & Toggle cam pos/front/right/up values\\ \hline
+       	\ss & Toggle light source bounding sphere rendering\\ \hline
+       	Num Enter & Toggle shadow map rendering\\ \hline
+       	Num + & Increase ambient light\\ \hline
+       	Num - & Decrease ambient light\\
   \end{tabular}
 \end{table}
+All other keys may have surprises for you.
 
-\section{Development Status}
-\subsection{Camera}
-The free moving camera is implemented as on the \href{http://www.learnopengl.com/#!Getting-started/Camera}{tutorial on camera from learnOpenGL.com} with slight modification to suit our needs, e.g. scroll speed, include all depth values on movement etc.
 
-\subsection{Moving Objects}
-\begin{itemize}
-\item Opening and closing doors.
-\end{itemize}
+\section{Effect Points}
 
-\subsection{Texture Mapping}
-See section \ref{Texture Mapping}.
-\subsection{Simple Lighting and Materials}
-See section \ref{lightSources}.
-\subsection{Controls}
-See section \ref{Controls}.
-\subsection{Basic Gameplay}
+
+\begin{table}[h!]
+  \centering
+  \label{effectsTable}
+  \begin{tabular}{l|p{10cm}|l}
+    \textbf{Name} & \textbf{Description} & \textbf{Value}\\ \hline
+      Vertex skinning & A complete bone structure is loaded from a model file and assigned to the model according to weighted indices. The skinning is done on the GPU. & 2	\\ \hline
+      Deferred Shading & 	Use the Deferred Shading technique to speed up lighting for many light sources. It uses several render targets and processes light information (shadows etc) in a post process effect (decoupling it from the scenes geometry). Transparency, however, is more difficult to handle & 1\\ \hline
+      Shadow Maps (with PCF) & 	As presented in the lectures, shadow maps calculate the shadows via rendering the scene from the light source. PCF samples the shadow map several times to improve quality. Make sure to counter all artifacts. & 1.5\\ \hline
+      \textbf{Summary} & \textbf{-} & \textbf{4.5}\\
+  \end{tabular}
+\end{table}
+For implementation references and explanation see section \ref{features}.
+
+
+
+\section{Gameplay}
 You find yourself in the middle of an university room. You need to get out of the building without being detected. Open the doors and find yourself a way towards the paved floor. Do not open the wrong door, otherwise you encounter a professor and you are busted!
 This is just a trial run... consider yourself planning your escape for the real experience that will follow. Explore the building, get the floor plane into your head. It will help your real escape in the near future.
 
 
-\section{Effects}
+\section{Development Status}
+Bullet buggy, only partiality collision detection, frustum culling buggy, not much gameplay.
+
+
+\section{Camera}
+The free moving camera is implemented as on the \href{http://www.learnopengl.com/#!Getting-started/Camera}{tutorial on camera from learnOpenGL.com} with slight modification to suit our needs, e.g. scroll speed, include all depth values on movement etc.
+
+\section{Moving Objects}
 \begin{itemize}
-	\item Blinn Phong lighting with materials from \href{http://learnopengl.com/#!Advanced-Lighting/Advanced-Lighting}{learnopengl.com advanced lighting tutorial}.
-	\item Effect Point: Deferred Shading as described in section \ref{Features}.
+\item Opening and closing doors.
+\item Moving character animated with vertex skinning.
+\item Chairs
 \end{itemize}
 
-\section{Features}
-\label{Features}
-\begin{itemize}
-	\item Temporary godlike powers: You can open all doors at once! Except the ``bad'' one.
-	\item Feel free to explore the floor plane of the building without collision and enjoy a beautifully designed building.
-	\item Usage of UBOs \cite{openGLSuperBible}.
-	%\item Gamma correction \cite{openGLSuperBible}.
-	\item Deferred shading from \cite{openGLSuperBible} and \href{http://learnopengl.com/#!Advanced-Lighting/Deferred-Shading}{learnopengl.com deferred shaing tutorial} with light volumes form
-	\href{http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html}{tutorial number 36} and \href{http://ogldev.atspace.co.uk/www/tutorial37/tutorial37.html}{37} from ogldev.atspace.co.uk.
-	\item Text rendering on screen with signed distance fields as in \cite{signedDistanceFields}.
-	% Original code: https://github.com/lazarmitic/SDFTR-GL
-	% Rendering: https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Text_Rendering_01
-	% Optimization: https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Text_Rendering_02#Rendering_lines_of_text_using_the_atlas
-	% Calculation of SDF: https://github.com/libgdx/libgdx/wiki/Distance-field-fonts
-	\item Scenegraph and different node type usage.
-  \item \href{https://www.youtube.com/watch?v=2LW9JSYn_h0}{Radar} frustum culling from a \href{http://www.lighthouse3d.com/tutorials/view-frustum-culling/radar-approach-implementation-ii}{lighthouse3d.com tutorial} and \cite{gems5} with a lot of changes. All objects and lights are tested for culling with a scaled bounding sphere.
-  % https://stackoverflow.com/questions/8101119/how-do-i-methodically-choose-the-near-clip-plane-distance-for-a-perspective-proj#8101234
-	% https://stackoverflow.com/questions/13896385/calculate-near-and-far-value-for-glperspective-in-opengl#13896488
-  \item Physics done with \href{http://bulletphysics.org/wordpress/}{bullet}. (In Progress)
-  % http://bulletphysics.org/Bullet/BulletFull/
-  % Automatic minimal collision shape calculation https://github.com/kmammou/v-hacd and its integration https://kmamou.blogspot.co.at/2014/12/v-hacd-20-in-your-project.html
-\end{itemize}
-
-%Brief description of the implementation, in particular a short description of how the different aspects of the requirements (see above) were implemented.
-
-\section{Textured objects \label{Texture Mapping}}
+\section{Texture Mapping}
 \begin{itemize}
 \item Door + door handle + doorframe
 \item Lamps
@@ -157,40 +159,54 @@ This is just a trial run... consider yourself planning your escape for the real 
 \item Paved pathwalk outside the building
 \end{itemize}
 
-\section{Light Sources \label{lightSources}}
-All objects are now illuminated with blinn phong lighting from a \href{http://learnopengl.com/#!Advanced-Lighting/Advanced-Lighting}{blinn phong tutorial on learnOpenGL.com}. Deferred shading form \cite{openGLSuperBible}, \href{http://learnopengl.com/#!Advanced-Lighting/Deferred-Shading}{learnopengl.com deferred shaing tutorial}, and \href{http://www.lighthouse3d.com/tutorials/opengl_framebuffer_objects/}{lighthouse3d.com openGL framebuffer objects}.\\
-
-Directional and point lights done with the \href{http://learnopengl.com/#!Lighting/Light-casters}{light casters tutorial on learnOpenGL.com}.\\
 
 
-There are currently 10 light-sources in use, distributed among the playfield.
 
-\section{Additional libraries in use}
- %What additional libraries (eg for collision, object-loader, sound, …) were used, including references (URL) (see restrictions)?
-
+\section{Features \label{features}}
+%Brief description of the implementation, in particular a short description of how the different aspects of the requirements (see above) were implemented.
 \begin{itemize}
-\item GLFW from \url{http://www.glfw.org/}
-\item GLEW from \url{http://glew.sourceforge.net/}
-\item DevIL from \url{http://openil.sourceforge.net/}
-\item irrKlang from \url{http://www.ambiera.com/irrklang/index.html}
-\item GLM from \url{http://glm.g-truc.net/}
-\item Assimp from \url{http://www.assimp.org/}
-\item BulletCollision from
-\url{http://bulletphysics.org/wordpress/} not yet in use (includes LinearMath Library)
-\item VHACD from
-\url{https://github.com/kmammou/v-hacd} not yet in use
+	\item Usage of FBOs, VAOs, VBOs, EBOs, and UBOs as stated in \cite{openGLSuperBible}.
+	%\item Gamma correction \cite{openGLSuperBible}.
+
+	\item Deferred shading from \cite{openGLSuperBible}, \href{http://learnopengl.com/#!Advanced-Lighting/Deferred-Shading}{learnopengl.com deferred shaing tutorial}, and light volumes form \href{http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html}{tutorial number 36} and \href{http://ogldev.atspace.co.uk/www/tutorial37/tutorial37.html}{37} from ogldev.atspace.co.uk all with changes of our own.
+
+  \item Point Shadow Mapping with PCF from \href{https://learnopengl.com/#!Advanced-Lighting/Shadows/Point-Shadows}{learnopengl.com} with changes of our own.
+
+	\item Text rendering on screen with signed distance fields as in \cite{signedDistanceFields} with changes of our own.
+	% Original code: https://github.com/lazarmitic/SDFTR-GL
+	% Rendering: https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Text_Rendering_01
+	% Optimization: https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Text_Rendering_02#Rendering_lines_of_text_using_the_atlas
+	% Calculation of SDF: https://github.com/libgdx/libgdx/wiki/Distance-field-fonts
+
+	\item Own implemented scene graph and different node type usage.
+
+  \item \href{https://www.youtube.com/watch?v=2LW9JSYn_h0}{Radar} frustum culling from a \href{http://www.lighthouse3d.com/tutorials/view-frustum-culling/radar-approach-implementation-ii}{lighthouse3d.com tutorial} and \cite{gems5} with a lot of changes. All objects and lights are tested for culling with a scaled bounding sphere all with changes of our own.
+  % https://stackoverflow.com/questions/8101119/how-do-i-methodically-choose-the-near-clip-plane-distance-for-a-perspective-proj#8101234
+	% https://stackoverflow.com/questions/13896385/calculate-near-and-far-value-for-glperspective-in-opengl#13896488
+
+  \item Physics done with \href{http://bulletphysics.org/wordpress/}{bullet physics}.
+  % http://bulletphysics.org/Bullet/BulletFull/
+
+  \item Automatic minimum collision shape generation from meshes with \href{https://github.com/kmammou/v-hacd}{VHACD}.
+
+  \item Vertex skinning from \href{http://drivenbynostalgia.com/}{drivenbynostalgia.com} with changes of our own.
 \end{itemize}
 
 
-\section{External resources}
+\section{Simple Lighting and Materials}
 
-\subsection{Textures and blender models}
+
+\subsection{Light Sources \label{lightSources}}
+All objects are now illuminated with blinn phong lighting from a \href{http://learnopengl.com/#!Advanced-Lighting/Advanced-Lighting}{blinn phong tutorial on learnOpenGL.com}. Deferred shading form \cite{openGLSuperBible}, \href{http://learnopengl.com/#!Advanced-Lighting/Deferred-Shading}{learnopengl.com deferred shaing tutorial}, and \href{http://www.lighthouse3d.com/tutorials/opengl_framebuffer_objects/}{lighthouse3d.com openGL framebuffer objects}.
+Point lights done with the \href{http://learnopengl.com/#!Lighting/Light-casters}{light casters tutorial on learnOpenGL.com}. There are currently 10 light-sources in use, distributed among the playfield.
+
+
+\subsection{Textures and Blender Models}
 
 \begin{itemize}
 
 \item If not explicit declared otherwise, textures have been taken from
 \url{https://lva.cg.tuwien.ac.at/textures/} or painted by ourself (single color textures mostly).
-
 
 \item The garden table model as well as its textures have been taken from the freely available download-package (after sign-up with email) from the website
 \url{http://www.chocofur.com/}. It has been modified in order to have the correct display behaviour in OpenGL as well as a reduced triangle load.
@@ -228,14 +244,28 @@ There are currently 10 light-sources in use, distributed among the playfield.
 
 \end{itemize}
 
-\subsection{Sounds}
 
+\section{Additional Libraries}
+ %What additional libraries (eg for collision, object-loader, sound, …) were used, including references (URL) (see restrictions)?
+
+\begin{itemize}
+\item \href{http://www.glfw.org/}{GLFW}
+\item \href{http://glew.sourceforge.net/}{GLEW}
+\item \href{http://openil.sourceforge.net/}{DevIL}
+\item \href{http://www.ambiera.com/irrklang/index.html}{irrKlang}
+\item \href{http://glm.g-truc.net}{GLM }
+\item \href{http://www.assimp.org}{Assimp}
+\item \href{http://bulletphysics.org/}{Bullet Physics}
+\item \href{https://github.com/kmammou/v-hacd}{VHACD}
+\end{itemize}
+
+
+\section{Sounds}
+If not stated below the sounds where recorded by the authors of this document.
 \begin{itemize}
 \item \href{http://freemusicarchive.org/music/EAT/20100129104001364/Oh_Mom_Elevator_Mix}{EAT - Oh Mom Elevator Mix} with an \href{http://creativecommons.org/licenses/by-sa/3.0/us/}{Attribution-Share Alike 3.0 United States License}
 \item \href{http://freemusicarchive.org/music/TMHECTOR/The_Haunted_Mansion/DS10Forumcom\_-\_DS10Forumcom\_-\_The_Haunted_Mansion\_-\_16\_The\_Elevator}{TMHECTOR\_-\_16\_-\_The\_Elevator} with an \href{http://creativecommons.org/licenses/by/3.0/}{Creative Commons Attribution 3.0 License}
-
 \item \href{http://freemusicarchive.org/music/Jahzzar/Smoke_Factory/The_last_ones}{The last ones by Jahzzar} with an \href{http://creativecommons.org/licenses/by-sa/3.0/}{Attribution-ShareAlike 3.0 International License.}
-
 % The door opening sounds have been taken from \url{http://www.freesfx.co.uk} in respect to their license of use.
 % For stefan: please state the license
 \end{itemize}
