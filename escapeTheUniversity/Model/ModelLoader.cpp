@@ -371,7 +371,7 @@ vector<Mesh::Texture> ModelLoader::loadMaterialTextures(aiMaterial* mat, aiTextu
 		}
 	}
 
-	materials->push_back(glm::vec4(0.0f ,0.0f ,0.0f, shininess));
+	materials->push_back(glm::vec4(1.0f ,1.0f ,1.0f, shininess));
 
 	//Read and load textures
 	vector<Mesh::Texture> textures;

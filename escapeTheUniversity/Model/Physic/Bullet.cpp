@@ -114,7 +114,7 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		
 		btTransform trans;
 		trans.setIdentity();
-		trans.setFromOpenGLMatrix((btScalar*)&mn->hirachicalModelMatrix);  
+		removeScaleMatrix(mn->hirachicalModelMatrix, shape, &trans);
 	
 		btDefaultMotionState* myMotionState = new btDefaultMotionState(trans);
 		btRigidBody::btRigidBodyConstructionInfo ci(mass, myMotionState, shape, localInertia);
@@ -154,14 +154,15 @@ void Bullet::createBuilding(ModelNode* mn)
 	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshArray, true, true); // A single mesh with all vertices of a big object in it confuses bullet and generateds an "overflow in AABB..." error
 	shape->buildOptimizedBvh();
 	shape->setMargin(DEFAULT_COLLISION_MARGIN);
+
 	mn->collisionObject = new btCollisionObject(); // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
 	mn->collisionObject->setCollisionShape(shape);
 
 	btTransform trans;
 	trans.setIdentity();
-	trans.setFromOpenGLMatrix((btScalar*) &mn->hirachicalModelMatrix); //InverseHirachical causes perfectly skinned, but only for 1 building-colission mesh (last)
+	removeScaleMatrix(mn->hirachicalModelMatrix, mn->collisionObject->getCollisionShape(), &trans);
+
 	mn->collisionObject->setWorldTransform(trans);
-			
 	shapes.push_back(shape);
 	dynamicsWorld->addCollisionObject(mn->collisionObject);
 }
@@ -179,8 +180,7 @@ void Bullet::createCamera(Camera* c)
 
 	btTransform trans;
 	trans.setIdentity();
-	trans.setFromOpenGLMatrix((btScalar*)&matrix);
-
+	removeScaleMatrix(matrix, shape, &trans);
 
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
@@ -191,7 +191,6 @@ void Bullet::createCamera(Camera* c)
 
 btDiscreteDynamicsWorld* Bullet::getDynamicsWorld()
 {
-	
 	return dynamicsWorld;
 }
 
@@ -227,6 +226,17 @@ Bullet::~Bullet()
 void Bullet::debugDraw() {
 	dynamicsWorld->debugDrawWorld(); // Fill debugDrawer with bullet rendering data
 	debugDrawer->draw(); // Draw the receivied rendering data
+}
+
+void Bullet::removeScaleMatrix(glm::mat4 matrix, btCollisionShape* shape, btTransform* trans)
+{
+	const float scaleX = glm::length(glm::vec3(matrix[0][0], matrix[0][1], matrix[0][2]));
+	const float scaleY = glm::length(glm::vec3(matrix[1][0], matrix[1][1], matrix[1][2]));
+	const float scaleZ = glm::length(glm::vec3(matrix[2][0], matrix[2][1], matrix[2][2]));
+	glm::mat4 matWithoutScale = glm::scale(matrix, glm::vec3(1.0f / scaleX, 1.0f / scaleY, 1.0f / scaleZ));
+
+	shape->setLocalScaling(btVector3(scaleX, scaleY, scaleZ));
+	trans->setFromOpenGLMatrix(glm::value_ptr(matWithoutScale)); //InverseHirachical causes perfectly skinned, but only for 1 building-colission mesh (last)
 }
 
 btCollisionObject* Bullet::createBox(float mass)

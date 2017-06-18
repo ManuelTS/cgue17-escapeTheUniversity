@@ -264,7 +264,7 @@ void RenderLoop::start()
 	height = initVar->height;
 	glViewport(0, 0, width, height);
 
-	camera = new Camera(glm::vec3(8,8,3), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
+	camera = new Camera(glm::vec3(8,5,0), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
 
 	initGLFWandGLEW();
 	displayLoadingScreen(ml);

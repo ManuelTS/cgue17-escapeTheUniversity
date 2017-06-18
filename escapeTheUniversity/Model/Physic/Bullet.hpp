@@ -33,6 +33,7 @@ private:
 	bool distributeBoundingGeneration(ModelNode* mn); // Chooses the correct method to calculate the bounding volume for this model node
 	void createBuilding(ModelNode* mn); // Creates a big static btBvhTriangleMeshShape 
 	btConvexHullShape* pureBulletConvexHullGeneration(ModelNode* mn); // Puts all points into bullet and generates an optimized convex hull from it
+	void removeScaleMatrix(glm::mat4 matrix, btCollisionShape* shape, btTransform* trans); // Removes the scaling from the matrix and applies it afterwards with the setLocalScaling method and sets the matrix without Scaling as openGLMatrix in trans
 public:
 	const unsigned int FLAG_LOCATION = 256; // Flag to use texture or material color
 	/*Returns the pointer to the unique instance of this class.*/

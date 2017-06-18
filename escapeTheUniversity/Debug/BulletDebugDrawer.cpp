@@ -28,8 +28,10 @@ void BulletDebugDrawer::BulletDebugDrawer::drawLine(const btVector3 &from, const
 
 	fromV.position = glm::vec3(from.getX(), from.getY(), from.getZ());
 	toV.position = glm::vec3(to.getX(), to.getY(), to.getZ());
-	fromV.texCoords = glm::vec2(1, 1);
-	toV.texCoords = glm::vec2(1, 1);
+	fromV.texCoords = glm::vec2(0, 0);
+	toV.texCoords = glm::vec2(0, 0);
+	fromV.normal = fromV.position;
+	toV.normal = toV.position;
 
 	container->vertices.push_back(fromV);
 	container->vertices.push_back(toV);
