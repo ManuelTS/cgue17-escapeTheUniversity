@@ -15,9 +15,9 @@ public:
 		glm::vec3 position; // Position
 		glm::vec3 normal; // Normal
 		glm::vec2 texCoords; // TexCoords
+		glm::uvec4 boneIndices = glm::uvec4(0); // Bone indices used for the correct boneMatrix in the shader
+		glm::vec4 boneWeights = glm::vec4(0); // The maximal four bone weights effecting this vertex read from corresponding aiBone in "assimpBoneNode" to deliver weights along with their vertex with VAO into the shader
 	};
-	
-	std::vector<Vertex> data;
 
 	/*Contains all texture ids, names, and paths.*/
 	struct Texture{
@@ -25,12 +25,24 @@ public:
 		std::string name;
 		std::string path;
 	};
+	
+	std::vector<Vertex> vertices; // Contains all vertices and their information
+	aiNode* assimpBoneNode = nullptr; // Node as Bone referrence for the animator class
+	unsigned int meshIndex; // Mesh this mesh index of assimpBoneNode
+	std::vector<unsigned int> indices; // Contains all indices of this mesh
+	std::vector<glm::vec4> materials; // Materials, rbg material values, a shininess
+	std::vector<Texture> textures; // Textures
 
-	Mesh() {};
-	Mesh(std::vector<unsigned int>_indices, std::vector<Vertex> _data, std::vector<Texture> _textures, std::vector<glm::vec4> _materials);
+	ModelNode* modelNode; // Is the node this mesh belongs to
+
+	Mesh();
 	~Mesh();
 	
-	void draw();
+	void link(); // Creates and links the VAO for this mesh
+	void draw(unsigned int drawMode, bool shadow); // drawMode is the openGl draw mode of glDrawElements, shadow is true if data is writting into shado shaders, false if in normal shaders
+	void clear(); // Clears all vectors
+	vector<int>* getAllIndices(); // Returns a pointer to all vertex indices of all meshes in this node. Dont' delete vector after usage!
+	vector<float>* getAllVertices(); // Returns a pointer to all vertices of all meshes in this node. Delete vector after usage!
 private:
 	// Shared handles
 	unsigned int EBO;
@@ -39,15 +51,19 @@ private:
 	unsigned int VBO;
 	unsigned int materialVBO;
 
-	std::vector<unsigned int> indices;
-	std::vector<Texture> textures; // Textures
-	std::vector<glm::vec4> materials; // Materials, rbg material values, a shininess
-
 	int maxTextureUnits = 0;
 	const unsigned int positionsLocation = 0; // In gBuffer.vert and stencil.vert
 	const unsigned int normalsLocation = 1; // In gBuffer.vert
 	const unsigned int uvLocation = 2; // UVs, In gBuffer.vert
-	const unsigned int materialLocation = 3; // In gBuffer.vert
+	const unsigned int boneIndicesLocation = 3; // Bone indices inside all the bonde matrices on the shader
+	const unsigned int boneWeightLocation = 4; // boneWeight, In gBuffer.vert
+	const unsigned int materialLocation = 5; // In gBuffer.vert
+	const unsigned int boneMatricesLocation = 16; // In gBuffer.vert
+
+	const unsigned int MAX_BONE_NUMER = 60; // Max bone number
 
 	RenderLoop* rl = RenderLoop::getInstance(); // to set the drawn trianlges
+
+	void transmitBoneMatrix();// Transmits the bone matrices to the vertex shader
+	glm::mat4 transposeAssimpMatrix2GLMColumnMajor(aiMatrix4x4 mat); // Convertes the argument to the return type, delete the return pointer!
 };

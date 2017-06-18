@@ -170,6 +170,12 @@ void Text::writeVertices(vector<float>*vertices)
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, size / 4); //Each vertex has two xy and two uv entries, ergo divide by four for correct vertex amount	
 }
 
+void Text::bulletDebugMessage(const char* text)
+{
+	bulletDebugMessageBuffer.append(text);
+	addText2Display(BULLET_DEBUG_MESSAGE);
+}
+
 void Text::addText2Display(const int toAdd) {
 	displayTime.push_back(toAdd);
 	displayTime.push_back(toAdd);
@@ -199,6 +205,30 @@ void Text::removeTime(const double deltaTime)
 				gameOver();
 				hasTimeLeft(i, deltaTime);
 				break;
+			case TEXTURE_SAMPLING_NEAREST_NEIGHBOR:
+				quality("Texture Sampling Nearest Neighbor", true);
+				hasTimeLeft(i, deltaTime);
+				break;
+			case TEXTURE_SAMPLING_BILINEAR:
+				quality("Texture Sampling Bilinear", true);
+				hasTimeLeft(i, deltaTime);
+				break;
+			case MIP_MAPPING_OFF:
+				quality("Mip Mapping Off");
+				hasTimeLeft(i, deltaTime);
+				break;
+			case MIP_MAPPING_NEAREST_NEIGHBOR:
+				quality("Mip Mapping Nearest Neighbor");
+				hasTimeLeft(i, deltaTime);
+				break;
+			case MIP_MAPPING_BILINEAR:
+				quality("Mip Mapping Bilinear");
+				hasTimeLeft(i, deltaTime);
+				break;
+			case BULLET_DEBUG_MESSAGE:
+				write(bulletDebugMessageBuffer.c_str(), -0.95f, 0.95f, 0.4f, 0.0f);
+				hasTimeLeft(i, deltaTime);
+				break;
 		}
 }
 
@@ -212,6 +242,11 @@ void Text::gameOver()
 	color = glm::vec3(1.0f, 0.0f, 0.0f);
 	write("Exmatriculated", -1.05f, -0.1f, 1.0f, -45.0f);
 	color = DEFAULT_COLOR; // Restet original color for other possible text draws
+}
+
+void Text::quality(std::string text, bool texture)
+{
+	write(text.c_str(), -0.98f, texture ? 0.1f : 0.0f, 0.5f, 0.0f);
 }
 
 void Text::fps(const double pastTime, const double deltaTime, const unsigned int drawnTriangles)
@@ -237,6 +272,10 @@ void Text::showCamCoords(Camera* camera) {
 	char text[138]; 
 	sprintf(text, "Cam pos/front/right/up in world space:\nx:%4.3f/%4.3f/%4.3f/%4.3f\ny:%4.3f/%4.3f/%4.3f/%4.3f\nz:%4.3f/%4.3f/%4.3f/%4.3f", position.x, front.x, right.x, up.x, position.y, front.y, right.y, up.y, position.z, front.z, right.z, up.z);
 	write(text, -0.95f, -0.8f, 0.5f, 0.0f);
+}
+
+void Text::drawBulletDebug() {
+	write("Showing bounding volumes", 0.0f, 0.9f, 0.5f, 0.0f);
 }
 
 void Text::loadingScreenInfo() {
@@ -317,7 +356,15 @@ void Text::help()
 	char help[1024] = "Keybindings";
 	write(help, -1.0, 0.9, 0.7, 0.0f);
 
-	unsigned int i = copyInBuffer(help, 0, (const unsigned char*) " F1= Help", true);
+	unsigned int i = copyInBuffer(help, 0, (const unsigned char*) "W/Upper arrow = Move forwards", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "S/Lower arrow = Move backwards", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "A/Left arrow = Move left", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "D/Right arrow = Move right", true); 
+	i = copyInBuffer(help, i, (const unsigned char*) "Left click = interaction", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Right click = ?", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Print = Screenshot", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Escape/End = Close game", true);
+	i = copyInBuffer(help, i, (const unsigned char*) " F1= Help", true);
 	i = copyInBuffer(help, i, (const unsigned char*) " F2= Toggle FPS and triangle count", true);
 	i = copyInBuffer(help, i, (const unsigned char*) " F3= Toggle wireframe", true);
 	i = copyInBuffer(help, i, (const unsigned char*) " F4= Texture-Sampling-Quality: Off/Nearest Neighbor/Bilinear", true);
@@ -328,16 +375,12 @@ void Text::help()
 	i = copyInBuffer(help, i, (const unsigned char*) " F9= Toggle blending", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "F10= Toggle stenicl buffer usage", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "F11= Fullscreen", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "F12= Toogle bounding volume triangles", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "Escape/End = Close game", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "W/Upper arrow = Move forwards", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "S/Lower arrow = Move backwards", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "A/Left arrow = Move left", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "D/Right arrow = Move right", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "Left click = interaction", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "Right click = ?", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "Print = Screenshot", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Scroll Lock= Toogle bounding volume edges", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "# = Toggle cam pos/front/right/up values", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "ß = Toggle light source bounding sphere rendering", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Num Enter = Toggle shadow map rendering", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Num + = Increase ambient light", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Num - = Decrease ambient light", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "All other keys have surprises for you.", true);
 
 	write(help, -1.0, 0.8, 0.5, 0.0f);

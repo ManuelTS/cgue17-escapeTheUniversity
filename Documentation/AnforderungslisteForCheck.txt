@@ -40,7 +40,7 @@
 				Put content files needed for your game into a subfolder of bin.
 		[X]	doc/
 				A documentation directory with a PDF file documenting the controls, development status and effects of your game
-		[x]	readme.txt
+		[x]	readme.md
 				A text-file containing your group name and you names, Matrikelnummer and Kennzahl. In addition you should state on which graphics card (AMD/NVIDIA) you have tested your solution.
 		-----------------------------------
 		---------- Documentation ----------
@@ -70,18 +70,18 @@
 				[x] F1 - Help (if available)
 				[x] F2 - Frame Time on/off
 				[x] F3 - Wire Frame on/off
-				[ ] F4 - Textur-Sampling-Quality: Nearest Neighbor/Bilinear
-				[ ] F5 - Mip Mapping-Quality: Off/Nearest Neighbor/Linear
+				[x] F4 - Textur-Sampling-Quality: Nearest Neighbor/Bilinear
+				[x] F5 - Mip Mapping-Quality: Off/Nearest Neighbor/Linear
 				[ ] F6 - Enable/Disable effect (if necessary, see Effects)
 				[ ] F7 - Enable/Disable effect (if necessary, see Effects)
 				[x] F8 - Viewfrustum-Culling on/off
 				[x] F9 - Blending on/off
-		[ ] Experimenting with OpenGL (Blending, Texture Sampling, MipMapping Quality)
+		[x] Experimenting with OpenGL (Blending, Texture Sampling, MipMapping Quality)
 				This means, that advanced functionality of OpenGL should be implement and tested. Those functionalities are:
 				[x]Buffer-Objects: FBO (Frame Buffer Object) or UBO (Uniform Buffer Object)
 				[x]Blending: Use hardware blending (glBlend*) somewhere in your code. Make sure it can be toggled on/off
-				[ ]Mip Mapping (on/off)
-				[ ]Textur-Sampling-Quality (Bi/Trilinear Filtering)
+				[x]Mip Mapping (on/off)
+				[x]Textur-Sampling-Quality (Bi/Trilinear Filtering)
 	-----------------------------------
 	---------- Uploads ----------
 	19.6 23:55

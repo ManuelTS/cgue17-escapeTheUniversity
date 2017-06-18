@@ -9,23 +9,23 @@ a window is resized, this function should be called as well.*/
 void Frustum::setCamInternals(float angle, int width, int height)
 {
 	ratio = ((float)width) * 1.0 / ((float)height); // Calculate the ratio
+	float radians = degreesToRadians(angle) / 2;
 	// compute width and height of the near and far plane sections
-	tang = tan(angle * HALF_ANG2RAD / 2);
-	height = nearD * tang;
-	width = height * ratio;
+	tang = tan(radians);
 
-	sphereFactorY = 1.0 / cos(angle); // Only for spheres, compute a part of the distance and multiply it later with the sphere radius
+	sphereFactorY = 1.0 / cos(radians); // Only for spheres, compute a part of the distance and multiply it later with the sphere radius
 	// compute half of the the horizontal field of view and sphereFactorX
 	const float anglex = atan(tang * ratio);
 	sphereFactorX = 1.0 / cos(anglex);
 }
 
 /*This function takes three vectors that contain the information about the current camera, see Camera.cpp for more information.*/
-void Frustum::setCamDef(glm::vec3 camPos, glm::vec3 front, glm::vec3 up) {
+void Frustum::setCamDef(glm::vec3 camPos, glm::vec3 front, glm::vec3 right, glm::vec3 up)
+{
 	this->camPos = camPos;
-	this->front = glm::normalize(front - camPos);
-	this->right = glm::normalize(glm::cross(this->front, up));
-	this->up = glm::cross(this->right, this->front);
+	this->front = front;
+	this->right = right;
+	this->up = up;
 }
 
 int Frustum::pointInFrustum(glm::vec3 p)
@@ -51,38 +51,52 @@ int Frustum::pointInFrustum(glm::vec3 p)
 	return 1;
 }
 
+/* This function checks, if a door is in in ActionRadius and therefor rotates or not*/
+int Frustum::inActionRadius(const glm::vec3 actionTarget) 
+{
+	int isInRadius = -1;
+	const glm::vec3 distanceToCamera = actionTarget - camPos; // Calculate distance
+	
+	if (abs(distanceToCamera.x) <= actionRadius && abs(distanceToCamera.y) <= actionRadius && abs(distanceToCamera.z) <= actionRadius) //take absolute value, since we only want the shortest distance
+		isInRadius = 1;
+	return isInRadius;
+}
+
+
 int Frustum::sphereInFrustum(const glm::vec3 sphereCenter, const float radius)
 {
-	int result = 1;
-	const glm::vec3 v = sphereCenter - camPos;
+	int result = 1; // Return value, 1 inside the frustum, 0 intersction, -1 outside the frustum
+	const glm::vec3 fromCam2Center = sphereCenter - camPos; // Calculate distance
+	const float az = glm::dot(front, fromCam2Center);
 
-	float az = glm::dot(v, front);
-
-	if (az > farD + radius || az < nearD - radius)
+	if (az > farD + radius || az < nearD - radius) //if the point is not 
 		return -1;
 
+	const float ax = glm::dot(fromCam2Center, right);
+	const float zz1 = az * tang * ratio;
+	const float distance1 = sphereFactorX * radius;
+	
+	if (ax > zz1 + distance1 || ax < -zz1 - distance1)
+		return -1;
+
+	const float ay = glm::dot(fromCam2Center, up);
+	const float zz2 = az * tang;
+	const float distance2 = sphereFactorY * radius; // Distance from sphere center to frustum plane, not radius since a sphere tangent to the frustum can have a greater distance
+	
+	if (ay > zz2 + distance2 || ay < -zz2 - distance2)
+		return -1;
+	
 	if (az > farD - radius || az < nearD + radius)
 		result = 0;
-
-	const float ay = glm::dot(v, up);
-	float distance = sphereFactorY * radius; // Distance from sphere center to frustum plane, not radius since a sphere tangent to the frustum can have a greater distance
-	az *= tang;
-
-	if (ay > az + distance || ay < -az - distance)
-		return -1;
-
-	if (ay > az - distance || ay < -az + distance)
+	if (ay > zz2 - distance2 || ay < -zz2 + distance2)
 		result = 0;
-
-	const float ax = glm::dot(v, right);
-	az *= ratio;
-	distance = sphereFactorX * radius;
-
-	if (ax > az + distance || ax < -az - distance)
-		return -1;
-
-	if (ax > az - distance || ax < -az + distance)
+	if (ax > zz1 - distance1 || ax < -zz1 + distance1)
 		result = 0;
-
+	
 	return result;
+}
+
+float Frustum::degreesToRadians(float degrees)
+{
+	return degrees * (3.141592f / 180.0f); // Use this for radiant calculation, the GLM one does not work!
 }

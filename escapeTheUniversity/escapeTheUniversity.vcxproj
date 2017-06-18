@@ -19,12 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Model\Node\AnimatNode.cpp" />
+    <ClCompile Include="Debug\BulletDebugDrawer.cpp" />
+    <ClCompile Include="Model\Mesh\Animator.cpp" />
     <ClCompile Include="Model\Physic\Bullet.cpp" />
     <ClCompile Include="Camera\Camera.cpp" />
     <ClCompile Include="Debug\Debugger.cpp" />
     <ClCompile Include="Debug\MemoryLeakTracker.cpp" />
     <ClCompile Include="Camera\Frustum.cpp" />
-    <ClCompile Include="GBuffer.cpp" />
+    <ClCompile Include="ShadowLight\GBuffer.cpp" />
     <ClCompile Include="Initialization.cpp" />
     <ClCompile Include="Model\Mesh\Mesh.cpp" />
     <ClCompile Include="Model\ModelLoader.cpp" />
@@ -35,17 +38,21 @@
     <ClCompile Include="Model\Physic\BVG.cpp" />
     <ClCompile Include="RenderLoop.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShadowLight\ShadowMapping.cpp" />
     <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="start.cpp" />
     <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Model\Node\AnimatNode.hpp" />
+    <ClInclude Include="Debug\BulletDebugDrawer.hpp" />
+    <ClInclude Include="Model\Mesh\Animator.hpp" />
     <ClInclude Include="Model\Physic\Bullet.hpp" />
     <ClInclude Include="Camera\Camera.hpp" />
     <ClInclude Include="Debug\Debugger.hpp" />
     <ClInclude Include="Debug\MemoryLeakTracker.h" />
     <ClInclude Include="Camera\Frustum.hpp" />
-    <ClInclude Include="GBuffer.hpp" />
+    <ClInclude Include="ShadowLight\GBuffer.hpp" />
     <ClInclude Include="Initialization.hpp" />
     <ClInclude Include="Model\Mesh\Mesh.hpp" />
     <ClInclude Include="Model\ModelLoader.hpp" />
@@ -56,6 +63,7 @@
     <ClInclude Include="Model\Physic\BVG.hpp" />
     <ClInclude Include="RenderLoop.hpp" />
     <ClInclude Include="Shader.hpp" />
+    <ClInclude Include="ShadowLight\ShadowMapping.hpp" />
     <ClInclude Include="SoundManager.hpp" />
     <ClInclude Include="start.hpp" />
     <ClInclude Include="Text.hpp" />
@@ -132,14 +140,15 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)\External\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\External\Include\Bullet;$(SolutionDir)\External\Include\VHACD\src;$(SolutionDir)\External\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\External\Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;irrKlang.lib;glfw3.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp-vc140-mt.lib;BulletCollision_vs2010_debug.lib;BulletDynamics_vs2010_debug.lib;LinearMath_vs2010_debug.lib;vhacd_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <IgnoreSpecificDefaultLibraries>LIBCMTD</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>opengl32.lib;irrKlang.lib;glfw3.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp-vc140-mt.lib;BulletDynamics_debug.lib;BulletCollision_debug.lib;LinearMath_debug.lib;vhacd_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>LIBCMTD;MSVCRT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /q /s /e /y "$(SolutionDir)External\DLLs"  "$(SolutionDir)$(Configuration)" 
@@ -183,7 +192,9 @@ xcopy /q /s /e /y "$(SolutionDir)Model"  "$(SolutionDir)$(Configuration)\Model\"
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\External\Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;irrKlang.lib;glfw3.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp-vc140-mt.lib;BulletCollision_vs2010.lib;BulletDynamics_vs2010.lib;LinearMath_vs2010.lib;vhacd_release.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;irrKlang.lib;glfw3.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp-vc140-mt.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;vhacd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /q /s /e /y "$(SolutionDir)External\DLLs"  "$(SolutionDir)$(Configuration)" 

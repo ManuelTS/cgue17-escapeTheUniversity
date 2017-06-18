@@ -14,6 +14,5 @@ public:
 
 	virtual void draw();
 	virtual bool isLeaf();
-	std::vector<Node*> getAllNodesDepthFirst(Node* current); //Depth first traverses the tree and returns a pre ordered node vector
 };
 

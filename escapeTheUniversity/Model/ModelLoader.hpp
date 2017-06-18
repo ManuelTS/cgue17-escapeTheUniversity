@@ -1,10 +1,12 @@
-#pragma 
+#pragma once
 
+#include <assimp\Importer.hpp>
 #include <assimp/scene.h>
 #include <GL\glew.h>
 #include <string>
 #include <vector>
 #include "Mesh/Mesh.hpp"
+#include "Mesh/Animator.hpp"
 
 class Node;
 class ModelNode;
@@ -15,9 +17,11 @@ class DoorNode;
 class ModelLoader
 {
 private:
-	const std::string ANGLE_SUFFIX = "_angle";
-	const std::string DOOR_SUFFIX = "_door";
-	const std::string LIGHT_SUFFIX = "_light";
+	const std::string BOUNDING_SUFFIX = "_bounding"; // Suffix to calculate bounding volumes for
+	const std::string ANIMATION_SUFFIX = "_c"; // Suffix for animat nodes
+	const std::string DOOR_SUFFIX = "_door"; // Door xxx names
+	const std::string LIGHT_SUFFIX = "_light"; // Light nodes
+	const std::string SPHERE_01_NAME = "sphere01";
 
 	bool loadModels = true; // Set this variable only once!
 	std::string directory;// Relative path to all models
@@ -34,16 +38,20 @@ private:
 	glm::vec3 getTransformationVec(aiMatrix4x4* transformation); // Transforms the blender 4x4 matrix into a xyz vec3
 	std::string lightSourceTypeToString(aiLightSourceType type); // Transforms the enum type into a string
 	
-	Mesh* processMesh(aiMesh* mesh, const aiScene* scene, ModelNode* modelNode); // Processes the mesh
+	Mesh* processMesh(aiMesh* mesh, unsigned int meshIndex, const aiScene* scene, aiNode* assimpNode, ModelNode* modelNode); // Processes the mesh
 	std::vector<Mesh::Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::vector<glm::vec4>* materials);// Loads all materials and the textures
 	void linkLightUBO(); // Generates the Light UBO handle
 public:
-	Node* root; // Root node of the scene graph
+	const std::string ANGLE_SUFFIX = "_angle"; // Door parent on their pivot point
+	const std::string MODEL_DIR = ".\\Model\\";// Resource top folder directories
+	const unsigned int LIGHT_NUMBER = 10;// Max number of lights 
 
-	// Resource top folder directories
-	const std::string MODEL_DIR = ".\\Model\\";
-	// Number of lights 
-	const unsigned int LIGHT_NUMBER = 10;
+	const std::string IMMOVABLE_SUFFIX = "_i"; // Suffix for immovable objects in bullet
+
+	Node* root; // Root node of the scene 
+	ModelNode* sphere01; // Pointer to sphere 01 for spherical bounding volume rendering
+	Assimp::Importer* importer;
+	Animator* animator; // Is the animator for  vertex skinning animations
 
 	/*Returns the pointer to the unique instance of this class.*/
 	static ModelLoader* ModelLoader::getInstance()
@@ -55,7 +63,7 @@ public:
 
 	void load(std::string path); // Loads all models and generates the scene graph
 	unsigned int ModelLoader::loadPicture(std::string path); // Loads a single picture
-	std::vector<Node*> getAllNodes(); // Traverses the scenegraph and puts all nodes in the vector
+	void setTextureState(Node* current, int paramMin, int paramMax); // Sets the texture sampling state of the current node
 
 	// Light
 	const unsigned int lightBinding = 2; // In the deferredShading.frag

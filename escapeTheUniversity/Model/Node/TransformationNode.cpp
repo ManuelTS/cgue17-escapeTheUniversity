@@ -1,6 +1,9 @@
+#pragma once
+
+#include "../../SoundManager.hpp"
+#include "TransformationNode.hpp"
 #include <GLM/gtc/matrix_transform.hpp>
 #include <GLM/gtc/matrix_inverse.hpp>
-#include "TransformationNode.hpp"
 #include "ModelNode.hpp"
 #include "..\..\RenderLoop.hpp"
 
@@ -21,22 +24,32 @@ void TransformationNode::switchState()
 
 float TransformationNode::change(bool plus)
 {
-	float newRadiant = RADIANT * RenderLoop::getInstance()->deltaTime;
-	
+	float newRadiant = RADIANT * RenderLoop::getInstance()->getTimeDelta();
+
 	if (!plus)
+	{
+		//SoundManager::getInstance()->playSound("close_interior_wood_door.mp3"); // only display sound if only one door is open or closed!
 		newRadiant = -newRadiant;
+	}
+	//else
+		//SoundManager::getInstance()->playSound("open_interior_wood_door_with_squeak.mp3");
 
 	for (Node* child : children)
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(child);
+		ModelNode* mnParent = dynamic_cast<ModelNode*>(mn->parent);
 
 		if (mn)
 		{
-			mn->modelMatrix = glm::translate(mn->modelMatrix, -mn->position); // Translate to origin to rotate there
-			mn->modelMatrix = glm::rotate(mn->modelMatrix, newRadiant, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it only on y axis
-			mn->modelMatrix = glm::translate(mn->modelMatrix, mn->position); // Translate rotated matrix bock to position
-			mn->inverseModelMatrix = glm::inverseTranspose(mn->modelMatrix); // Transpose and inverse on the CPU because it is very costly on the GPU
-			// TODO check what to use here with the hirachical ones
+			glm::vec3 pos = mn->position;
+			mn->hirachicalModelMatrix = glm::translate(mn->hirachicalModelMatrix, -pos); // Translate to origin to rotate there
+			mn->hirachicalModelMatrix = glm::rotate(mn->hirachicalModelMatrix, newRadiant, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it only on y axis
+			mn->hirachicalModelMatrix = glm::translate(mn->hirachicalModelMatrix, pos); // Translate rotated matrix bock to position
+			// - rotate is faster than inverseTranspose
+			//pos = glm::vec3(hirachicalModelMatrix[3]);
+			mn->inverseHirachicalModelMatrix = glm::translate(mn->inverseHirachicalModelMatrix, -pos); // Translate to origin to rotate there
+			mn->inverseHirachicalModelMatrix = glm::rotate(mn->inverseHirachicalModelMatrix, newRadiant, glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it only on y axis
+			mn->inverseHirachicalModelMatrix = glm::translate(mn->inverseHirachicalModelMatrix, pos); // Translate rotated matrix bock to position
 		}
 	}
 

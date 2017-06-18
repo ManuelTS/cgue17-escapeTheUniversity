@@ -1,10 +1,10 @@
-#include <assimp\Importer.hpp>
 #include <assimp\postprocess.h>
 #include "ModelLoader.hpp"
 #include "Node\Node.hpp"
 #include "Node\ModelNode.hpp"
 #include "Node\LightNode.hpp"
 #include "Node\TransformationNode.hpp"
+#include "Node\AnimatNode.hpp"
 #include "Mesh\Mesh.hpp"
 #include <IL\il.h>
 #include <IL\ilu.h>  // for image creation and manipulation funcs.
@@ -15,6 +15,8 @@ using namespace std;
 ModelLoader::~ModelLoader()
 {
 	delete root;
+	delete animator;
+	delete importer;
 }
 
 /*Loads recusrive the model with its objects, meshs, and textures.*/
@@ -24,17 +26,19 @@ void ModelLoader::load(string path)
 	{
 		path = MODEL_DIR + path;
 		loadModels = false; // Makes sure in the hole game that the models are loaded only once!
-		Assimp::Importer importer;// Read file via ASSIMP
-		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+		importer = new Assimp::Importer();// Read file via ASSIMP
+		const aiScene* scene = importer->ReadFile(path, aiProcess_Triangulate | aiProcess_LimitBoneWeights);
 
 		if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // Error check, if not zero
-			Debugger::getInstance()->pauseExit("ASSIMP " + *importer.GetErrorString());
+			Debugger::getInstance()->pauseExit("ASSIMP " + *importer->GetErrorString());
 
 		this->directory = path.substr(0, path.find_last_of('\\') + 1);// Retrieve the directory path of the filepath
-
 		this->linkLightUBO(); // Link light UBO in shader
+		
+		if (scene->HasAnimations())
+			animator = new Animator(scene, 0);
 
-		root = this->processNode(nullptr, scene->mRootNode, scene);// Process ASSIMP's root node recursively
+		root = this->processNode(nullptr, scene->mRootNode, scene);// Process ASSIMP's root node recursively		
 		
 		loadedTextures.clear();
 		loadedMaterials.clear();
@@ -59,36 +63,26 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 		return processLightNode(&name, parent, node, scene);
 	else // Normal node and transformation processing
 	{
-		ModelNode* current = new ModelNode();
+		ModelNode* current = nullptr;
+		
+		if (string::npos != name.find(ANGLE_SUFFIX))
+			current = new TransformationNode();
+		else if (string::npos != name.find(ANIMATION_SUFFIX))
+			current = new AnimatNode();
+		else
+			current = new ModelNode();
 
 		current->name = name;
 
-		if (current->name.compare("FlowerPot2") == 0)
-			int i = 0;
+		if (string::npos != name.find(BOUNDING_SUFFIX))
+			current->bounding = true;
 
-		if (string::npos != name.find(DOOR_SUFFIX)) // Door Model, Door Node
-		{
-			aiNode* aiParent = node->mParent;
+		if (string::npos != name.find(SPHERE_01_NAME))
+			sphere01 = current;
 
-			if (aiParent != NULL && string(aiParent->mName.C_Str()).find(ANGLE_SUFFIX) != string::npos) // Read the pivot point of this node
-				((ModelNode*)current)->pivot = getTransformationVec(&aiParent->mTransformation);
-
-			TransformationNode* interpolation = new TransformationNode();
-
-			interpolation->parent = parent;
-			current->parent = interpolation;
-			interpolation->children.push_back(current);
-	
-			processMeshesAndChildren(current, node, scene);
-
-			return dynamic_cast<Node*>(interpolation);
-		}
-		else
-		{
-			current->parent = parent;
-			processMeshesAndChildren(current, node, scene);
-			return current;
-		}
+		current->parent = parent;
+		processMeshesAndChildren(current, node, scene);
+		return current;
 	}
 
 }
@@ -110,9 +104,8 @@ void ModelLoader::processMeshesAndChildren(Node* current, aiNode* node, const ai
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		// The scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 		
-		if (mn != 0) {
-			mn->meshes.push_back(processMesh(mesh, scene, mn));
-		}
+		if (mn != 0)
+			mn->meshes.push_back(processMesh(mesh, i, scene, node, mn));
 	}
 
 	// After we've processed all of the meshes (if any) we then recursively process each of the children nodes
@@ -214,19 +207,19 @@ std::string ModelLoader::lightSourceTypeToString(aiLightSourceType type)
 		return "Unknown light enum type";
 }
 
-Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene, ModelNode* modelNode)
+Mesh* ModelLoader::processMesh(aiMesh* assimpMesh, unsigned int meshIndex, const aiScene* scene, aiNode* assimpNode, ModelNode* modelNode)
 {
-	// Data to fill, Vertex data
-	vector<Mesh::Vertex> data;
+	Mesh* mesh = new Mesh(); // Our own mesh
+	mesh->modelNode = modelNode;
 
 	// Loop through each of the mesh's vertices
-	for (GLuint i = 0; i < mesh->mNumVertices; i++)
+	for (unsigned int i = 0; i < assimpMesh->mNumVertices; i++)
 	{
 		Mesh::Vertex vertex;
 		// Positions
-		vertex.position.x = mesh->mVertices[i].x;
-		vertex.position.y = mesh->mVertices[i].y;
-		vertex.position.z = mesh->mVertices[i].z;
+		vertex.position.x = assimpMesh->mVertices[i].x;
+		vertex.position.y = assimpMesh->mVertices[i].y;
+		vertex.position.z = assimpMesh->mVertices[i].z;
 
 		if (fabs(vertex.position.x) > modelNode->radius)
 			modelNode->radius = fabs(vertex.position.x);
@@ -236,52 +229,95 @@ Mesh* ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene, ModelNode* mo
 			modelNode->radius = fabs(vertex.position.z);
 
 		// Normals
-		vertex.normal.x = mesh->mNormals[i].x;
-		vertex.normal.y = mesh->mNormals[i].y;
-		vertex.normal.z = mesh->mNormals[i].z;
+		vertex.normal.x = assimpMesh->mNormals[i].x;
+		vertex.normal.y = assimpMesh->mNormals[i].y;
+		vertex.normal.z = assimpMesh->mNormals[i].z;
 		// Texture Coordinates
-		if (mesh->mTextureCoords[0]) // Does the mesh contain texture coordinates?
+		if (assimpMesh->mTextureCoords[0]) // Does the mesh contain texture coordinates?
 		{
 			// A vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't 
 			// use models where a vertex can have multiple texture coordinates so we always take the first set (0).
-			vertex.texCoords.x = mesh->mTextureCoords[0][i].x;
-			vertex.texCoords.y = mesh->mTextureCoords[0][i].y;
+			vertex.texCoords.x = assimpMesh->mTextureCoords[0][i].x;
+			vertex.texCoords.y = assimpMesh->mTextureCoords[0][i].y;
 		}
 		else
 			vertex.texCoords = glm::vec2(0.0f, 0.0f);
 
-		data.push_back(vertex);
+		mesh->vertices.push_back(vertex);
 	}
-	// Now loop through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
-	vector<GLuint> indices;
 
-	for (GLuint i = 0; i < mesh->mNumFaces; i++)
+	// Process the meshes bones
+	for (unsigned int boneIndex = 0; boneIndex < assimpMesh->mNumBones; boneIndex++)
 	{
-		aiFace face = mesh->mFaces[i];
-		// Retrieve all indices of the face and store them in the indices vector
-		for (GLuint j = 0; j < face.mNumIndices; j++)
-			indices.push_back(face.mIndices[j]);
-	}
-	// Process textures and materials
-	vector<Mesh::Texture> textures;
-	vector<glm::vec4> materials;
+		aiBone * pBone = assimpMesh->mBones[boneIndex];
 
-	if (mesh->mMaterialIndex >= 0)
-	{
-		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		vector<Mesh::Texture> text;
-		text = loadMaterialTextures(material, aiTextureType_AMBIENT, "textureAmbient", &materials);
-		textures.insert(textures.end(), text.begin(), text.end());
-		text.clear();
-		text = loadMaterialTextures(material, aiTextureType_DIFFUSE, "textureDiffuse", &materials);
-		textures.insert(textures.end(), text.begin(), text.end());
-		text.clear();
-		text = loadMaterialTextures(material, aiTextureType_SPECULAR, "textureSpecular", &materials);
-		textures.insert(textures.end(), text.begin(), text.end());
-		text.clear();
+		for (unsigned int weightIndex = 0; weightIndex < pBone->mNumWeights; weightIndex++)
+		{
+			aiVertexWeight assimpVertexWeight = pBone->mWeights[weightIndex];
+			glm::vec4* pBoneWeight = &mesh->vertices.at(assimpVertexWeight.mVertexId).boneWeights;
+			glm::uvec4* pBoneIndices = &mesh->vertices.at(assimpVertexWeight.mVertexId).boneIndices;
+
+			if (pBoneWeight->x == 0.0f)
+			{
+				pBoneIndices->x = boneIndex;
+				pBoneWeight->x = assimpVertexWeight.mWeight;
+			}
+			else if (pBoneWeight->y == 0.0f)
+			{
+				pBoneIndices->y = boneIndex;
+				pBoneWeight->y = assimpVertexWeight.mWeight;
+			}
+			else if (pBoneWeight->z == 0.0f)
+			{
+				pBoneIndices->z = boneIndex;
+				pBoneWeight->z = assimpVertexWeight.mWeight;
+			}
+			else if (pBoneWeight->w == 0.0f)
+			{
+				pBoneIndices->w = boneIndex;
+				pBoneWeight->w = assimpVertexWeight.mWeight;
+			}
+			else
+			{ // Not more than four influcences on a bone are allowed
+				string nodeName = "The node " + modelNode->name + " has more than four weights in the bone " + pBone->mName.C_Str() + ".";
+				Debugger::getInstance()->pause(nodeName.c_str());
+			}
+		}
+
+		if(mesh->assimpBoneNode == nullptr && assimpNode != nullptr)
+			mesh->assimpBoneNode = assimpNode; // To be able to use the animator.cpp to the the correct for skinned pose matrices
+		mesh->meshIndex = meshIndex;
 	}
 	
-	return new Mesh(indices, data, textures, materials);
+
+	// Now loop through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
+	for (unsigned int i = 0; i < assimpMesh->mNumFaces; i++)
+	{
+		aiFace face = assimpMesh->mFaces[i];
+		// Retrieve all indices of the face and store them in the indices vector
+		for (GLuint j = 0; j < face.mNumIndices; j++)
+			mesh->indices.push_back(face.mIndices[j]);
+	}
+	// Process textures and materials
+
+	if (assimpMesh->mMaterialIndex >= 0)
+	{
+		aiMaterial* material = scene->mMaterials[assimpMesh->mMaterialIndex];
+		vector<Mesh::Texture> text;
+		text = loadMaterialTextures(material, aiTextureType_AMBIENT, "textureAmbient", &mesh->materials);
+		mesh->textures.insert(mesh->textures.end(), text.begin(), text.end());
+		text.clear();
+		text = loadMaterialTextures(material, aiTextureType_DIFFUSE, "textureDiffuse", &mesh->materials);
+		mesh->textures.insert(mesh->textures.end(), text.begin(), text.end());
+		text.clear();
+		text = loadMaterialTextures(material, aiTextureType_SPECULAR, "textureSpecular", &mesh->materials);
+		mesh->textures.insert(mesh->textures.end(), text.begin(), text.end());
+		text.clear();
+	}
+
+	mesh->link();
+
+	return mesh; 
 }
 
 // Checks all material textures of a given type and loads the textures if they're not loaded yet.
@@ -387,8 +423,7 @@ unsigned int ModelLoader::loadPicture(string path)
 
 	if (error != IL_TRUE) {
 		ilDeleteImages(1, &ilHandle);
-		char* msg = "";
-		sprintf_s(msg, sizeof(msg),"Texture: Failed to load the image from %s , error code: %i", path.c_str(), error);
+		string msg = "Texture: Failed to load the image from " + path + " , error code: " + to_string(error) + ".";
 		Debugger::getInstance()->pauseExit(msg);
 	}
 
@@ -406,7 +441,7 @@ unsigned int ModelLoader::loadPicture(string path)
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//Repeat texture if outside of the border
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);// Nice trilinear filtering.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // The combination of both parameters can create trilinear filtering, see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -414,7 +449,19 @@ unsigned int ModelLoader::loadPicture(string path)
 	return glHandle;
 }
 
-vector<Node*> ModelLoader::getAllNodes()
-{
-	return root->getAllNodesDepthFirst(root);
+void ModelLoader::setTextureState(Node* current, int paramMin, int paramMax) {
+	ModelNode* mn = dynamic_cast<ModelNode*>(current);
+
+	if (mn && mn->meshes.size() > 0)
+		for (Mesh* me : mn->meshes)
+			for (Mesh::Texture t : me->textures)
+			{
+				glBindTexture(GL_TEXTURE_2D, t.id);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, paramMin); // The combination of both parameters can create trilinear filtering, see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, paramMax);
+				glBindTexture(GL_TEXTURE_2D, 0);
+			}
+
+	for (Node* child : current->children)
+		setTextureState(child, paramMin, paramMax);
 }

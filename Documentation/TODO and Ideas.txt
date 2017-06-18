@@ -2,29 +2,8 @@ All ordered by priority!
 
 Programming (Manuel):
 
-make bounding volumes with threads (with vhacd)
-for(boundingBoxIndex)
-{
-  threat1.free
-    do boundingBoxIndex
-    continue
-  thread2.free
-   do boundingBoxIndex
-   continue
-  ...
-}
-and each volume becomes a sphere too for frustum culling (most fastest due to one center vertex and radius check)
-
-One of this for bullet timestep:
-http://gafferongames.com/game-physics/fix-your-timestep/
-or
-http://www.gamasutra.com/blogs/BramStolk/20160408/269988/Fixing_your_time_step_the_easy_way_with_the_golden_48537_ms.php
-update in bullet only each second or x frame if the deltaTime gets too low since bullet can get nummerical instable. for example if frames are above 60 fps only each second or x frame...
-visualize the bounding boxes
-
-Transform feedback: https://open.gl/feedback
-
-DONE: Rim lighting openGL super Bibile page 634, but only if object is lit from the back
+render generated bounding Shapes:
+Uncomment camera setting in #doMovement method
 
 Skymap, with a beautiful night sky von NASA deep field image full of stars in OGLSB as cube map on page 640. Before doing that check "seamless cube map / sky box2".
 
@@ -34,8 +13,6 @@ Fade for sound
 
 check vertical sync impact on the game
 
-Omnidirectional shadows
-
 in stencil and gbuffer vertex shader combine this parameters with using only vec4 s
 layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link(); // Of a point of the light sphere, used in .cpp, w is unused and must be one
 layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
@@ -44,21 +21,26 @@ layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, rgb unuse
 
 in the gBuffer try to reduce the single GL_** bit attachments from GL_DEPTH32F_STENCIL8 to GL_DEPTH24F_STENCIL8 for example
 
+DONE: Rim lighting openGL super Bibile page 634, but only if object is lit from the back, now only use it
+
 Visualize depth: https://learnopengl.com/#!Advanced-OpenGL/Depth-testing
 
 make an camera transition intro
 
+update all external libs
+
 Optimization:
-Transform feedback: https://open.gl/feedback
 Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines
-
-
+http://leifnode.com/2015/05/tiled-deferred-shading/
+try to run all in VS 2017
 
 
 Textures (Stefan):
 
-Hang up Poster_002 and our game design poster in a aisle.
+Hang up Poster_002 and our game design poster in a aisle and our game design poster too.
 Our real life pictures somewhere in an office on the wall as framed pictures.
+
+if you exit the left wing to the right wing through the door and you look right, place a NPC on the roof looking at you.
 
 University interriors,
 - Furnitures, books, bookshelfs, pc, monitors, bakets
@@ -91,24 +73,17 @@ Elevator, from the basement up to to roof top, must be with typical elevator mus
 
 Ideas (both):
 
-Roof revision:
-- roof with stairs up to it and door on top
-- handrails to not to fall down
-- roofgarden
+Generator which changes physics, negative gravity?...
 
 If a charater is camping giv an NPC the position and let him walk to that position to detect him
 
 SSAO as alternative to vertex skinning
-
-Display the TUWEL form screenshot on a screen, info desk, desktop, laptop, canvas, projector etc... as easter egg
 
 Link the sound to the view frustum culling, if outside the cull it is decreased
 
 Austiran tradition, insert a basement, optional a parkinglot too, maybe combine it with "fatal decisions".
 
 Fatal decisions During sneaking dark secrets of the university can be discovered, e.g. the player puts the hand in a hole (safe or vault) after entering a code, but it gets chopped of if entered wrong. Best in the cellar in combination with "austrian tradition".
-
-Normal Mapping, https://en.wikipedia.org/wiki/Normal_mapping
 
 Time doors, you have to sneak fast otherwise the door(s) will close.
 
@@ -120,4 +95,11 @@ Octopus, put somewhere a big fucking octopus from a professor who's experiment w
 
 Cloning, a gun, box, room, crazy person, or whatsoever which allows you to clone things.
 
+Roof revision:
+- roof with stairs up to it and door on top
+- handrails to not to fall down
+- roofgarden
+
 Gras, done with a single, perfect culm as in the openGL SB. Use instanced drawing 294, draw many objects with a single function call gldraw***instanced(); On page 305 is good simple instanced example. Either transform feedback or compute shader usage is a must, look into the OGLSB.
+
+Normal Mapping, https://en.wikipedia.org/wiki/Normal_mapping

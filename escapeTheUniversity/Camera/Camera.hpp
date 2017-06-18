@@ -1,10 +1,13 @@
 #pragma once
+#define GLM_FORCE_RADIANS // Use this for radiant calculation, the GLM one does not work!
+
 // Std. Includes
 #include <vector>
 // GL Includes
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Bullet/btBulletDynamicsCommon.h"
 
 using namespace glm;
 
@@ -22,7 +25,7 @@ class Camera{
 		};
 
 		// Camera Attributes
-		vec3 position = vec3(0.0f, 0.0f, 0.0f); // Camera position
+		vec3 position = vec3(0.0f, 0.0f, 0.0f); // Camera position in world coords
 		vec3 front; // vector pointing towards the camera's positive z-axis.
 		vec3 up; // y axis, cross product of front and right
 		vec3 right; // represents the positive x-axis of the camera space
@@ -37,6 +40,9 @@ class Camera{
 		double movementSpeed;
 		double mouseSensitivity;
 		double zoom;
+		// Bullet, first person camera rigit body
+		btRigidBody* rigitBody;
+
 
 		Camera(vec3 position, double _zoom, double _movementSpeed, double _mouseSensitivity);
 		~Camera();

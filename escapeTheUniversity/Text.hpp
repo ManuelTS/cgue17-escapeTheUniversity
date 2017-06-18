@@ -16,6 +16,12 @@ public:
 	const unsigned char LAST_CHARACTER = 'ÿ'; //Last supported extended ASCII character
 	static const int GAME_OVER = 4000; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
 	static const int SCREENY = 4001; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int BULLET_DEBUG_MESSAGE = 4002; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int TEXTURE_SAMPLING_NEAREST_NEIGHBOR = 3000; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int TEXTURE_SAMPLING_BILINEAR = 3001; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int MIP_MAPPING_OFF = 3002; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int MIP_MAPPING_NEAREST_NEIGHBOR = 3003; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int MIP_MAPPING_BILINEAR = 3004; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
 
 	/*Returns the pointer to the unique instance of this class.*/
 	static Text* Text::getInstance()
@@ -41,6 +47,8 @@ public:
 	void removeTime(const double deltaTime); // Checks if in the displayTime array is still some text left to display and removes the entries if necessary
 	void wireframe(); // Displays wireframe text on screen
 	void showCamCoords(Camera* camera); // Displays the camera coords on the screen
+	void drawBulletDebug(); // Displays the showing debug context text on screen
+	void bulletDebugMessage(const char* text); // Displays a bullet debug message
 private:
 	// Image path and name
 	const std::string loadingImagePath = "characters-df.png";
@@ -60,6 +68,7 @@ private:
 	unsigned int previousMaxBufferSize = 0;
 	// Buffers
 	char fpsBuffer[30]; // FPS character buffer
+	std::string bulletDebugMessageBuffer = "Bullet debug drawer error message:\n"; // Bullet debug message buffer
 	const glm::vec3 DEFAULT_COLOR = glm::vec3(1.0f, 1.0f, 1.0f); // Default color of text
 	glm::vec3 color = DEFAULT_COLOR; // Color of text to be drawn next
 	// Display timed text
@@ -77,4 +86,5 @@ private:
 	void writeVertices(std::vector<float>* vertices); // Writes the actual caracters denoted by the vector onto the screen
 	void gameOver(); // Displays the game over text on screen for some seconds
 	void screeny(); // Displays the screen shoot screen for some seconds
+	void quality(std::string text, bool texture = false); // Displays the current quality for textures or mip maps used for some seconds
 };

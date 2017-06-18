@@ -32,7 +32,7 @@ void Camera::processKeyboard(Camera_Movement direction, double deltaTime)
 	if (direction == RIGHT)
 		position += glm::normalize(glm::cross(front, up)) * velocity;
 
-	Frustum::getInstance()->setCamDef(position, front, up);
+	Frustum::getInstance()->setCamDef(position, front, right, up);
 }
 
 // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -88,8 +88,9 @@ void Camera::updateCameraVectors()
 	front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
 	front = glm::normalize(front);
 	// Also re-calculate the right and Up vector
-	right = glm::normalize(glm::cross(front, worldUp));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-	up = glm::cross(right, front);
+	right = glm::normalize(glm::cross(worldUp, front));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+	up = glm::cross(front, right); // Both already normalized
 
-	Frustum::getInstance()->setCamDef(position, front, up);
+	Frustum::getInstance()->setCamDef(position, front, right, up);
+
 }
