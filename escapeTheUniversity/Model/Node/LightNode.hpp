@@ -13,9 +13,11 @@ public:
 	struct Light{ // Due to openGL byte ordering only vec4 usage
 		glm::vec4 position = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f); // xyz = world coord position of light, w = flag if it should be drawn or not 1.0 = true = yes, otherwise false = no.
 		glm::vec4 diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.01f); // rgb = rgb of diffuse light, a = ambient light coefficient to decrase the diffuse light and use it as ambient one
-		glm::vec4 specular = glm::vec4(0.3f, 0.3f, 0.3f, 0.0f); // rgb = rgb of diffuse light, a = light Sphere radius calculated in gBuffer#calcPointLightBSphere
+		// The diffuse light colors are the same as the specular light colors, in blender specular light colors indefinable
 		glm::vec4 shiConLinQua = glm::vec4(64.0f, 1.0f, 0.22f, 0.20f); // shininess, constant, linear, quadratic http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Point+Light+Attenuation
 	} light;
+
+	float lightSphereRadius = 0.0f;
 
 	const unsigned int UBO;
 	const unsigned int arrayIndex;
