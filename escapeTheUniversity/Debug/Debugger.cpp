@@ -82,7 +82,7 @@ void Debugger::drawLightBoundingSpheres() // Draws the light spheres based on th
 	for (LightNode* ln : ml->lights)
 	{
 		glm::vec3 distance = glm::vec3(ln->light.position) - ml->sphere01->position; // Calculate distance between the light and sphere points
-		glm::mat4 m = glm::scale(glm::translate(glm::mat4(), distance), glm::vec3(ln->light.specular.w)); // Translate to light center and then scale the sphere to the light radius
+		glm::mat4 m = glm::scale(glm::translate(glm::mat4(), distance), glm::vec3(ln->lightSphereRadius)); // Translate to light center and then scale the sphere to the light radius
 		ml->sphere01->hirachicalModelMatrix = m; // Set new model matrix
 		ml->sphere01->inverseHirachicalModelMatrix = glm::inverseTranspose(m);
 		RenderLoop::getInstance()->pureDraw(ml->sphere01);

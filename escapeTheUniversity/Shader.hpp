@@ -193,7 +193,6 @@ private:
 	{ // Same as LightNode.hpp#Light
 		vec4 position;     // xyz = world coord position of light, w = flag if it should be drawn or not 1.0 = true = yes, otherwise false = no.
 		vec4 diffuse;      // rgb = diffuse light, a = ambient coefficient
-		vec4 specular;     // rgb = rgb of diffuse light, a = light Sphere radius calculated in gBuffer#calcPointLightBSphere
 		vec4 shiConLinQua; // x = shininess, y = constant attentuation, z = linear attentuation, w = quadratic attentuation value
 	};
 
@@ -262,7 +261,7 @@ private:
 		// Calculate spectralColor
 		vec3 halfwayDir = normalize(lightDirection + viewDirection); // Blinn Phong
 		float spec = pow(max(dot(norm, halfwayDir), 0.0), light.shiConLinQua.x);
-		vec3 specularColor = light.specular.rgb * spec * materialShininess;
+		vec3 specularColor = light.diffuse.rgb * spec * materialShininess;
 
 		//Calculate attenuation
 		float lightFragDist = length(lightPosition - fragmentPosition);

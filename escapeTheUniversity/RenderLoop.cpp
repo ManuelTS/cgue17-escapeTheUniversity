@@ -334,8 +334,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	for (unsigned int i = 0; i < ml->lights.size(); i++) // Look which lights intersect or are in the frustum
 	{
 		LightNode* ln = ml->lights.at(i);
-		ln->light.specular.w = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
-		ln->light.position.w = frustum->sphereInFrustum(vec3(ln->light.position), ln->light.specular.w);// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
+		ln->lightSphereRadius = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
+		ln->light.position.w = frustum->sphereInFrustum(vec3(ln->light.position), ln->lightSphereRadius);// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
 
 		if (ln->name.find("Licht0") != string::npos && ln->light.position.w > -1 ) // Light volume intersects or is in frustum, render shadow map for light
 		{
@@ -347,7 +347,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	}
 
 	if (drawShadowMap) // Renders one shadow map on screen
-		Debugger::getInstance()->renderShadowMap(renderingLights.at(lightShadowMapDrawIndex).specular.w, realmOfShadows->dephMapTextureHandle);
+		Debugger::getInstance()->renderShadowMap(ml->lights.at(lightShadowMapDrawIndex)->lightSphereRadius, realmOfShadows->dephMapTextureHandle);
 	else
 	{
 		// Deferred Shading
