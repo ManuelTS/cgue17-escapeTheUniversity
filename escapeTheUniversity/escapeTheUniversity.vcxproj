@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Model\Node\CubeNode.cpp" />
     <ClCompile Include="Model\Node\AnimatNode.cpp" />
     <ClCompile Include="Debug\BulletDebugDrawer.cpp" />
     <ClCompile Include="Model\Mesh\Animator.cpp" />
@@ -44,6 +45,7 @@
     <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Model\Node\CubeNode.hpp" />
     <ClInclude Include="Model\Node\AnimatNode.hpp" />
     <ClInclude Include="Debug\BulletDebugDrawer.hpp" />
     <ClInclude Include="Model\Mesh\Animator.hpp" />

@@ -4,6 +4,7 @@
 #include "Node\ModelNode.hpp"
 #include "Node\LightNode.hpp"
 #include "Node\TransformationNode.hpp"
+#include "Node\CubeNode.hpp"
 #include "Node\AnimatNode.hpp"
 #include "Mesh\Mesh.hpp"
 #include <IL\il.h>
@@ -69,6 +70,8 @@ Node* ModelLoader::processNode(Node* parent, aiNode* node, const aiScene* scene)
 			current = new TransformationNode();
 		else if (string::npos != name.find(ANIMATION_SUFFIX))
 			current = new AnimatNode();
+		else if (string::npos != name.find("Cube"))
+			current = new CubeNode();
 		else
 			current = new ModelNode();
 
