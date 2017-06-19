@@ -1,9 +1,10 @@
-#include "BulletDebugDrawer.hpp"
 #include <iostream>
 #include <vector>
-
+#include "BulletDebugDrawer.hpp"
 #include "../Text.hpp"
 #include "../Model/ModelLoader.hpp"
+#include "../Model/Node/ModelNode.hpp"
+
 
 using namespace std;
 
@@ -11,8 +12,8 @@ using namespace std;
 BulletDebugDrawer::BulletDebugDrawer()
 {
 	container = new Mesh(); // Empty container mesh, no VAO generated only for data container
-	
-	ModelLoader* ml = ModelLoader::getInstance();
+	modelMatrix = glm::mat4();
+	inverseModelMatrix = glm::inverseTranspose(modelMatrix);
 }
 
 BulletDebugDrawer::~BulletDebugDrawer()
@@ -98,6 +99,11 @@ void BulletDebugDrawer::draw()
 		drawer->vertices = container->vertices;
 
 		drawer->link();
+
+		glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniformMatrix4fv(ModelNode::inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseModelMatrix));
+
+		glDepthFunc(GL_LEQUAL);
 
 		drawer->draw(GL_LINES, false);
 		delete drawer;

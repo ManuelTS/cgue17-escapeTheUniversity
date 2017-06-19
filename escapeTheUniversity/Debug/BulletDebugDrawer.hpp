@@ -10,6 +10,9 @@ private:
 	unsigned int VBO = 0;
 	unsigned int index = 0; // Vertex index array
 	Mesh* container; // Mesh used to draw all the primitives coming from bullet
+
+	glm::mat4 modelMatrix = glm::mat4();
+	glm::mat4 inverseModelMatrix;
 public:
 		BulletDebugDrawer();
 		~BulletDebugDrawer();

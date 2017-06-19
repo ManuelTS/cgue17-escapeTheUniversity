@@ -185,6 +185,11 @@ void Bullet::createCamera(Camera* c)
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
 	c->rigitBody = new btRigidBody(groundRigidBodyCI);
+	c->rigitBody->setAngularFactor(btVector3(1, 1, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+	c->rigitBody->setLinearFactor(btVector3(1, 1, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+	c->rigitBody->setAngularVelocity(btVector3(0.1f, 0.1f, 0.1f)); // https://en.wikipedia.org/wiki/Angular_velocity
+	//c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
+	//c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
 	shapes.push_back(shape);
 	dynamicsWorld->addRigidBody(c->rigitBody);
 }
@@ -230,13 +235,15 @@ void Bullet::debugDraw() {
 
 void Bullet::removeScaleMatrix(glm::mat4 matrix, btCollisionShape* shape, btTransform* trans)
 {
-	const float scaleX = glm::length(glm::vec3(matrix[0][0], matrix[0][1], matrix[0][2]));
+	/*const float scaleX = glm::length(glm::vec3(matrix[0][0], matrix[0][1], matrix[0][2]));
 	const float scaleY = glm::length(glm::vec3(matrix[1][0], matrix[1][1], matrix[1][2]));
 	const float scaleZ = glm::length(glm::vec3(matrix[2][0], matrix[2][1], matrix[2][2]));
 	glm::mat4 matWithoutScale = glm::scale(matrix, glm::vec3(1.0f / scaleX, 1.0f / scaleY, 1.0f / scaleZ));
 
 	shape->setLocalScaling(btVector3(scaleX, scaleY, scaleZ));
 	trans->setFromOpenGLMatrix(glm::value_ptr(matWithoutScale)); //InverseHirachical causes perfectly skinned, but only for 1 building-colission mesh (last)
+	*/
+	trans->setFromOpenGLMatrix(glm::value_ptr(matrix));
 }
 
 btCollisionObject* Bullet::createBox(float mass)

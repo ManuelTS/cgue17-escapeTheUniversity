@@ -370,7 +370,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, projectionMatrixP);
 		glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
 		draw(ml->root); // Draw all nodes except light ones
-
+		
 		if (drawBulletDebug) // Draws the bullet debug context, see bullet.cpp#bulle
 			Bullet::getInstance()->debugDraw();
 
