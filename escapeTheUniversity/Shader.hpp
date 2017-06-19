@@ -232,23 +232,23 @@ private:
 		float shadow = 0.0f;												      // PCF, percentage-closer filtering. The idea is to sample more than once from the depth map, each time with slightly different texture coordinates. 
 		vec2 texelSize = 1.0 / textureSize(depthMap, 0);
 		
-		for(int x = -1; x <= 1; ++x)
-			for(int y = -1; y <= 1; ++y)
+		for(int x = -1; x <= 1; x++)
+			for(int y = -1; y <= 1; y++)
 			{
 	            float pcfDepth = texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-		        shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
+		        shadow += currentDepth - bias > pcfDepth  ? 0.0 : 1.0;        
 			}    
 		
-		shadow /= 9.0;
+		shadow /= 9.0f;
 	
-		if(projCoords.z > 1.0) // Avoid over sampling: Keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-			shadow = 0.0;
+		if(projCoords.z > 1.0) // Avoid over sampling: Keep the shadow at 1.0 when outside the far_plane region of the light's frustum.
+			shadow = 1.0;
 
-		return shadow; // 0 in shadow, 1 not in shadow
+		return shadow; // 0.x in shadow, 1 not in shadow
 	}
 
 	// Blinn Phong light
-	vec3 calculateLight(LightStruct light, vec3 diffuse, float specular, vec3 norm, vec3 fragmentPosition, vec3 viewDirection)
+	vec3 calculateLight(LightStruct light, vec3 diffuse, float materialShininess, vec3 norm, vec3 fragmentPosition, vec3 viewDirection)
 	{
 		//  Calculate ambientColor
 		vec3 ambientColor = diffuse * light.diffuse.a;
@@ -257,12 +257,12 @@ private:
 		vec3 lightPosition = light.position.xyz;
 		vec3 lightDirection = normalize(lightPosition - fragmentPosition);
 		float diffuseImpact = max(dot(norm, lightDirection), 0.0); // Max for no negative values
-		vec3 diffuseColor = light.diffuse.rgb * (diffuseImpact * diffuse);
+		vec3 diffuseColor = light.diffuse.rgb * diffuseImpact * diffuse;
 
 		// Calculate spectralColor
 		vec3 halfwayDir = normalize(lightDirection + viewDirection); // Blinn Phong
 		float spec = pow(max(dot(norm, halfwayDir), 0.0), light.shiConLinQua.x);
-		vec3 specularColor = light.specular.rgb * (spec * specular);
+		vec3 specularColor = light.specular.rgb * spec * materialShininess;
 
 		//Calculate attenuation
 		float lightFragDist = length(lightPosition - fragmentPosition);
@@ -275,7 +275,7 @@ private:
 	    float shadow = calculateShadow(fragmentPosition, lightDirection, norm);  
 
 		// Calculate Final color	
-		return ambientColor + ((diffuseColor + specularColor) * (1.0f - shadow));// + calculateRim(norm, viewDirection);
+		return ambientColor + ((diffuseColor + specularColor) * shadow);// + calculateRim(norm, viewDirection);
 	}
 
 	void main()
@@ -287,7 +287,7 @@ private:
 		vec3 diffuse = vec3(unpackHalf2x16(gColorAndNormal.x), temp.x);
 		vec2 shininess = unpackHalf2x16(gColorAndNormal.w); // x = shininess color value, y = unused
 
-		float specular = shininess.x;
+		float materialShininess = shininess.x;
 		vec3 norm = normalize(vec3(temp.y, unpackHalf2x16(gColorAndNormal.z)));
 		vec3 fragmentPosition = gPosition.xyz;
 		vec3 viewDirection = normalize(viewPosition - fragmentPosition);
@@ -297,7 +297,7 @@ private:
 
 		for(int i = 0; i < LIGHT_NUMBER; i++)
 			if(l.light[i].position.w > -1)
-				color += calculateLight(l.light[i], diffuse, specular, norm, fragmentPosition, viewDirection);
+				color += calculateLight(l.light[i], diffuse, materialShininess, norm, fragmentPosition, viewDirection);
 
 		gl_FragColor = vec4(color, 1.0f);
 	})glsl";

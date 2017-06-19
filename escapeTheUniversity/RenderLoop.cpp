@@ -264,7 +264,7 @@ void RenderLoop::start()
 	height = initVar->height;
 	glViewport(0, 0, width, height);
 
-	camera = new Camera(glm::vec3(8,5,0), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
+	camera = new Camera(glm::vec3(6.2f,16.4,0.4f), initVar->zoom, initVar->movingSpeed, initVar->mouseSensitivity);
 
 	initGLFWandGLEW();
 	displayLoadingScreen(ml);
@@ -337,7 +337,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		ln->light.specular.w = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
 		ln->light.position.w = frustum->sphereInFrustum(vec3(ln->light.position), ln->light.specular.w);// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
 
-		if (ln->light.position.w > -1) // Light volume intersects or is in frustum, render shadow map for light
+		if (ln->name.find("Licht0") != string::npos && ln->light.position.w > -1 ) // Light volume intersects or is in frustum, render shadow map for light
 		{
 			lightShadowMapDrawIndex = i;
 			realmOfShadows->renderInDepthMap(ml->root, ln, initVar->zoom, width, height); // far plane is the spheres radius

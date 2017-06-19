@@ -75,6 +75,15 @@ Class: 186.831 UE Computergraphics}
 \pagestyle{plain}
 \setcounter{page}{1}
 
+\section{Development Status and Bugs}
+We will try to get rid of all bugs before the 28.06.2017!
+\begin{itemize}
+\item Bullet buggy since openGL world and bullet world are asynchronous in their positions.
+\item Hence for now only partiality collision detection
+\item Inside a light volume everything is culled, no light volumnes in use.
+\item Not much gameplay because the effect point implementations took so much time.
+\end{itemize}
+
 \section{Controls \label{Controls}}
 
 \begin{table}[h!]
@@ -112,9 +121,7 @@ Class: 186.831 UE Computergraphics}
 All other keys may have surprises for you.
 
 
-\section{Effect Points}
-
-
+\section{Implemented Effect Points}
 \begin{table}[h!]
   \centering
   \label{effectsTable}
@@ -133,10 +140,6 @@ For implementation references and explanation see section \ref{features}.
 \section{Gameplay}
 You find yourself in the middle of an university room. You need to get out of the building without being detected. Open the doors and find yourself a way towards the paved floor. Do not open the wrong door, otherwise you encounter a professor and you are busted!
 This is just a trial run... consider yourself planning your escape for the real experience that will follow. Explore the building, get the floor plane into your head. It will help your real escape in the near future.
-
-
-\section{Development Status}
-Bullet buggy, only partiality collision detection, frustum culling buggy, not much gameplay.
 
 
 \section{Camera}
@@ -244,8 +247,8 @@ For creating and as well as modifying our objects, we used Blender 2.78c freely 
 \url{ https://www.cgtrader.com/3d-models/interior/office/school-desk-206e3c48-1bea-40d0-9c75-cbb46eaa64af}. Model has been purchased and is used in compliance with the Royalty Free License.
 
 \item We Want You - Poster with some adaptions from \\ \url{https://free3d.com/3d-model/poster-quotwe-want-youquot-88757.html}.
- 
-\item Laptop from with a modified texture from 
+
+\item Laptop from with a modified texture from
 \url{https://free3d.com/download-page.php?url=notebook-low-poly-version-57341}.
 %\item Freddie Krueger like character from
 %\url{https://www.cgtrader.com/free-3d-models/character/man/sketchfast-7-halloween-contest}. Model is used in compliance with the Editorial License.
@@ -253,6 +256,7 @@ For creating and as well as modifying our objects, we used Blender 2.78c freely 
 
 \item Books-on-a-shelf from \url{https://www.blendswap.com/blends/view/75450} under fullfillment of stating the corresponding author \textit{Archemi} \url{https://www.blendswap.com/user/archemi}. Model has been slightly adjusted for texturing.
 
+\item All used poster pictures are from \href{https://pixabay.com}{pixabay.com} with an CC0 Public Domain license except the pilgrim society poster wtich is from \href{http://www.pilgrimsociety.org/}{pilgrimsociety.org}.
 
 \end{itemize}
 
@@ -284,6 +288,8 @@ If not stated below the sounds where recorded by the authors of this document.
 % The door opening sounds have been taken from \url{http://www.freesfx.co.uk} in respect to their license of use.
 % For stefan: please state the license
 \end{itemize}
+
+
 
 \bibliographystyle{plain}
 \bibliography{Referenzen}
