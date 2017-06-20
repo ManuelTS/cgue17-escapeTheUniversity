@@ -122,23 +122,78 @@ void RenderLoop::doMovement(double timeDelta)
 	}
 
 	//Camera controls
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 		camera->processKeyboard(camera->FORWARD, timeDelta);
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera->rigitBody->setActivationState(true);
+		camera->rigitBody->setLinearVelocity(btVector3(5, 0, 0));
+	}
+	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		//camera->processKeyboard(camera->BACKWARD, timeDelta);
+	{
 		camera->processKeyboard(camera->BACKWARD, timeDelta);
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera->rigitBody->setActivationState(true);
+		camera->rigitBody->setLinearVelocity(btVector3(-5, 0, 0));
+	}
+	else if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		camera->processKeyboard(camera->LEFT, timeDelta);
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera->processKeyboard(camera->RIGHT, timeDelta);
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+		//camera->processKeyboard(camera->UP, timeDelta);
+		//camera->rigitBody->setLinearVelocity(btVector3(0, 5, 0));
+	{
 		camera->processKeyboard(camera->UP, timeDelta);
-
+		camera->rigitBody->setActivationState(true);
+		camera->rigitBody->setLinearVelocity(btVector3(0, 5, 0));
+	}
+	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		//camera->processKeyboard(camera->UP, timeDelta);
+		//camera->rigitBody->setLinearVelocity(btVector3(0, 5, 0));
+	{
+		camera->processKeyboard(camera->UP, timeDelta);
+		camera->rigitBody->setActivationState(true);
+		camera->rigitBody->setLinearVelocity(btVector3(0, -5, 0));
+	}
+	else { // if the key of movement stops, we should put the velocity to 0 (otherwise it will continue to move)
+		camera->rigitBody->setLinearVelocity(btVector3(0, 0, 0));
+	}
 	if (!freeCamera)
 	{
 		matrix = mat4(); // No yaw or pitch
 		matrix[3] = vec4(camera->position, 1.0f); // Set the new position to the bounding camera object
 		trans.setFromOpenGLMatrix(glm::value_ptr(matrix));
-		camera->rigitBody->getMotionState()->setWorldTransform(trans);
+		//camera->rigitBody->getMotionState()->setWorldTransform(trans);
+		
+		/*
+		first: 
+		https://gamedev.stackexchange.com/questions/24772/how-would-i-move-a-character-in-an-rpg-with-bullet-physics-ogre3d
+
+		apply linear velocity
+
+		*/
+
+		/*
+		Keep in mind:
+		Perhaps the object becomes deactivated and then it doesn't move anymore. Then you have to activate it again
+		(search in the documentation how to activate a rigid body with the setActivationState() method)
+		Objects become deactivated when they become almost stopped. 
+		Then they don't activate again until another object applies them a force or you do it programmatically.
+		*/
+
+		/*if above did not work:
+		https://stackoverflow.com/questions/12251199/re-positioning-a-rigid-body-in-bullet-physics
+		I can't tell you what causes the unusual outcome when moving rigid bodies but I can definitely sympathize!
+
+		There are three things you'll need to do in order to solve this:
+
+		Convert your rigid bodies to kinematic ones
+		Adjust the World Transform of the bodies motion state and NOT the rigid body
+		Convert the kinematic body back to a rigid body
+
+		And/or
+		Change its worldtransform and then clear forces and linear and angular velocities is sufficient
+		*/
+
 	}
 }
 
