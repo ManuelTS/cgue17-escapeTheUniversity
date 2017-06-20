@@ -2,7 +2,6 @@
 #include <vector>
 #include "BulletDebugDrawer.hpp"
 #include "../Text.hpp"
-#include "../Model/ModelLoader.hpp"
 #include "../Model/Node/ModelNode.hpp"
 
 
@@ -102,6 +101,7 @@ void BulletDebugDrawer::draw()
 
 		glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 		glUniformMatrix4fv(ModelNode::inverseModelLocation, 1, GL_FALSE, glm::value_ptr(inverseModelMatrix));
+		glUniform4f(ModelNode::debugFlagLocation, 1, 0, 0, 0); // x = flag for debugging to render bullet wireframe with value 1
 
 		glDepthFunc(GL_LEQUAL);
 
