@@ -115,7 +115,7 @@ void RenderLoop::doMovement(double timeDelta)
 	btTransform trans = camera->rigitBody->getCenterOfMassTransform();
 	mat4 matrix;
 
-	if (/*!*/freeCamera) // Constrains camera movement to bullet physics
+	if (!freeCamera) // Constrains camera movement to bullet physics
 	{ //Set camera postion after the physics from the last frame were calculated
 		trans.getOpenGLMatrix(glm::value_ptr(matrix));
 		camera->position = vec3(matrix[3]); // only update the position of the camera!
@@ -133,7 +133,7 @@ void RenderLoop::doMovement(double timeDelta)
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 		camera->processKeyboard(camera->UP, timeDelta);
 
-	if (/*!*/freeCamera)
+	if (!freeCamera)
 	{
 		matrix = mat4(); // No yaw or pitch
 		matrix[3] = vec4(camera->position, 1.0f); // Set the new position to the bounding camera object
@@ -369,6 +369,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		gBufferShader->useProgram();
 		glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, projectionMatrixP);
 		glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
+		glUniform4f(ModelNode::debugFlagLocation, 0, 0, 0, 0); // x = flag for debugging to render bullet wireframe with value 1
 		draw(ml->root); // Draw all nodes except light ones
 		
 		if (drawBulletDebug) // Draws the bullet debug context, see bullet.cpp#bulle

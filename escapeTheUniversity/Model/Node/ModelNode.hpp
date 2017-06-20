@@ -43,5 +43,6 @@ public:
 
 	static const unsigned int modelLocation = 0; // gBuffer.vert
 	static const unsigned int inverseModelLocation = 4; // gBuffer.vert
+	static const unsigned int debugFlagLocation = 256; // gBuffer.frag
 private:
 };

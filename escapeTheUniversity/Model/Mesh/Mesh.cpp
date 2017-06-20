@@ -46,7 +46,7 @@ void Mesh::link()
 	glGenBuffers(1, &materialVBO); // RGB = optional color, if all are not zero the texture is unused, only vec4.a for shininess
 	glBindBuffer(GL_ARRAY_BUFFER, materialVBO);
 	glBufferData(GL_ARRAY_BUFFER, materials.size() * sizeof(materials[0]), &materials[0], GL_STATIC_DRAW); // Play with last param 4 performance
-	//	glEnableVertexAttribArray(materialLocation); // TODO material shininess value causes scattered specular lights
+	glEnableVertexAttribArray(materialLocation); // TODO material shininess value causes scattered specular lights
 	glVertexAttribPointer(materialLocation, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	glBindVertexArray(0); // Unbind VAO first!

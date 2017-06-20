@@ -147,6 +147,8 @@ private:
 
 	layout (binding = 0) uniform sampler2D textureDiffuse; // Usage in: Mesh.cpp draw();
 
+	layout (location = 256) uniform vec4 flags; // x = flag for debugging to render bullet wireframe with value 1, used in RenderLoop#doDeferredShading and BulletDebugDrawer#draw
+
 	layout (location = 0) in vec3 fragmentPosition; // Usage in: gBuffer.vert out
 	layout (location = 1) in vec3 normalVector;     // Usage in: gBuffer.vert out, normalized
 	layout (location = 2) in vec2 texCoords;        // Usage in: gBuffer.vert out
@@ -158,6 +160,9 @@ private:
 	void main()
 	{
 		vec3 color = texture(textureDiffuse, texCoords).rgb;
+
+		if(flags.x > 0) // Flag for debugging to render bullet wireframe with value 1
+			color = materialDiffuseShininess.rgb;
 		
 		gColorNormal.x = packHalf2x16(color.xy);
 		gColorNormal.y = packHalf2x16(vec2(color.z,normalVector.x));
@@ -165,7 +170,7 @@ private:
 		gColorNormal.w = packHalf2x16(vec2(materialDiffuseShininess.a, 0.0f)); // x = shininess value, y unused
 
 		gPosition.xyz = fragmentPosition;
-		gPosition.w = 0.0f; // w Unused
+		gPosition.w = flags.x; // Flag for debugging to render bullet wireframe with value 1
 	})glsl";
 	const char* DEFERRED_SHADING_VERT = R"glsl(
 	#version 430 core
@@ -280,25 +285,31 @@ private:
 	void main()
 	{ //Unpack GBuffer
 		uvec4 gColorAndNormal = texelFetch(colorAndNormalTex, ivec2(gl_FragCoord.xy), 0);
-		vec4 gPosition = texelFetch(positionTex, ivec2(gl_FragCoord.xy), 0); // w unused
+		vec4 gPosition = texelFetch(positionTex, ivec2(gl_FragCoord.xy), 0); // flag to display color immediately without light calculations
 		vec2 temp = unpackHalf2x16(gColorAndNormal.y);
 
 		vec3 diffuse = vec3(unpackHalf2x16(gColorAndNormal.x), temp.x);
-		vec2 shininess = unpackHalf2x16(gColorAndNormal.w); // x = shininess color value, y = unused
 
-		float materialShininess = shininess.x;
-		vec3 norm = normalize(vec3(temp.y, unpackHalf2x16(gColorAndNormal.z)));
-		vec3 fragmentPosition = gPosition.xyz;
-		vec3 viewDirection = normalize(viewPosition - fragmentPosition);
+		if(gPosition.w == 1.0f)
+			gl_FragColor = vec4(diffuse, 1.0f);
+		else
+		{
+			vec2 shininess = unpackHalf2x16(gColorAndNormal.w); // x = shininess color value, y = unused
 
-		//Calculate color with light
-		vec3 color = vec3(0.0f);
+			float materialShininess = shininess.x;
+			vec3 norm = normalize(vec3(temp.y, unpackHalf2x16(gColorAndNormal.z)));
+			vec3 fragmentPosition = gPosition.xyz;
+			vec3 viewDirection = normalize(viewPosition - fragmentPosition);
 
-		for(int i = 0; i < LIGHT_NUMBER; i++)
-			if(l.light[i].position.w > -1)
-				color += calculateLight(l.light[i], diffuse, materialShininess, norm, fragmentPosition, viewDirection);
+			//Calculate color with light
+			vec3 color = vec3(0.0f);
 
-		gl_FragColor = vec4(color, 1.0f);
+			for(int i = 0; i < LIGHT_NUMBER; i++)
+				if(l.light[i].position.w > -1)
+					color += calculateLight(l.light[i], diffuse, materialShininess, norm, fragmentPosition, viewDirection);
+
+			gl_FragColor = vec4(color, 1.0f);	
+		}
 	})glsl";
 	const char* SHADOW_VERT = R"glsl(
 	#version 430 core
