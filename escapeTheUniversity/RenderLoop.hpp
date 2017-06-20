@@ -27,6 +27,8 @@ class RenderLoop
 		void calculateDeltaTime(); // Calculates the delta time, e.g. the time between frames
 		void draw(Node* current); // Draws all lights which checking their dependencies and condition (no Light Node drawing, frustum culling, flag setting)
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
+
+		vec3 movementVectorXYAxis = vec3(2.0f, 0.0f, 2.0f); //direction of possible axis + factor 2 (otherwise slow)	
  		
 	public:
 		struct Time // variables of this game, approach of http://gafferongames.com/game-physics/fix-your-timestep/

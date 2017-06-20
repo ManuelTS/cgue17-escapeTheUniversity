@@ -120,42 +120,51 @@ void RenderLoop::doMovement(double timeDelta)
 		trans.getOpenGLMatrix(glm::value_ptr(matrix));
 		camera->position = vec3(matrix[3]); // only update the position of the camera!
 	}
-
+	vec3 movementVectorXYAxis = vec3(2.0f, 0.0f, 2.0f); //direction of possible axis + factor 2 (otherwise slow)	
 	//Camera controls
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) 
+	{
 		camera->processKeyboard(camera->FORWARD, timeDelta);
 		camera->rigitBody->setActivationState(true);
-		camera->rigitBody->setLinearVelocity(btVector3(5, 0, 0));
+		vec3 movement = camera->front*movementVectorXYAxis;
+		camera->rigitBody->setLinearVelocity(btVector3(movement.x, movement.y, movement.z));
 	}
 	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		//camera->processKeyboard(camera->BACKWARD, timeDelta);
 	{
 		camera->processKeyboard(camera->BACKWARD, timeDelta);
 		camera->rigitBody->setActivationState(true);
-		camera->rigitBody->setLinearVelocity(btVector3(-5, 0, 0));
+		vec3 movement = camera->front*(-movementVectorXYAxis); //we want to walk backwards
+		camera->rigitBody->setLinearVelocity(btVector3(movement.x, movement.y, movement.z));
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	{
 		camera->processKeyboard(camera->LEFT, timeDelta);
+		camera->rigitBody->setActivationState(true);
+		vec3 movement = glm::normalize(glm::cross(camera->front, camera->up))*(-movementVectorXYAxis); //going left!
+		camera->rigitBody->setLinearVelocity(btVector3(movement.x, movement.y, movement.z));
+	}
 	else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	{
 		camera->processKeyboard(camera->RIGHT, timeDelta);
+		camera->rigitBody->setActivationState(true);
+		vec3 movement = glm::normalize(glm::cross(camera->front, camera->up))*(movementVectorXYAxis); //going Right!
+		camera->rigitBody->setLinearVelocity(btVector3(movement.x, movement.y, movement.z));
+	}
 	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-		//camera->processKeyboard(camera->UP, timeDelta);
-		//camera->rigitBody->setLinearVelocity(btVector3(0, 5, 0));
 	{
 		camera->processKeyboard(camera->UP, timeDelta);
 		camera->rigitBody->setActivationState(true);
-		camera->rigitBody->setLinearVelocity(btVector3(0, 5, 0));
+		camera->rigitBody->setLinearVelocity(btVector3(0, 3, 0));
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		//camera->processKeyboard(camera->UP, timeDelta);
-		//camera->rigitBody->setLinearVelocity(btVector3(0, 5, 0));
 	{
 		camera->processKeyboard(camera->UP, timeDelta);
 		camera->rigitBody->setActivationState(true);
-		camera->rigitBody->setLinearVelocity(btVector3(0, -5, 0));
+		camera->rigitBody->setLinearVelocity(btVector3(0, -3, 0));
 	}
 	else { // if the key of movement stops, we should put the velocity to 0 (otherwise it will continue to move)
 		camera->rigitBody->setLinearVelocity(btVector3(0, 0, 0));
+		//activationstate shall be be automatically set to false if no force is applied
 	}
 	if (!freeCamera)
 	{

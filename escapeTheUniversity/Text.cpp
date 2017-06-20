@@ -360,6 +360,8 @@ void Text::help()
 	i = copyInBuffer(help, i, (const unsigned char*) "S/Lower arrow = Move backwards", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "A/Left arrow = Move left", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "D/Right arrow = Move right", true); 
+	i = copyInBuffer(help, i, (const unsigned char*) "Space = Ascend", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Left Shift = Descend", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Left click = interaction", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Right click = ?", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Print = Screenshot", true);
