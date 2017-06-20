@@ -8,8 +8,8 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 {
 	glGenFramebuffers(1, &handle);
 	glBindFramebuffer(GL_FRAMEBUFFER, handle);
-	glGenTextures(3, positionNormalColorHandles);
-	unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glGenTextures(4, positionNormalColorHandles);
+	const unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 
 	// Normals, albedo color, and material index in gBuffer.frag and deferredShading.frag
 	glBindTexture(GL_TEXTURE_2D, positionNormalColorHandles[0]);
@@ -25,9 +25,16 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture(GL_FRAMEBUFFER, attachments[1], positionNormalColorHandles[1], 0);
 
+	// The thing is that our G Buffer combines as a target the buffers for the attributes with the depth/stencil buffer. When we run the point light pass we setup the stencil stuff and we need to use the values from the depth buffer. Here we have a problem - if we render into the default FBO we won't have access to the depth buffer from the G Buffer. But the G Buffer must have its own depth buffer because when we render into its FBO we don't have access to the depth buffer from the default FBO. 
 	glBindTexture(GL_TEXTURE_2D, positionNormalColorHandles[2]);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, MAX_WIDTH, MAX_HEIGHT);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, positionNormalColorHandles[2], 0);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, MAX_WIDTH, MAX_HEIGHT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture(GL_FRAMEBUFFER, attachments[2], positionNormalColorHandles[2], 0);
+
+	glBindTexture(GL_TEXTURE_2D, positionNormalColorHandles[3]);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH32F_STENCIL8, MAX_WIDTH, MAX_HEIGHT);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, positionNormalColorHandles[3], 0);
 
 	Debugger::getInstance()->checkWholeFramebufferCompleteness();
 
@@ -39,9 +46,28 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 	glBindVertexArray(0);
 }
 
+void GBuffer::startFrame()
+{
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle); // Must be first
+	glDrawBuffer(GL_COLOR_ATTACHMENT2);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void GBuffer::bindForGeometryPass()
+{
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
+	const unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, attachments);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
 /*Binds the textures for usage in the shader to render into the frame buffer.*/
 void GBuffer::bindTextures()
 {
+	glDrawBuffer(GL_COLOR_ATTACHMENT2);
+
 	for (int i = 0; i < deferredShadingColorTextureCount; i++)
 	{
 		glActiveTexture(GL_TEXTURE0+i);
@@ -51,7 +77,8 @@ void GBuffer::bindTextures()
 }
 
 // RenderQuad() Renders a 1x1 quad in NDC, best used for framebuffer color targets and post-processing effects.
-void GBuffer::renderQuad(){
+void GBuffer::renderQuad()
+{
 	glBindVertexArray(quadVAO);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
@@ -60,6 +87,14 @@ void GBuffer::renderQuad(){
 		glActiveTexture(GL_TEXTURE0+i);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+}
+
+void GBuffer::finalPass(const unsigned int width, const unsigned int height)
+{
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Sets the accumulating FBO to read and the standard FBO (screen) to draw and blits the first in the second FBO
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, handle);
+	glReadBuffer(GL_COLOR_ATTACHMENT2);
+	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR); // Blit FBO to screen
 }
 
 // The calculation solves a quadratic equation (see http://en.wikipedia.org/wiki/Quadratic_equation). It returns the effecting max light distance which is the radius of the light sphere.

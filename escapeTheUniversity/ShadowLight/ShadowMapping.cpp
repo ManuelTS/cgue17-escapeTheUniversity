@@ -50,12 +50,13 @@ void ShadowMapping::renderInDepthMap(Node* root, LightNode* ln, const float FOV,
 	glUniformMatrix4fv(shadowShader->SHADOW_LIGHT_SPACE_MATRIX_LOCATION, 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glCullFace(GL_FRONT);
-
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // No color is needed, only depth
 	//frustum->setCamDef(lightPosition, lightFront, lightUp);
 	//frustum->setCamInternals(degreesFOV, SHADOW_WIDTH, SHADOW_HEIGHT);
 
 	draw(root);
 
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glCullFace(GL_BACK);
 	unbindTexture();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

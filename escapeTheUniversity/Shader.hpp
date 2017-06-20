@@ -196,15 +196,14 @@ private:
 
 	struct LightStruct 
 	{ // Same as LightNode.hpp#Light
-		vec4 position;     // xyz = world coord position of light, w = flag if it should be drawn or not 1.0 = true = yes, otherwise false = no.
+		vec4 position;     // xyz = world coord position of light, w = unused
 		vec4 diffuse;      // rgb = diffuse light, a = ambient coefficient
 		vec4 shiConLinQua; // x = shininess, y = constant attentuation, z = linear attentuation, w = quadratic attentuation value
 	};
 
-	const int LIGHT_NUMBER = 10; // Correlates with ModelLoader.hpp#LIGHT_NUMBER
 	layout (std140, binding = 2, index = 0) uniform LightBlock 
 	{
-		LightStruct light[LIGHT_NUMBER];
+		LightStruct light;
 	} l; // Workaround, direct struct blockbinding only in openGL 4.5
 
 	const float RIM_POWER = 10.0f; // Rim light power
@@ -302,14 +301,30 @@ private:
 			vec3 viewDirection = normalize(viewPosition - fragmentPosition);
 
 			//Calculate color with light
-			vec3 color = vec3(0.0f);
-
-			for(int i = 0; i < LIGHT_NUMBER; i++)
-				if(l.light[i].position.w > -1)
-					color += calculateLight(l.light[i], diffuse, materialShininess, norm, fragmentPosition, viewDirection);
+			vec3 color = calculateLight(l.light, diffuse, materialShininess, norm, fragmentPosition, viewDirection);
 
 			gl_FragColor = vec4(color, 1.0f);	
 		}
+	})glsl";
+	const char* STENCIL_VERT = R"glsl(
+	#version 430 core
+
+	layout (location = 0) in vec3 position;              // of the rendered vertex, correlates in location value with gbuffer.vert
+
+	layout (location = 0)  uniform mat4 model;	      // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
+	layout (location = 4)  uniform mat4 inverseModel; // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
+	layout (location = 8)  uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
+	layout (location = 12) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
+
+	void main()
+	{
+		gl_Position = projection * view * model * vec4(position, 1.0f);
+	})glsl";
+	const char* STENCIL_FRAG = R"glsl( // Empty shader, color is not needed
+	#version 430 core
+	
+	void main()
+	{
 	})glsl";
 	const char* SHADOW_VERT = R"glsl(
 	#version 430 core

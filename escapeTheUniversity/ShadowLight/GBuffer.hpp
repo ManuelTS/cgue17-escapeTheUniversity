@@ -7,7 +7,7 @@
 class GBuffer
 {
 private:
-	unsigned int positionNormalColorHandles[3];
+	unsigned int positionNormalColorHandles[4];
 
 	unsigned int quadVAO;
 	unsigned int quadVBO;
@@ -22,12 +22,16 @@ public:
 
 	Shader* gBufferShader = new Shader("gBuffer"); // Set up schaders
 	Shader* deferredShader = new Shader("deferredShading");
+	Shader* stencilShader = new Shader("stencil"); // Set up schaders
 
 	GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT);
 	~GBuffer();
 
+	void startFrame(); // At the start of each frame we need to clear the final texture which is attached to attachment point number 3
+	void bindForGeometryPass(); // Previously the FBO in the G Buffer was static (in terms of its configuration) and was set up in advance so we just had to bind it for writing when the geometry pass started. Now we keep changing the FBO to we need to config the draw buffers for the attributes each time.
 	void bindTextures(); // Bindes the textures used
 	float calcPointLightBSphere(LightNode* ln); /*Render the bounding sphere based on the light params.*/
-	void renderQuad();
+	void renderQuad(); // Renders the stenciled quad
+	void finalPass(const unsigned int width, const unsigned int height); // Sets the accumulating FBO to read and the standard FBO (screen) to draw and blits the first in the second FBO
 };
 
