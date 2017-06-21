@@ -73,20 +73,17 @@ void Debugger::renderShadowMap(float farPlane, unsigned int depthMapTextureHandl
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Debugger::drawLightBoundingSpheres() // Draws the light spheres based on their location and intensity radius
+void Debugger::drawLightBoundingSpheres(LightNode* ln) // Draws the light spheres based on their location and intensity radius
 {
 	ModelLoader* ml = ModelLoader::getInstance();
 	bool actualBounding = ml->sphere01->bounding;
 	ml->sphere01->bounding = false; // Draw regardless of bounding
 
-	for (LightNode* ln : ml->lights)
-	{
-		glm::vec3 distance = glm::vec3(ln->light.position) - ml->sphere01->position; // Calculate distance between the light and sphere points
-		glm::mat4 m = glm::scale(glm::translate(glm::mat4(), distance), glm::vec3(ln->lightSphereRadius)); // Translate to light center and then scale the sphere to the light radius
-		ml->sphere01->hirachicalModelMatrix = m; // Set new model matrix
-		ml->sphere01->inverseHirachicalModelMatrix = glm::inverseTranspose(m);
-		RenderLoop::getInstance()->pureDraw(ml->sphere01);
-	}
+	glm::vec3 distance = glm::vec3(ln->light.position) - ml->sphere01->position; // Calculate distance between the light and sphere points
+	glm::mat4 m = glm::scale(glm::translate(glm::mat4(), distance), glm::vec3(ln->lightSphereRadius)); // Translate to light center and then scale the sphere to the light radius
+	ml->sphere01->hirachicalModelMatrix = m; // Set new model matrix
+	ml->sphere01->inverseHirachicalModelMatrix = glm::inverseTranspose(m);
+	RenderLoop::getInstance()->pureDraw(ml->sphere01);
 
 	ml->sphere01->bounding = actualBounding; // Sphere position overwritten on its next rendering
 }

@@ -15,6 +15,7 @@ DONE: Rim lighting openGL super Bibile page 634, but only if object is lit from 
 Visualize depth (for overall game not only light perspective): https://learnopengl.com/#!Advanced-OpenGL/Depth-testing
 
 Optimization:
+merge the shadow map FBO into de gbuffer FBO, the latter would only have an additional depth attachment
 update all external libs
 try to run all in VS 2017
 Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines

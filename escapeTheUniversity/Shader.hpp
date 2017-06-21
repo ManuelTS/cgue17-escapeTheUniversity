@@ -312,9 +312,8 @@ private:
 	layout (location = 0) in vec3 position;              // of the rendered vertex, correlates in location value with gbuffer.vert
 
 	layout (location = 0)  uniform mat4 model;	      // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
-	layout (location = 4)  uniform mat4 inverseModel; // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
-	layout (location = 8)  uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
-	layout (location = 12) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
+	layout (location = 4)  uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
+	layout (location = 8) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
 
 	void main()
 	{

@@ -48,11 +48,11 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 
 void GBuffer::startFrame()
 {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle); // Must be first
-	glDrawBuffer(GL_COLOR_ATTACHMENT2);
+	glBindFramebuffer(GL_FRAMEBUFFER, handle); // Must be first
+	//glDrawBuffer(GL_COLOR_ATTACHMENT2);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
 }
 
 void GBuffer::bindForGeometryPass()
@@ -60,12 +60,12 @@ void GBuffer::bindForGeometryPass()
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
 	const unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, attachments);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 /*Binds the textures for usage in the shader to render into the frame buffer.*/
 void GBuffer::bindTextures()
 {
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
 	glDrawBuffer(GL_COLOR_ATTACHMENT2);
 
 	for (int i = 0; i < deferredShadingColorTextureCount; i++)
@@ -91,9 +91,9 @@ void GBuffer::renderQuad()
 
 void GBuffer::finalPass(const unsigned int width, const unsigned int height)
 {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Sets the accumulating FBO to read and the standard FBO (screen) to draw and blits the first in the second FBO
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, handle);
 	glReadBuffer(GL_COLOR_ATTACHMENT2);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Sets the accumulating FBO to read and the standard FBO (screen) to draw and blits the first in the second FBO
 	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR); // Blit FBO to screen
 }
 
