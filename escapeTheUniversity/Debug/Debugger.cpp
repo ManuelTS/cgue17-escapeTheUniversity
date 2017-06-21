@@ -27,6 +27,8 @@ Debugger::~Debugger()
 
 void Debugger::renderShadowMap(float farPlane, unsigned int depthMapTextureHandle)
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	if (shadowDebug == nullptr)
 		shadowDebug = new Shader("shadowDebug");
 

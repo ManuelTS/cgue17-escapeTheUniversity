@@ -61,7 +61,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	}
 	else if (key == GLFW_KEY_F6 && action == GLFW_PRESS)
 		cout << "TODO: Visualizing the depth buffer." << endl; // TODO Visualizing the depth buffer http://learnopengl.com/#!Advanced-OpenGL/Depth-testing, swith shaders to depth ones
-	else if (key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE && action == GLFW_PRESS)
+	else if ((key == GLFW_KEY_F7 || key == GLFW_KEY_PAUSE) && action == GLFW_PRESS)
 		rl->render = !rl->render;
 	else if (key == GLFW_KEY_F8 && action == GLFW_PRESS)
 	{
@@ -351,7 +351,6 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 
 	for (unsigned int i = 0; i < ml->lights.size(); i++) // Look which lights intersect or are in the frustum
 	{
-		glEnable(GL_DEPTH_TEST);
 		LightNode* ln = ml->lights.at(i);
 		ln->lightSphereRadius = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
 		ln->light.position.w = frustum->sphereInFrustum(vec3(ln->light.position), ln->lightSphereRadius);// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
@@ -361,62 +360,66 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 
 		if (ln->light.position.w > -1) // Light intersects or is in the frustum, draw it
 		{
-			//realmOfShadows->renderInDepthMap(ml->root, ln, initVar->zoom, width, height); // far plane is the spheres radius
+			glEnable(GL_DEPTH_TEST);
+			glDepthMask(GL_TRUE);
+			realmOfShadows->renderInDepthMap(ml->root, ln, initVar->zoom, width, height); // far plane is the spheres radius
 
 			if(drawShadowMap)
 				Debugger::getInstance()->renderShadowMap(ln->lightSphereRadius, realmOfShadows->dephMapTextureHandle); // Draw light depth map on screen
+			else
+			{
+				gBuffer->bind4LightPass();
+				// Stencil
+				glDepthMask(GL_FALSE); // prevents depth reading in the stencil, needed for shadows before
+				//glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Bind for stencil pass, no color values but only depth and stencil are written or read
+				//gBuffer->stencilShader->useProgram();
+				//glClear(GL_STENCIL_BUFFER_BIT);
+				//glStencilFunc(GL_ALWAYS, 0, 0xFF);
+				//glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR, GL_KEEP);
+				//glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR, GL_KEEP);
+				//glStencilMask(0xFF);
+				//glDisable(GL_CULL_FACE);
 
-			//gBuffer->bindForGeometryPass();
-			// Stencil
-			//glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Bind for stencil pass, no color values but only depth and stencil are written or read
-			//glDepthMask(GL_FALSE); // prevents depth reading in the stencil, needed for shadows before
-			//gBuffer->stencilShader->useProgram();
-			//glClear(GL_STENCIL_BUFFER_BIT);
-			//glStencilFunc(GL_ALWAYS, 0, 0xFF);
-			//glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR, GL_KEEP);
-			//glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR, GL_KEEP);
-			//glStencilMask(0xFF);
-			//glDisable(GL_CULL_FACE);
+				//glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, viewMatrixP); // stencil.vert
+				//glUniformMatrix4fv(ModelNode::projectionMatrixStencilLocation, 1, GL_FALSE, projectionMatrixP); // stencil.vert
+				//vec3 distance = vec3(ln->light.position) - ml->sphere01->position;
+				//glm::mat4 sphereModelMatrix = glm::scale(glm::translate(glm::mat4(), distance), glm::vec3(ln->lightSphereRadius)); // Transalte then scale sphere model matrix
+				//glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, glm::value_ptr(ml->sphere01->hirachicalModelMatrix = sphereModelMatrix));
 
-			//glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, viewMatrixP); // stencil.vert
-			//glUniformMatrix4fv(ModelNode::projectionMatrixStencilLocation, 1, GL_FALSE, projectionMatrixP); // stencil.vert
-			//vec3 distance = vec3(ln->light.position) - ml->sphere01->position;
-			//glm::mat4 sphereModelMatrix = glm::scale(glm::translate(glm::mat4(), distance), glm::vec3(ln->lightSphereRadius)); // Transalte then scale sphere model matrix
-			//glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, glm::value_ptr(ml->sphere01->hirachicalModelMatrix = sphereModelMatrix));
+				//for (Mesh* m : ml->sphere01->meshes)
+				//	m->draw(GL_TRIANGLES, true);
 
-			//for (Mesh* m : ml->sphere01->meshes)
-			//	m->draw(GL_TRIANGLES, true);
+				//Light pass
+				deferredShader->useProgram();
+				gBuffer->bindTextures();
+				realmOfShadows->bindTexture(); 	//Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
 
-			//Light pass
-			deferredShader->useProgram();
-			gBuffer->bindTextures();
-			//realmOfShadows->bindTexture(); 	//Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
+				//glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+				glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+				glDisable(GL_DEPTH_TEST);
 
-			//glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-			glDisable(GL_DEPTH_TEST);
+				/*if (blending) {
+					glEnable(GL_BLEND);
+					glBlendEquation(GL_FUNC_ADD);
+					glBlendFunc(GL_ONE, GL_ONE);
+				}*/
+				//glEnable(GL_CULL_FACE);
+				//glCullFace(GL_FRONT);
 
-			/*if (blending) {
-				glEnable(GL_BLEND);
-				glBlendEquation(GL_FUNC_ADD);
-				glBlendFunc(GL_ONE, GL_ONE);
-			}*/
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_FRONT);
+				glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);// Write light data to deferred shader
+				glUniformMatrix4fv(realmOfShadows->SHADOW_LIGHT_SPACE_MATRIX_LOCATION, 1, GL_FALSE, glm::value_ptr(realmOfShadows->lightSpaceMatrix)); // Write the light space matrix to the deferred shader
+				glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
+				glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
+				glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ln->light), &ln->light);
+				glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-			glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);// Write light data to deferred shader
-			glUniformMatrix4fv(realmOfShadows->SHADOW_LIGHT_SPACE_MATRIX_LOCATION, 1, GL_FALSE, glm::value_ptr(realmOfShadows->lightSpaceMatrix)); // Write the light space matrix to the deferred shader
-			glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
-			glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
-			glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ln->light), &ln->light);
-			glBindBuffer(GL_UNIFORM_BUFFER, 0);
+				gBuffer->renderQuad(); // Render all vertices inside the stencil to the attachment2
+				realmOfShadows->unbindTexture();
 
-			gBuffer->renderQuad(); // Render all vertices inside the stencil to the attachment2
-			//realmOfShadows->unbindTexture();
-
-			glCullFace(GL_BACK);
-			//if (blending)
-				//glDisable(GL_BLEND);
+				//glCullFace(GL_BACK);
+				//if (blending)
+					//glDisable(GL_BLEND);
+			}
 			break;
 		}
 	}

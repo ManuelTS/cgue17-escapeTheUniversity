@@ -44,7 +44,6 @@ private:
 public:
 	const std::string ANGLE_SUFFIX = "_angle"; // Door parent on their pivot point
 	const std::string MODEL_DIR = ".\\Model\\";// Resource top folder directories
-	const unsigned int LIGHT_NUMBER = 10;// Max number of lights 
 
 	const std::string IMMOVABLE_SUFFIX = "_i"; // Suffix for immovable objects in bullet
 
@@ -66,7 +65,7 @@ public:
 	void setTextureState(Node* current, int paramMin, int paramMax); // Sets the texture sampling state of the current node
 
 	// Light
-	const unsigned int lightBinding = 2; // In the deferredShading.frag
+	const unsigned int lightBinding = 3; // In the deferredShading.frag
 	unsigned int lightUBO = 0; // Handle for the Light UBO in deferredShading.frag
 	std::vector<LightNode*>lights;
 };

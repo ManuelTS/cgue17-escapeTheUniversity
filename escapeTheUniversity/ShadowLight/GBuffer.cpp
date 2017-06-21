@@ -38,7 +38,6 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 
 	Debugger::getInstance()->checkWholeFramebufferCompleteness();
 
-	glDrawBuffers(deferredShadingColorTextureCount, attachments);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	glGenVertexArrays(1, &quadVAO);
@@ -52,7 +51,7 @@ void GBuffer::startFrame()
 	//glDrawBuffer(GL_COLOR_ATTACHMENT2);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
 }
 
 void GBuffer::bindForGeometryPass()
@@ -62,11 +61,14 @@ void GBuffer::bindForGeometryPass()
 	glDrawBuffers(2, attachments);
 }
 
+void GBuffer::bind4LightPass() {
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
+	glDrawBuffer(GL_COLOR_ATTACHMENT2);
+}
+
 /*Binds the textures for usage in the shader to render into the frame buffer.*/
 void GBuffer::bindTextures()
 {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
-	glDrawBuffer(GL_COLOR_ATTACHMENT2);
 
 	for (int i = 0; i < deferredShadingColorTextureCount; i++)
 	{

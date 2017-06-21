@@ -201,7 +201,7 @@ private:
 		vec4 shiConLinQua; // x = shininess, y = constant attentuation, z = linear attentuation, w = quadratic attentuation value
 	};
 
-	layout (std140, binding = 2, index = 0) uniform LightBlock 
+	layout (std140, binding = 3, index = 0) uniform LightBlock 
 	{
 		LightStruct light;
 	} l; // Workaround, direct struct blockbinding only in openGL 4.5
@@ -311,8 +311,8 @@ private:
 
 	layout (location = 0) in vec3 position;              // of the rendered vertex, correlates in location value with gbuffer.vert
 
-	layout (location = 0)  uniform mat4 model;	      // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
-	layout (location = 4)  uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
+	layout (location = 0) uniform mat4 model;	      // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
+	layout (location = 4) uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
 	layout (location = 8) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
 
 	void main()

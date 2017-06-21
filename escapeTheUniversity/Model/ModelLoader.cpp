@@ -50,7 +50,7 @@ void ModelLoader::linkLightUBO()
 {
 		glGenBuffers(1, &lightUBO);
 		glBindBuffer(GL_UNIFORM_BUFFER, lightUBO);
-		glBufferData(GL_UNIFORM_BUFFER, LIGHT_NUMBER * sizeof(LightNode::Light), NULL, GL_DYNAMIC_DRAW); // Play with last param 4 performance
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(LightNode::Light), NULL, GL_DYNAMIC_DRAW); // Play with last param 4 performance
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		//glUniformBlockBinding(shader->programHandle, xxx,xxx); // done by index attribute in shader
 }
@@ -164,9 +164,6 @@ LightNode* ModelLoader::processLightNode(string* name, Node* parent, aiNode* nod
 		Debugger::getInstance()->pauseExit("Malfunction: Light node " + *name + " not found.");
 
 	lights.push_back(ln);
-
-	if(lights.size() > LIGHT_NUMBER)
-		Debugger::getInstance()->pauseExit("Malfunction: Too much lights in .dae file, game has less lights defined.");
 
 	return ln;
 }
