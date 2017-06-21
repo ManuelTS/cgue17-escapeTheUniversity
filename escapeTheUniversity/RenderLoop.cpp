@@ -368,43 +368,43 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				Debugger::getInstance()->renderShadowMap(ln->lightSphereRadius, realmOfShadows->dephMapTextureHandle); // Draw light depth map on screen
 			else
 			{
-				gBuffer->bind4LightPass();
 				// Stencil
+				gBuffer->bind4LightPass(); // Return from shadow FBO to light FBO
 				glDepthMask(GL_FALSE); // prevents depth reading in the stencil, needed for shadows before
-				//glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Bind for stencil pass, no color values but only depth and stencil are written or read
-				//gBuffer->stencilShader->useProgram();
-				//glClear(GL_STENCIL_BUFFER_BIT);
-				//glStencilFunc(GL_ALWAYS, 0, 0xFF);
-				//glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR, GL_KEEP);
-				//glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR, GL_KEEP);
-				//glStencilMask(0xFF);
-				//glDisable(GL_CULL_FACE);
+				gBuffer->stencilShader->useProgram();
+				glClear(GL_STENCIL_BUFFER_BIT);
+				glStencilFunc(GL_ALWAYS, 0, 0xFF);
+				glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR, GL_KEEP);
+				glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR, GL_KEEP);
+				glStencilMask(0xFF);
+				glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // No color values but only depth and stencil are written or read
+				glDisable(GL_CULL_FACE);
 
-				//glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, viewMatrixP); // stencil.vert
-				//glUniformMatrix4fv(ModelNode::projectionMatrixStencilLocation, 1, GL_FALSE, projectionMatrixP); // stencil.vert
-				//vec3 distance = vec3(ln->light.position) - ml->sphere01->position;
-				//glm::mat4 sphereModelMatrix = glm::scale(glm::translate(glm::mat4(), distance), glm::vec3(ln->lightSphereRadius)); // Transalte then scale sphere model matrix
-				//glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, glm::value_ptr(ml->sphere01->hirachicalModelMatrix = sphereModelMatrix));
+				glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, viewMatrixP); // stencil.vert
+				glUniformMatrix4fv(ModelNode::projectionMatrixStencilLocation, 1, GL_FALSE, projectionMatrixP); // stencil.vert
+				vec3 distance = vec3(ln->light.position) - ml->sphere01->position;
+				glm::mat4 sphereModelMatrix = glm::scale(glm::translate(glm::mat4(), distance), glm::vec3(ln->lightSphereRadius)); // Transalte then scale sphere model matrix
+				glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, glm::value_ptr(ml->sphere01->hirachicalModelMatrix = sphereModelMatrix));
 
-				//for (Mesh* m : ml->sphere01->meshes)
-				//	m->draw(GL_TRIANGLES, true);
+				for (Mesh* m : ml->sphere01->meshes)
+					m->draw(GL_TRIANGLES, true);
 
 				//Light pass
-				deferredShader->useProgram();
-				gBuffer->bindTextures();
-				realmOfShadows->bindTexture(); 	//Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
-
-				//glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
-				glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 				glDisable(GL_DEPTH_TEST);
+				glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+				glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-				/*if (blending) {
+				if (blending) {
 					glEnable(GL_BLEND);
 					glBlendEquation(GL_FUNC_ADD);
 					glBlendFunc(GL_ONE, GL_ONE);
-				}*/
-				//glEnable(GL_CULL_FACE);
-				//glCullFace(GL_FRONT);
+				}
+				glEnable(GL_CULL_FACE);
+				glCullFace(GL_FRONT);
+
+				deferredShader->useProgram();
+				gBuffer->bindTextures();
+				realmOfShadows->bindTexture(); 	//Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
 
 				glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);// Write light data to deferred shader
 				glUniformMatrix4fv(realmOfShadows->SHADOW_LIGHT_SPACE_MATRIX_LOCATION, 1, GL_FALSE, glm::value_ptr(realmOfShadows->lightSpaceMatrix)); // Write the light space matrix to the deferred shader
@@ -416,9 +416,9 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				gBuffer->renderQuad(); // Render all vertices inside the stencil to the attachment2
 				realmOfShadows->unbindTexture();
 
-				//glCullFace(GL_BACK);
-				//if (blending)
-					//glDisable(GL_BLEND);
+				glCullFace(GL_BACK);
+				if (blending)
+					glDisable(GL_BLEND);
 			}
 			break;
 		}
