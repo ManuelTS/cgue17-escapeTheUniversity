@@ -171,7 +171,7 @@ void Bullet::createCamera(Camera* c)
 {
 	btCylinderShape* shape= new btCylinderShape(btVector3(0.7f, 1.4f, 0.2f));
 	shape->setMargin(DEFAULT_COLLISION_MARGIN);
-	const float mass = 10.0;
+	const float mass = 80.0;
 	btVector3 localInertia = btVector3(0, 0, 0);
 	shape->calculateLocalInertia(mass, localInertia);
 
@@ -185,11 +185,27 @@ void Bullet::createCamera(Camera* c)
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
 	c->rigitBody = new btRigidBody(groundRigidBodyCI);
-	c->rigitBody->setAngularFactor(btVector3(1, 1, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
-	c->rigitBody->setLinearFactor(btVector3(1, 1, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
-	c->rigitBody->setAngularVelocity(btVector3(0.1f, 0.1f, 0.1f)); // https://en.wikipedia.org/wiki/Angular_velocity
+	// we want a turn only on y-Axis
+	c->rigitBody->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+	// and movement only x-z (but basically 
+	c->rigitBody->setLinearFactor(btVector3(1, 0, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+	//angular velocity should be 
+	c->rigitBody->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); // https://en.wikipedia.org/wiki/Angular_velocity
 	//c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
 	//c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
+	c->rigitBody->setFriction(0.0f);
+	//btVector3 inertia;
+	//c->rigitBody->getCollisionShape()->calculateLocalInertia(mass, inertia);
+	c->rigitBody->setMassProps(mass, localInertia);
+	//c->rigitBody->setAngularFactor(btVector3(0, 0, 0));
+	/*
+	You just need to call btRigidBody::setAngularFactor(btVector3(Yaw, Pitch, Roll)); Calling it with all 0s will prevent your object from rotating on any angle.
+	*c->rigitBody->setAngularDamping = 0.5f;
+	c->rigitBody->setLinearDamping = 0.5f;
+	c->rigitBody.m_linearSleepingThreshold = 0.2f;
+	c->rigitBody.m_angularSleepingThreshold = 0.2f;
+	c->rigitBody.m_restitution = 0.5f;
+	*/
 	shapes.push_back(shape);
 	dynamicsWorld->addRigidBody(c->rigitBody);
 }

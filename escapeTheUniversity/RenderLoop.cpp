@@ -125,7 +125,7 @@ void RenderLoop::doMovement(double timeDelta)
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) 
 	{
 		camera->processKeyboard(camera->FORWARD, timeDelta);
-		camera->rigitBody->setActivationState(true);
+		camera->rigitBody->setActivationState(true);	
 		vec3 movement = camera->front*movementVectorXYAxis;
 		camera->rigitBody->setLinearVelocity(btVector3(movement.x, movement.y, movement.z));
 	}
