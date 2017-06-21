@@ -61,6 +61,13 @@ class RenderLoop
 		bool drawBulletDebug = false; // Toggle the drawing of the bullet world debug, default false
 		bool drawShadowMap = false; // Toogle the drawing of a shadow map on screen, default false
 		bool freeCamera = false; // Toogles the camera to its bullet collision shape, default false
+		bool disableKeyRendering = false; //indicates the pickup of the key
+
+
+		bool gamePhaseKey = false; //indicates the pickup of the key
+		bool gamePhasePaper = false; //indicates the pickup of the exam
+		bool gamePhaseEnd = false; // reached the safe zone
+
 		// Sampling states
 		int textureSampling = 1; // Texture Sampling Quality: 0 = Nearest Neighbor, 1 = Bilinear, default: 1 see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping
 		int mipMapping = 2; // Maping-Quality: 0 = Off, 1 = Nearest Neigbor, 2 = Bilinear, default: 2

@@ -97,6 +97,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		Text::getInstance()->addText2Display(Text::GAME_OVER);
 		SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
 	}
+	else if (key == GLFW_KEY_I && action == GLFW_PRESS)
+	{
+		rl->disableKeyRendering = !rl->disableKeyRendering;
+	}
 	else if (key == GLFW_KEY_B && action == GLFW_PRESS)
 		SoundManager::getInstance()->playSound("Dialog\\burp.mp3");
 	else if (key == GLFW_KEY_PRINT_SCREEN && action == GLFW_PRESS)
@@ -476,7 +480,25 @@ void RenderLoop::draw(Node* current)
 	if (current && !dynamic_cast<LightNode*>(current)) // Don't draw light nodes
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
+/*
+		GAME LOGIC WINNING CONDITION		
+*/
+		if (disableKeyRendering && string::npos != mn->name.find("Key"))
+		{
+			if(gamePhaseKey == false)
+			{
+				gamePhaseKey == true;
+				Text::getInstance()->addText2Display(Text::KEY_FOUND);
+			}
+			mn->render = false;
+		}
+		else
+		{
+			mn->render = true;
+		}
 
+// continue normal renderloop
+		
 		if (mn) // Leave if structure this way!
 		{
 			// If model node and (no frustum or transformationNode or modelNode bounding frustum sphere (modelNode center, radius) inside frustum):

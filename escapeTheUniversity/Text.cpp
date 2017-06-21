@@ -205,6 +205,15 @@ void Text::removeTime(const double deltaTime)
 				gameOver();
 				hasTimeLeft(i, deltaTime);
 				break;
+			case YOU_WON:
+				winGame();
+				hasTimeLeft(i, deltaTime);
+				break;
+			case KEY_FOUND:
+				winGame();
+				hasTimeLeft(i, deltaTime);
+				break;
+
 			case TEXTURE_SAMPLING_NEAREST_NEIGHBOR:
 				quality("Texture Sampling Nearest Neighbor", true);
 				hasTimeLeft(i, deltaTime);
@@ -242,6 +251,18 @@ void Text::gameOver()
 	color = glm::vec3(1.0f, 0.0f, 0.0f);
 	write("Exmatriculated", -1.05f, -0.1f, 1.0f, -45.0f);
 	color = DEFAULT_COLOR; // Restet original color for other possible text draws
+}
+
+void Text::winGame() 
+{
+	color = glm::vec3(0.0f, 1.0f, 0.0f);
+	write("You escaped!", -1.05f, -0.1f, 1.0f, -45.0f);
+	color = DEFAULT_COLOR; // Restet original color for other possible text draws
+}
+
+void Text::simpleText(std::string text)
+{
+	write(text.c_str(), -0.9f, 0.0f, 0.5f, 0.0f);
 }
 
 void Text::quality(std::string text, bool texture)
