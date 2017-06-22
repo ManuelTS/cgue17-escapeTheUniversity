@@ -69,7 +69,6 @@ void GBuffer::bind4LightPass() {
 /*Binds the textures for usage in the shader to render into the frame buffer.*/
 void GBuffer::bindTextures()
 {
-
 	for (int i = 0; i < deferredShadingColorTextureCount; i++)
 	{
 		glActiveTexture(GL_TEXTURE0+i);
