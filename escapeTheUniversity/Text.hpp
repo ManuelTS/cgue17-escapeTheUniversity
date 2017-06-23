@@ -14,12 +14,14 @@ public:
 
 	const unsigned char FIRST_CHARACTER = ' '; //First supported extended ASCII character
 	const unsigned char LAST_CHARACTER = 'ÿ'; //Last supported extended ASCII character
-	static const int GAME_OVER = 4000; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
-	static const int SCREENY = 4001; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
-	static const int BULLET_DEBUG_MESSAGE = 4002; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
-	static const int YOU_WON = 4003;// Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
-	static const int KEY_FOUND = 4004; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
-	static const int PAPER_FOUND = 4005; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int GAME_OVER = 2000; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int SCREENY = 2001; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int BULLET_DEBUG_MESSAGE = 2002; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int YOU_WON = 2003;// Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int KEY_FOUND = 2004; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int KEY_NOTFOUND = 2005;  // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int PAPER_FOUND = 2018; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int PAPER_NOTFOUND = 2007;  // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
 	static const int TEXTURE_SAMPLING_NEAREST_NEIGHBOR = 3000; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
 	static const int TEXTURE_SAMPLING_BILINEAR = 3001; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
 	static const int MIP_MAPPING_OFF = 3002; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used

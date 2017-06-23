@@ -67,11 +67,11 @@ class RenderLoop
 
 		bool gameEventCheckIsOn = false; //for going only through the check 1 frame. is reset every loop
 		bool gamePhaseKey = false; //indicates the pickup of the key
-		void checkGamePhaseKey();  //indicates the game-section of the key
+		void checkGamePhaseKey(ModelNode* key);  //indicates the game-section of the key
 		bool gamePhasePaper = false; //indicates the pickup of the exam
-		void checkGamePhasePaper();  //indicates the game-section of the paper
+		void checkGamePhasePaper(ModelNode* paper);  //indicates the game-section of the paper
 		bool gamePhaseEnd = false; // reached the safe zone
-		void checkGamePhaseEnd();  //indicates the game-section of the end
+		void checkGamePhaseEnd(ModelNode* paper);  //indicates the game-section of the end
 
 		// Sampling states
 		int textureSampling = 1; // Texture Sampling Quality: 0 = Nearest Neighbor, 1 = Bilinear, default: 1 see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping

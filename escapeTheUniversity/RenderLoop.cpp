@@ -93,21 +93,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 	else if (key == GLFW_KEY_Q && action == GLFW_PRESS)
 		{
-			if(!rl->gamePhaseKey && !rl->gamePhasePaper && !rl->gamePhaseEnd) //if game has just begun
-			{
-			//	rl->checkGamePhaseKey();
-				int i = 0;
-			}
-			else if (rl->gamePhaseKey && rl->gamePhasePaper && !rl->gamePhaseEnd) //if key has been found, but the others not
-			{
-			//	rl->checkGamePhasePaper();
-				int i = 0;
-			}
-			else if (rl->gamePhaseKey && rl->gamePhasePaper && !rl->gamePhaseEnd) //if all has been 
-			{
-			//	rl->checkGamePhaseEnd();
-				int i = 0;
-			}
+			rl->gameEventCheckIsOn = true; //we want to check only a single time for 1 frame, gets reseted afterwards	
 		}
 	else if (key == GLFW_KEY_LEFT_BRACKET && action == GLFW_PRESS) // ü on german keyboard, ü is for überflieger
 		rl->freeCamera = !rl->freeCamera;
@@ -497,25 +483,27 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 
 void RenderLoop::draw(Node* current)
 {
+	
 	if (current && !dynamic_cast<LightNode*>(current)) // Don't draw light nodes
 	{
 		ModelNode* mn = dynamic_cast<ModelNode*>(current);
 /*
 		GAME LOGIC WINNING CONDITION		
 */
-		if (disableKeyRendering && string::npos != mn->name.find("Key"))
+		//doing the checks the other way around, so messages dont overlap
+		if (gameEventCheckIsOn && gamePhasePaper && gamePhaseKey &&  string::npos != mn->name.find("WinningZone"))
 		{
-			if(gamePhaseKey == false)
-			{
-				gamePhaseKey == true;
-				Text::getInstance()->addText2Display(Text::KEY_FOUND);
-			}
-			mn->render = false;
+			checkGamePhaseEnd(mn);
 		}
-		else
+		else if (gamePhaseKey && gameEventCheckIsOn  && string::npos != mn->name.find("Paperstack"))
 		{
-			mn->render = true;
+			checkGamePhasePaper(mn);
 		}
+		else if (gameEventCheckIsOn && string::npos != mn->name.find("Key"))
+		{	
+			checkGamePhaseKey(mn);			
+		}
+
 
 // continue normal renderloop
 		
@@ -547,10 +535,65 @@ void RenderLoop::pureDraw(Node* current)
 		draw(child);
 }
 
+void RenderLoop::checkGamePhaseKey(ModelNode* key)
+{
+		if (gamePhaseKey == false)
+		{
+			if (Frustum::getInstance()->inActionRadius(vec3(key->hirachicalModelMatrix[3])) == 1) 
+			{			
+				gamePhaseKey = true;
+				Text::getInstance()->addText2Display(Text::KEY_FOUND);
+				key->render = false;
+				gameEventCheckIsOn = false;
+			}
+			else
+			{
+				Text::getInstance()->addText2Display(Text::KEY_NOTFOUND);
+			}
+		}
+}
+
+void RenderLoop::checkGamePhasePaper(ModelNode* paper)
+{
+	if (gamePhaseKey && gamePhasePaper == false)
+	{
+		if (Frustum::getInstance()->inActionRadius(vec3(paper->hirachicalModelMatrix[3])) == 1)
+		{
+			gamePhasePaper = true;
+			gameEventCheckIsOn = false;
+			//Text::getInstance()->addText2Display(Text::PAPER_FOUND);
+			//paper->render = false; //we dont want to let all papers disappear
+		}
+		else 
+		{
+			Text::getInstance()->addText2Display(Text::PAPER_NOTFOUND);
+		}
+	}
+}
+
+void RenderLoop::checkGamePhaseEnd(ModelNode* zone)
+{
+	if (gamePhaseKey && gamePhasePaper && gamePhaseEnd == false)
+	{
+		if (Frustum::getInstance()->inActionRadius(vec3(zone->hirachicalModelMatrix[3])) == 1)
+		{
+			gamePhaseEnd = true;
+			gameEventCheckIsOn = false;
+			Text::getInstance()->addText2Display(Text::YOU_WON);
+			//paper->render = false; //we dont want to let all papers disappear
+		}
+		else
+		{
+			Text::getInstance()->addText2Display(Text::PAPER_FOUND);
+		}
+	}
+}
+
+
 void RenderLoop::renderText()
 { // It is important to leave the if else structure here as it is
 	if (fps)
-		Text::getInstance()->fps(time.now, time.delta, drawnTriangles);
+		Text::getInstance()->fps(time.now, time.differentialDelta, drawnTriangles);
 
 	if (wireFrameMode)
 		Text::getInstance()->wireframe();
@@ -566,7 +609,7 @@ void RenderLoop::renderText()
 	else if (!render)
 		Text::getInstance()->pause();
 	else if (Text::getInstance()->hasTimeLeft())
-		Text::getInstance()->removeTime(time.delta);
+		Text::getInstance()->removeTime(time.differentialDelta);
 
 }
 

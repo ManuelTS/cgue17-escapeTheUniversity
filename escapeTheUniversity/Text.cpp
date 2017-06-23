@@ -209,15 +209,22 @@ void Text::removeTime(const double deltaTime)
 				winGame();
 				hasTimeLeft(i, deltaTime);
 				break;
+			case KEY_NOTFOUND:
+				simpleText("Search more closely for the key!");
+				hasTimeLeft(i, deltaTime);
+				break;
 			case KEY_FOUND:
 				simpleText("You found the key. Now find and open the locked door with your exam!");
+				hasTimeLeft(i, deltaTime);
+				break;
+			case PAPER_NOTFOUND:
+				simpleText("Search more closely for your messed up exam!");
 				hasTimeLeft(i, deltaTime);
 				break;
 			case PAPER_FOUND:
 				simpleText("You found your exam! Now get out of the building!");
 				hasTimeLeft(i, deltaTime);
 				break;
-
 			case TEXTURE_SAMPLING_NEAREST_NEIGHBOR:
 				quality("Texture Sampling Nearest Neighbor", true);
 				hasTimeLeft(i, deltaTime);
@@ -387,7 +394,8 @@ void Text::help()
 	i = copyInBuffer(help, i, (const unsigned char*) "D/Right arrow = Move right", true); 
 	i = copyInBuffer(help, i, (const unsigned char*) "Space = Ascend", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Left Shift = Descend", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "Left click = interaction", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Q = interaction/status information", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Left click = ?", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Right click = ?", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Print = Screenshot", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Escape/End = Close game", true);
