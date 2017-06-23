@@ -330,13 +330,15 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	Frustum* frustum = Frustum::getInstance();
 	Shader* gBufferShader = gBuffer->gBufferShader;
 
+	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
+	glViewport(0, 0, width, height);
+	gBuffer->bindForGeometryPass(); // Previously the FBO in the G Buffer was static (in terms of its configuration) and was set up in advance so we just had to bind it for writing when the geometry pass started. Now we keep changing the FBO to we need to config the draw buffers for the attributes each time.
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE); // Must be before glClearColor and ShadowMapping, otherwise it remains untouched
 	glDepthFunc(GL_LEQUAL);
 	glDepthRange(0, 1);
-	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
-	glViewport(0, 0, width, height);
-	gBuffer->bindForGeometryPass(); // Previously the FBO in the G Buffer was static (in terms of its configuration) and was set up in advance so we just had to bind it for writing when the geometry pass started. Now we keep changing the FBO to we need to config the draw buffers for the attributes each time.
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
 	gBufferShader->useProgram();
 	const float* projectionMatrixP = glm::value_ptr(glm::perspective(frustum->degreesToRadians(camera->zoom), (float)width / (float)height, frustum->nearD, frustum->farD));
 	const float* viewMatrixP = glm::value_ptr(camera->getViewMatrix());
@@ -395,9 +397,11 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 			//Light pass
 			deferredShader->useProgram();
 			gBuffer->bindTextures();
+			glClearColor(0, 0, 0, 1); // set fallback color for non touched fragments
+			glClear(GL_COLOR_BUFFER_BIT); // set buffer color
 			realmOfShadows->bindTexture(); 	//Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
 			glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
-			//glStencilMask(0x00);
+			glStencilMask(0x00);
 
 			if (blending)
 			{
