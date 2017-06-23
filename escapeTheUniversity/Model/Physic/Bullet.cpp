@@ -98,7 +98,11 @@ btConvexHullShape* Bullet::pureBulletConvexHullGeneration(ModelNode* mn)
 
 bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 {
-	if (mn->name.find(ModelLoader::getInstance()->IMMOVABLE_SUFFIX) != string::npos)
+	if(mn->name.find("_hinge") != string::npos)
+	{
+		createDoorHinge(mn);
+	}
+	else if (mn->name.find(ModelLoader::getInstance()->IMMOVABLE_SUFFIX) != string::npos)
 		createBuilding(mn);
 	else
 	{
@@ -129,6 +133,7 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 
 void Bullet::createBuilding(ModelNode* mn)
 {
+
 	btTriangleIndexVertexArray* meshArray = new btTriangleIndexVertexArray();
 	//BVG* bvg = new BVG(); // VHACD calculation causes a bullet exception which should net happen according to their own comments
 
@@ -167,6 +172,111 @@ void Bullet::createBuilding(ModelNode* mn)
 	dynamicsWorld->addCollisionObject(mn->collisionObject);
 }
 
+void Bullet::createDoorHinge(ModelNode* mn) 
+{
+
+	ModelNode* parentAngle = dynamic_cast<ModelNode*>(mn->parent);
+	/* create door */
+	btCylinderShape* shape = new btCylinderShape(btVector3(0.5f, 2.2f, 0.2f));
+		//new btCylinderShape(btVector3(0.3,2.2,0.9));
+	shape->setMargin(DEFAULT_COLLISION_MARGIN);
+	const float mass = 20.0;
+	btVector3 localInertia = btVector3(0, 0, 0);
+	shape->calculateLocalInertia(mass, localInertia);
+
+	mat4 matrix = mat4();
+	vec3 temp = vec3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y, mn->hirachicalModelMatrix[3].z);
+	matrix[3] = vec4(temp, 1.0f);
+
+	btTransform trans;
+	trans.setIdentity();
+	removeScaleMatrix(matrix, shape, &trans);
+
+	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
+	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
+	btRigidBody *mydoor = new btRigidBody(groundRigidBodyCI);
+
+	mydoor->setAngularFactor(btVector3(0, 0, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+														// and movement only x-z (but basically 
+	mydoor->setLinearFactor(btVector3(1, 0, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+													   //angular velocity should be 
+	mydoor->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); // https://en.wikipedia.org/wiki/Angular_velocity
+																   //c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
+																   //c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
+	mydoor->setFriction(0.0f);
+	mydoor->setDamping(0.1f, 0.1f); //sets linear damping + angular damping
+										  //btVector3 inertia;
+										  //c->rigitBody->getCollisionShape()->calculateLocalInertia(mass, inertia);
+	mydoor->setMassProps(mass, localInertia);
+
+	mydoor->setRestitution(0); //switch off bouncing 
+
+	shapes.push_back(shape);
+	dynamicsWorld->addRigidBody(mydoor);
+
+	/* door ended */
+
+	/*create angle rigitbody*/
+	btCylinderShape* shape2 = new btCylinderShape(btVector3(0.1f, 2.6f, 0.1f));
+	//new btCylinderShape(btVector3(0.3,2.2,0.9));
+	shape2->setMargin(DEFAULT_COLLISION_MARGIN);
+	const float mass2 = 20.0;
+	btVector3 localInertia2 = btVector3(0, 0, 0);
+	shape2->calculateLocalInertia(mass2, localInertia2);
+
+	mat4 matrix2 = mat4();
+	vec3 temp2 = vec3(parentAngle->hirachicalModelMatrix[3].x, parentAngle->hirachicalModelMatrix[3].y, parentAngle->hirachicalModelMatrix[3].z);
+	matrix2[3] = vec4(temp2, 1.0f);
+
+	btTransform trans2;
+	trans2.setIdentity();
+	removeScaleMatrix(matrix2, shape2, &trans2);
+
+	btDefaultMotionState* groundMotionState2 = new btDefaultMotionState(trans2);
+	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI2(mass2, groundMotionState2, shape2, localInertia2); // To construct multiple rigit bodies with same construction info
+	btRigidBody *myAngle = new btRigidBody(groundRigidBodyCI2);
+
+	myAngle->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+												  // and movement only x-z (but basically 
+	myAngle->setLinearFactor(btVector3(0, 0, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+												 //angular velocity should be 
+	myAngle->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); // https://en.wikipedia.org/wiki/Angular_velocity
+															 //c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
+															 //c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
+	myAngle->setFriction(0.0f);
+	myAngle->setDamping(1.0f, 1.0f); //sets linear damping + angular damping
+									//btVector3 inertia;
+									//c->rigitBody->getCollisionShape()->calculateLocalInertia(mass, inertia);
+	myAngle->setMassProps(mass2, localInertia2);
+
+	myAngle->setRestitution(0); //switch off bouncing 
+
+	shapes.push_back(shape2);
+	dynamicsWorld->addRigidBody(myAngle);
+	/*angle rigitbody end*/
+
+	btVector3 mnposition = btVector3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y, mn->hirachicalModelMatrix[3].z);
+	btVector3 parentPosition = btVector3(parentAngle->hirachicalModelMatrix[3].x, parentAngle->hirachicalModelMatrix[3].y, parentAngle->hirachicalModelMatrix[3].z);
+	// btHingeConstraint(btRigidBody& rbA,btRigidBody& rbB, const btVector3& pivotInA,const btVector3& pivotInB, const btVector3& axisInA,const btVector3& axisInB, bool useReferenceFrameA = false);
+	btHingeConstraint* hingeDoorConstraint;
+	hingeDoorConstraint = new btHingeConstraint(*mydoor, *myAngle, mnposition, parentPosition, btVector3(0, 0, 0), btVector3(0, 1, 0), true);
+	hingeDoorConstraint->setLimit((0.0f * (3.141592f / 180.0f)), (140.0f * (3.141592f / 180.0f)), 0.5f, 0.3f, 1.0f);
+	dynamicsWorld->addConstraint(hingeDoorConstraint,true);
+	/*create contraint to world/
+	btHingeConstraint* hingeDoorConstraint;
+	//	btHingeConstraint(btRigidBody& rbA, const btVector3& pivotInA, const btVector3& axisInA, bool useReferenceFrameA = false);
+	//                    the body          the point of the body//parent?               axis in body          iDont know
+	ModelNode* parentAngle = dynamic_cast<ModelNode*>(mn->parent);
+	btVector3 parentPosition = btVector3(parentAngle->hirachicalModelMatrix[3].x, parentAngle->hirachicalModelMatrix[3].y, parentAngle->hirachicalModelMatrix[3].z);
+	//hingeDoorConstraint = new btHingeConstraint(*mydoor, parentPosition, btVector3(0, 1, 0), false);
+	hingeDoorConstraint = new btHingeConstraint(*mydoor, parentPosition, btVector3(0,1,0), true);
+	hingeDoorConstraint->setLimit((0.0f * (3.141592f / 180.0f)), (140.0f * (3.141592f / 180.0f)), 0.5f, 0.3f, 1.0f);
+	//hingeDoorConstraint->setLimit(0.0f, 140.0f, 0.5f, 0.3f, 1.0f);
+	dynamicsWorld->addConstraint(hingeDoorConstraint);
+	/*create contraint to world ended (not functionable)*/
+
+}
+
 void Bullet::createCamera(Camera* c) 
 {
 	btCylinderShape* shape= new btCylinderShape(btVector3(0.7f, 1.4f, 0.2f));
@@ -194,6 +304,7 @@ void Bullet::createCamera(Camera* c)
 	//c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
 	//c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
 	c->rigitBody->setFriction(0.0f);
+	c->rigitBody->setDamping(0.1f,0.1f); //sets linear damping + angular damping
 	//btVector3 inertia;
 	//c->rigitBody->getCollisionShape()->calculateLocalInertia(mass, inertia);
 	c->rigitBody->setMassProps(mass, localInertia);
@@ -235,7 +346,13 @@ Bullet::~Bullet()
 		shapes[j] = 0;
 		delete shape;
 	}
-	
+
+/*	TODO: clean up proberly	
+int numConstraints = dynamicsWorld->getNumConstraints;
+	for (int i = 0; i < numConstraints; i++) {
+		dynamicsWorld->removeConstraint[i];
+	}
+*/
 	delete dynamicsWorld;//delete dynamics world
 	delete solver;//delete solver
 	delete overlappingPairCache;//delete broadphase

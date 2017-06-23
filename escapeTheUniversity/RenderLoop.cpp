@@ -127,12 +127,15 @@ void RenderLoop::doMovement(double timeDelta)
 	vec3 movementVectorXYAxis = vec3(5.0f, 0.0f, 5.0f); //direction of possible axis + factor 2 (otherwise slow)	
 	//Camera controls
     //jitter cannot be solved through applying the force just on key-tap 
+	//jitter cannot be solved through applyCentralForce on body (though, keep in mind, force needs to be adjusted to the mass)
+	// setInterpolationLinearVelocity could maybe work, needs investigation
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) 
 	{
 		//camera->processKeyboard(camera->FORWARD, timeDelta); no need anymore
 		camera->rigitBody->setActivationState(true);	
 		vec3 movement = camera->front*movementVectorXYAxis;
 		camera->rigitBody->setLinearVelocity(btVector3(movement.x, movement.y, movement.z));
+		//camera->rigitBody->applyCentralForce(btVector3(movement.x, movement.y, movement.z));
 	}
 	
 	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -428,11 +431,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		glViewport(0, 0, width, height);
 		glDepthFunc(GL_LEQUAL);
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		/**DEBUGGING */
-		if (this->drawBulletDebug)
-			glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to white
-		else
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
+		//insert here white for green background
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		const float* projectionMatrixP = glm::value_ptr(glm::perspective(frustum->degreesToRadians(camera->zoom), (float)width / (float)height, frustum->nearD, frustum->farD));
 		const float* viewMatrixP = glm::value_ptr(camera->getViewMatrix());
@@ -555,10 +555,28 @@ void RenderLoop::calculateDeltaTime()
 {
 	time.now = glfwGetTime();
 	time.delta = time.now - time.past;
+
+	if (time.delta > 0.25)
+		time.delta = 0.25;
+
 	time.past = time.now;
 
+	time.accumulator += time.delta;
+
+	Animator* a = ModelLoader::getInstance()->animator;
+	Bullet* b = Bullet::getInstance();
+
+	while (time.accumulator >= time.differentialDelta)
+	{
+		b->getDynamicsWorld()->stepSimulation(time.differentialDelta);
+		//a->UpdateAnimation(time.differentialDelta, a->ANIMATION_TICKS_PER_SECOND);
+		time.accumulator -= time.differentialDelta;
+	}
+
+	const double alpha = time.accumulator / time.differentialDelta;
+	time.delta = time.now * alpha + time.past * (1 - alpha);
 	// Sets the timing syncronization of bullet physics, deltaTime is around 0.18
-	Bullet::getInstance()->getDynamicsWorld()->stepSimulation(time.delta, 2, 0.16f); // Params: deltaTime, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
+	//Bullet::getInstance()->getDynamicsWorld()->stepSimulation(time.delta, 2, 0.16f); // Params: deltaTime, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
 	//Bullet::getInstance()->getDynamicsWorld()->stepSimulation(time.delta, 2, 0.01f); // much much smoother
 }
 
