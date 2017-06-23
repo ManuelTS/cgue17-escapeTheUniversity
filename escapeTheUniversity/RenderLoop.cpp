@@ -255,8 +255,10 @@ void RenderLoop::start()
 	time.past = glfwGetTime();
 	ModelLoader* ml = ModelLoader::getInstance();
 	SoundManager* sm = SoundManager::getInstance();
-	sm->initFileName("Music\\Jahzzar_-_01_-_The_last_ones.mp3"); // Init SM with music file to play while loading
-	sm->playSound();
+	#if !_DEBUG
+		sm->initFileName("Music\\Jahzzar_-_01_-_The_last_ones.mp3"); // Init SM with music file to play while loading
+		sm->playSound();
+	#endif
 
 	initVar = new Initialization();
 
@@ -305,9 +307,10 @@ void RenderLoop::start()
 		glfwSwapBuffers(window);
 	}
 
-	sm->playSound("Dialog\\Bye.mp3"); // Exit sound
-	Sleep(1600);
-
+	#if !_DEBUG
+		sm->playSound("Dialog\\Bye.mp3"); // Exit sound
+		Sleep(1600);
+	#endif
 	// TODO: Write with initVar game statistics, play time etc...
 	delete realmOfShadows;
 	delete gBuffer;
