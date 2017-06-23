@@ -54,15 +54,14 @@ void GBuffer::bindForGeometryPass()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
 }
 
-void GBuffer::bind4LightPass() {
+void GBuffer::bind4LightPass()
+{
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
-	glDrawBuffer(GL_COLOR_ATTACHMENT2);
 }
 
 /*Binds the textures for usage in the shader to render into the frame buffer.*/
 void GBuffer::bindTextures()
 {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
 	glDrawBuffer(GL_COLOR_ATTACHMENT2); // attach auxiliary color buffer
 	glClearColor(0, 0, 0, 1); // set fallback color for non touched fragments
 	glClear(GL_COLOR_BUFFER_BIT); // set buffer color

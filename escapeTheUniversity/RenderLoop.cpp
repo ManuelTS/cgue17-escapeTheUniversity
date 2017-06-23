@@ -370,6 +370,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		{
 			// Stencil
 			gBuffer->bind4LightPass(); // Return from shadow FBO to light FBO
+			glDrawBuffer(GL_NONE); // detach MRTs from FBO, no color drawing
 			gBuffer->stencilShader->useProgram();
 			glEnable(GL_STENCIL_TEST);
 			glStencilMask(0xFF);
@@ -378,7 +379,6 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 			glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 			glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 			glDepthMask(GL_FALSE); // prevents depth reading in the stencil, needed for shadows before
-			glDrawBuffer(GL_NONE); // detach MRTs from FBO, no color drawing
 			glDisable(GL_CULL_FACE);
 
 			glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, viewMatrixP); // stencil.vert
@@ -397,7 +397,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 			gBuffer->bindTextures();
 			realmOfShadows->bindTexture(); 	//Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
 			glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
-			glStencilMask(0x00);
+			//glStencilMask(0x00);
 
 			if (blending)
 			{
