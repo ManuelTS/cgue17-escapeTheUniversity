@@ -561,11 +561,12 @@ void RenderLoop::checkGamePhasePaper(ModelNode* paper)
 		{
 			gamePhasePaper = true;
 			gameEventCheckIsOn = false;
-			//Text::getInstance()->addText2Display(Text::PAPER_FOUND);
+			Text::getInstance()->addText2Display(Text::PAPER_FOUND);
 			//paper->render = false; //we dont want to let all papers disappear
 		}
 		else 
 		{
+			gameEventCheckIsOn = false; 
 			Text::getInstance()->addText2Display(Text::PAPER_NOTFOUND);
 		}
 	}
@@ -573,7 +574,7 @@ void RenderLoop::checkGamePhasePaper(ModelNode* paper)
 
 void RenderLoop::checkGamePhaseEnd(ModelNode* zone)
 {
-	if (gamePhaseKey && gamePhasePaper && gamePhaseEnd == false)
+	if (gamePhaseKey && gamePhasePaper && gameEventCheckIsOn && gamePhaseEnd == false)
 	{
 		if (Frustum::getInstance()->inActionRadius(vec3(zone->hirachicalModelMatrix[3])) == 1)
 		{
@@ -584,6 +585,7 @@ void RenderLoop::checkGamePhaseEnd(ModelNode* zone)
 		}
 		else
 		{
+			gameEventCheckIsOn = false; //just do this once!
 			Text::getInstance()->addText2Display(Text::PAPER_FOUND);
 		}
 	}
@@ -593,7 +595,7 @@ void RenderLoop::checkGamePhaseEnd(ModelNode* zone)
 void RenderLoop::renderText()
 { // It is important to leave the if else structure here as it is
 	if (fps)
-		Text::getInstance()->fps(time.now, time.differentialDelta, drawnTriangles);
+		Text::getInstance()->fps(time.now, time.delta, drawnTriangles);
 
 	if (wireFrameMode)
 		Text::getInstance()->wireframe();
