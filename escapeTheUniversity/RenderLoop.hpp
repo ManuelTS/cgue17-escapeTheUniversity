@@ -65,10 +65,13 @@ class RenderLoop
 		bool freeCamera = false; // Toogles the camera to its bullet collision shape, default false
 		bool disableKeyRendering = false; //indicates the pickup of the key
 
-
+		bool gameEventCheckIsOn = false; //for going only through the check 1 frame. is reset every loop
 		bool gamePhaseKey = false; //indicates the pickup of the key
+		void checkGamePhaseKey();  //indicates the game-section of the key
 		bool gamePhasePaper = false; //indicates the pickup of the exam
+		void checkGamePhasePaper();  //indicates the game-section of the paper
 		bool gamePhaseEnd = false; // reached the safe zone
+		void checkGamePhaseEnd();  //indicates the game-section of the end
 
 		// Sampling states
 		int textureSampling = 1; // Texture Sampling Quality: 0 = Nearest Neighbor, 1 = Bilinear, default: 1 see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping

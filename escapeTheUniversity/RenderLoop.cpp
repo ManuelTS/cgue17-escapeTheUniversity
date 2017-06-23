@@ -90,6 +90,25 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	}
 	else if (key == GLFW_KEY_E && action == GLFW_PRESS)
 		rl->move(ModelLoader::getInstance()->root);
+
+	else if (key == GLFW_KEY_Q && action == GLFW_PRESS)
+		{
+			if(!rl->gamePhaseKey && !rl->gamePhasePaper && !rl->gamePhaseEnd) //if game has just begun
+			{
+			//	rl->checkGamePhaseKey();
+				int i = 0;
+			}
+			else if (rl->gamePhaseKey && rl->gamePhasePaper && !rl->gamePhaseEnd) //if key has been found, but the others not
+			{
+			//	rl->checkGamePhasePaper();
+				int i = 0;
+			}
+			else if (rl->gamePhaseKey && rl->gamePhasePaper && !rl->gamePhaseEnd) //if all has been 
+			{
+			//	rl->checkGamePhaseEnd();
+				int i = 0;
+			}
+		}
 	else if (key == GLFW_KEY_LEFT_BRACKET && action == GLFW_PRESS) // ü on german keyboard, ü is for überflieger
 		rl->freeCamera = !rl->freeCamera;
 	else if (key == GLFW_KEY_O && action == GLFW_PRESS)
@@ -365,6 +384,7 @@ void RenderLoop::start()
 		{
 			doMovement(time.delta);
 			doDeferredShading(gBuffer, realmOfShadows, ml);
+			gameEventCheckIsOn = false; //we reset the actions for key/paper/end-zone every frame
 		}
 		else
 		{

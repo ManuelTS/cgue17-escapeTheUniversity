@@ -210,7 +210,11 @@ void Text::removeTime(const double deltaTime)
 				hasTimeLeft(i, deltaTime);
 				break;
 			case KEY_FOUND:
-				winGame();
+				simpleText("You found the key. Now find and open the locked door with your exam!");
+				hasTimeLeft(i, deltaTime);
+				break;
+			case PAPER_FOUND:
+				simpleText("You found your exam! Now get out of the building!");
 				hasTimeLeft(i, deltaTime);
 				break;
 
@@ -243,7 +247,7 @@ void Text::removeTime(const double deltaTime)
 
 void Text::screeny()
 {
-	write("Hope you don't do anything bad\nwith that screeny, sweetie.", -0.9f, 0.0f, 0.5f, 0.0f);
+	write("Hope you don't do anything bad\nwith that screeny, sweetie.", -0.9f, 0.0f, 0.7f, 0.0f);
 }
 
 void Text::gameOver()

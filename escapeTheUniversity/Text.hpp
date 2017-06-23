@@ -19,6 +19,7 @@ public:
 	static const int BULLET_DEBUG_MESSAGE = 4002; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
 	static const int YOU_WON = 4003;// Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
 	static const int KEY_FOUND = 4004; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
+	static const int PAPER_FOUND = 4005; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
 	static const int TEXTURE_SAMPLING_NEAREST_NEIGHBOR = 3000; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
 	static const int TEXTURE_SAMPLING_BILINEAR = 3001; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
 	static const int MIP_MAPPING_OFF = 3002; // Unique constant time in milliseconds to display text on screen, added to displayTime vector if used
