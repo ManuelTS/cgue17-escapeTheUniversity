@@ -10,7 +10,7 @@ public:
 	const int viewLocation = 8; // Matrix, gBuffer.vert
 	const int projectionLocation = 12; // Matrix, gBuffer.vert
 	// deferredShader location constants
-	const int viewPositionLocation = 0; // defferredShader.frag
+	const int viewPositionLocation = 12; // defferredShader.frag
 	// shadowShader location constants
 	const unsigned int SHADOW_LIGHT_POSITION_LOCATION = 0; // shadowShader.vert
 	const unsigned int SHADOW_MODEL_MATRIX_LOCATION = 0; // shadowShader.vert
@@ -174,19 +174,20 @@ private:
 	})glsl";
 	const char* DEFERRED_SHADING_VERT = R"glsl(
 	#version 430 core
-	const vec4 verts[4] = vec4[4](vec4(-1.0, -1.0, 0.5, 1.0), 
-								  vec4( 1.0, -1.0, 0.5, 1.0),
-								  vec4(-1.0,  1.0, 0.5, 1.0),
-								  vec4( 1.0,  1.0, 0.5, 1.0)); //Arraysize in GBuffer#rederQuad()
+	layout (location = 0) in vec3 position;              // of the rendered vertex, correlates in location value with gbuffer.vert
+
+	layout (location = 0) uniform mat4 model;	      // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
+	layout (location = 4) uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
+	layout (location = 8) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
 
 	void main(void)
 	{
-		gl_Position = verts[gl_VertexID];
+		gl_Position = projection * view * model * vec4(position, 1.0f);
 	})glsl";
 	const char* DEFERRED_SHADING_FRAG = R"glsl(
 	#version 430 core
 
-	layout (location = 0) uniform vec3 viewPosition; // from RenderLoop.cpp#renderloop
+	layout (location = 12) uniform vec3 viewPosition; // from RenderLoop.cpp#renderloop
 
 	layout (location = 1) uniform mat4 lightSpaceMatrix; // Light space transformation matrix that transforms each world-space vector into the space as visible from the light source
 

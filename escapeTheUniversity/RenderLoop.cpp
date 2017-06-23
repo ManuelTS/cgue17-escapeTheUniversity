@@ -255,8 +255,9 @@ void RenderLoop::start()
 	time.past = glfwGetTime();
 	ModelLoader* ml = ModelLoader::getInstance();
 	SoundManager* sm = SoundManager::getInstance();
+	sm->init();
 	#if !_DEBUG
-		sm->initFileName("Music\\Jahzzar_-_01_-_The_last_ones.mp3"); // Init SM with music file to play while loading
+		sm->setFileName("Music\\Jahzzar_-_01_-_The_last_ones.mp3"); // Init SM with music file to play while loading
 		sm->playSound();
 	#endif
 
@@ -332,7 +333,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE); // Must be before glClearColor and ShadowMapping, otherwise it remains untouched
 	glDepthFunc(GL_LEQUAL);
-	gBuffer->startFrame(); // At the start of each frame we need to clear the final texture which is attached to attachment point number 2
+	glDepthRange(0, 1);
 	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
 	glViewport(0, 0, width, height);
 	gBuffer->bindForGeometryPass(); // Previously the FBO in the G Buffer was static (in terms of its configuration) and was set up in advance so we just had to bind it for writing when the geometry pass started. Now we keep changing the FBO to we need to config the draw buffers for the attributes each time.
@@ -347,8 +348,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	if (drawBulletDebug) // Draws the bullet debug context, see bullet.cpp#bulle
 		Bullet::getInstance()->debugDraw();
 
-	// Stencil pass with light pass inside
-	
+	// Stencil and light passes
 	Shader* deferredShader = gBuffer->deferredShader;
 
 	for (unsigned int i = 0; i < ml->lights.size(); i++) // Look which lights intersect or are in the frustum
@@ -372,14 +372,14 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 			gBuffer->bind4LightPass(); // Return from shadow FBO to light FBO
 			gBuffer->stencilShader->useProgram();
 			glEnable(GL_STENCIL_TEST);
-			//glDisable(GL_CULL_FACE);
 			glStencilMask(0xFF);
 			glClear(GL_STENCIL_BUFFER_BIT);
 			glStencilFunc(GL_ALWAYS, 0, 0xFF);
-			glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR, GL_KEEP);
-			glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR, GL_KEEP);
+			glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+			glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 			glDepthMask(GL_FALSE); // prevents depth reading in the stencil, needed for shadows before
-			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // No color values but only depth and stencil are written or read
+			glDrawBuffer(GL_NONE); // detach MRTs from FBO, no color drawing
+			glDisable(GL_CULL_FACE);
 
 			glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, viewMatrixP); // stencil.vert
 			glUniformMatrix4fv(ModelNode::projectionMatrixStencilLocation, 1, GL_FALSE, projectionMatrixP); // stencil.vert
@@ -390,16 +390,14 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 			for(Mesh* m: ml->sphere01->meshes)
 				m->draw(GL_TRIANGLES, true);
 
+			glDisable(GL_DEPTH_TEST);
 			//Light pass
 			deferredShader->useProgram();
 			gBuffer->bindTextures();
 			realmOfShadows->bindTexture(); 	//Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
-			//glEnable(GL_CULL_FACE);
-			//glCullFace(GL_FRONT);
-			glDisable(GL_DEPTH_TEST);
 			glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
 			glStencilMask(0x00);
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
 			if (blending)
 			{
 				glEnable(GL_BLEND);
@@ -407,20 +405,34 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				glBlendFunc(GL_ONE, GL_ONE);
 			}
 
-			glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);// Write light data to deferred shader
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_FRONT);
+
+			glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);// Write light data to deferred shader.frag
 			glUniformMatrix4fv(realmOfShadows->SHADOW_LIGHT_SPACE_MATRIX_LOCATION, 1, GL_FALSE, glm::value_ptr(realmOfShadows->lightSpaceMatrix)); // Write the light space matrix to the deferred shader
 			glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLSB: S. 169, always execute after new program is used
 			glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
 			glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ln->light), &ln->light);
 			glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-			gBuffer->renderQuad(); // Render all vertices inside the stencil to the attachment2
-			realmOfShadows->unbindTexture();
+			// Render the light sphere positions through the deferred shading shader.vert
+			glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, viewMatrixP); // deferredShading.vert
+			glUniformMatrix4fv(ModelNode::projectionMatrixStencilLocation, 1, GL_FALSE, projectionMatrixP); // deferredShading.vert
+			glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, glm::value_ptr(ml->sphere01->hirachicalModelMatrix)); // deferredShading.vert
 
-			//glCullFace(GL_BACK);
+			for (Mesh* m : ml->sphere01->meshes)
+				m->draw(GL_TRIANGLES, true);
+
+			glCullFace(GL_BACK);
 			if (blending)
+			{
+				//glDisable(GL_ALPHA_TEST); //Depricated in openGL 4.3
 				glDisable(GL_BLEND);
+			}
 			glDisable(GL_STENCIL_TEST); 
+
+			gBuffer->unbindTexture();
+			realmOfShadows->unbindTexture();
 		}
 	}
 	

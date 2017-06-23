@@ -113,8 +113,10 @@ void SoundManager::resume()
 }
 
 // Stops all sounds with a small fade
-void SoundManager::stopAll(){
-	soundEngine->stopAllSounds();
+void SoundManager::stopAll()
+{
+	if(soundEngine)
+		soundEngine->stopAllSounds();
 }
 
 /************************

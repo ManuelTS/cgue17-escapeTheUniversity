@@ -45,20 +45,13 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 	glBindVertexArray(0);
 }
 
-void GBuffer::startFrame()
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, handle); // Must be first
-	//glDrawBuffer(GL_COLOR_ATTACHMENT2);
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
-}
-
 void GBuffer::bindForGeometryPass()
 {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
 	const unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, attachments);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
 }
 
 void GBuffer::bind4LightPass() {
@@ -69,6 +62,11 @@ void GBuffer::bind4LightPass() {
 /*Binds the textures for usage in the shader to render into the frame buffer.*/
 void GBuffer::bindTextures()
 {
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
+	glDrawBuffer(GL_COLOR_ATTACHMENT2); // attach auxiliary color buffer
+	glClearColor(0, 0, 0, 1); // set fallback color for non touched fragments
+	glClear(GL_COLOR_BUFFER_BIT); // set buffer color
+
 	for (int i = 0; i < deferredShadingColorTextureCount; i++)
 	{
 		glActiveTexture(GL_TEXTURE0+i);
@@ -78,12 +76,8 @@ void GBuffer::bindTextures()
 }
 
 // RenderQuad() Renders a 1x1 quad in NDC, best used for framebuffer color targets and post-processing effects.
-void GBuffer::renderQuad()
+void GBuffer::unbindTexture()
 {
-	glBindVertexArray(quadVAO);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glBindVertexArray(0);
-
 	for (int i = 0; i < deferredShadingColorTextureCount; i++){
 		glActiveTexture(GL_TEXTURE0+i);
 		glBindTexture(GL_TEXTURE_2D, 0);
