@@ -88,46 +88,41 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		for (LightNode* ln : ModelLoader::getInstance()->lights)
 			ln->light.diffuse.a += minus ? -0.01f : 0.01f;
 	}
-	else if (key == GLFW_KEY_E && action == GLFW_PRESS)
-		rl->move(ModelLoader::getInstance()->root);
-	else if (key == GLFW_KEY_R && action == GLFW_PRESS) //test raycast
-	{
-
-		
+	//else if (key == GLFW_KEY_E && action == GLFW_PRESS) is obsolete
+	//	rl->move(ModelLoader::getInstance()->root);
+	else if ((key == GLFW_KEY_Q || key == GLFW_KEY_E) && action == GLFW_PRESS) //pull or push
+	{		
 		Bullet* b = Bullet::getInstance();
 		vec3 origin = vec3(rl->camera->position.x, rl->camera->position.y, rl->camera->position.z);
-		vec3 distance = origin + rl->camera->front * 100.0f;
-		
-		//btCollisionWorld::ClosestRayResultCallback rayCallback(btVector3(origin.x,origin.y, origin.z), btVector3(distance.x, distance.y, distance.z));
-	//	btCollisionWorld::AllHitsRayResultCallback result(btVector3(origin.x, origin.y, origin.z), btVector3(distance.x, distance.y, distance.z));
-		
-		/*b->getDynamicsWorld()->rayTest(btVector3(origin.x, origin.y, origin.z), btVector3(distance.x, distance.y, distance.z), result);
-		if(result.hasHit())
-			int i = 0;*/
+		vec3 distance = origin + rl->camera->front * 5.0f;
 		btCollisionWorld::ClosestRayResultCallback res(btVector3(origin.x, origin.y, origin.z), btVector3(distance.x, distance.y, distance.z));
 		b->getDynamicsWorld()->rayTest(btVector3(origin.x, origin.y, origin.z), btVector3(distance.x, distance.y, distance.z), res);
-	//	Base::getSingletonPtr()->m_btWorld->rayTest(origin, distance, res); // m_btWorld is btDiscreteDynamicsWorld
-
 		if (res.hasHit()) {
 			printf("Raycast hit at: <%.2f, %.2f, %.2f>\n", res.m_hitPointWorld.getX(), res.m_hitPointWorld.getY(), res.m_hitPointWorld.getZ());
 		}
 		if (res.hasHit() && res.m_collisionObject->CO_RIGID_BODY) 
 		{
 			btRigidBody* body;
-				body = (btRigidBody*)res.m_collisionObject;
+			body = (btRigidBody*)res.m_collisionObject;
+			//btRigidBody* body = (btRigidBody*)btRigidBody::upcast(res.m_collisionObject); //this upcast does not work!!
 			body->activate();
 			//body->applyCentralForce(btVector3(4.0f, 0.0f,4.0f));
-			body->applyCentralImpulse(btVector3(-4.0f, 0.0f, -4.0f));
+			if (key == GLFW_KEY_Q)                                    //push
+			{
+				//body->applyCentralForce(btVector3(-4.0f, 0.0f, -4.0f));
+				body->applyTorqueImpulse(btVector3(0.0f, -4.0f, 0.0f)); //this is the way to go!
+				//body->applyCentralImpulse(btVector3(-4.0f, 0.0f, -4.0f)); 
+			}
+			else 
+			{
+				body->applyTorqueImpulse(btVector3(0.0f, 4.0f, 0.0f));   //pull
+				//body->applyCentralForce(btVector3(4.0f, 0.0f, 4.0f));
+				//body->applyCentralImpulse(btVector3(4.0f, 0.0f, 4.0f));
+			}
 		}
-		//res.m_collisionObject->set
-		//	btRigidBody* dn = (btRigidBody)res.m_collisionObject[0];
-		/*b->getDynamicsWorld()->rayTest(
-	<		btVector3(origin.x,	origin.y, origin.z), distance
-		);*/
-		//btCollisionWorld::ClosestRayResultCallback rayCallback;  // error, no such constructor and it wont work if you use something like (zeroVector, zeroVector) doesn't work.
-	//	World->rayTest(origin, origin + forward * 100, RayCallback);
+	
 	}	
-	else if (key == GLFW_KEY_Q && action == GLFW_PRESS)
+	else if (key == GLFW_KEY_F && action == GLFW_PRESS)
 		{
 			rl->gameEventCheckIsOn = true; //we want to check only a single time for 1 frame, gets reseted afterwards	
 		}

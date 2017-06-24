@@ -223,10 +223,12 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
 	btRigidBody *mydoor = new btRigidBody(groundRigidBodyCI);
+	//mydoor->
 	mn->rigidBody = mydoor;
 
 	mydoor->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
-														// and movement only x-z (but basically 
+	//values may only be positive here
+
 	mydoor->setLinearFactor(btVector3(1, 0, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
 													   //angular velocity should be 
 	mydoor->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); // https://en.wikipedia.org/wiki/Angular_velocity
@@ -258,10 +260,15 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	btHingeConstraint* hingeDoorConstraint;
 	hingeDoorConstraint = new btHingeConstraint(*mydoor, distance, btVector3(0, 1, 0), true);
 	//void hingeDoorConstraint->setLimit(btScalar low, btScalar high, btScalar softness = 0.9f, btScalar_biasFactor = 0.3f, btScalar relaxationFactor = 1.0f)
-	if (mn->name.find("_reverse") != string::npos)
+	if (mn->name.find("_reverse") != string::npos) //we need other limits for the doors that should rotate in the respective direction
+	{		
 		hingeDoorConstraint->setLimit((-140.0f * (3.141592f / 180.0f)), (0.0f * (3.141592f / 180.0f)), 0.5f, 0.3f, 1.0f);
-	else
+	}
+	else 
+	{
 		hingeDoorConstraint->setLimit((0.0f * (3.141592f / 180.0f)), (140.0f * (3.141592f / 180.0f)), 0.5f, 0.3f, 1.0f);
+	}
+		
 
 	dynamicsWorld->addConstraint(hingeDoorConstraint);
 

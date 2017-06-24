@@ -394,7 +394,8 @@ void Text::help()
 	i = copyInBuffer(help, i, (const unsigned char*) "D/Right arrow = Move right", true); 
 	i = copyInBuffer(help, i, (const unsigned char*) "Space = Ascend", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Left Shift = Descend", true);
-	i = copyInBuffer(help, i, (const unsigned char*) "Q = interaction/status information", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "Q / E = Push / Pull door", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "F = interaction/status information", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Left click = ?", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Right click = ?", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Print = Screenshot", true);
