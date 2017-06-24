@@ -332,11 +332,11 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 
 	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
 	glViewport(0, 0, width, height);
+	gBuffer->clearLastAccumulationBuffer();
 	gBuffer->bindForGeometryPass(); // Previously the FBO in the G Buffer was static (in terms of its configuration) and was set up in advance so we just had to bind it for writing when the geometry pass started. Now we keep changing the FBO to we need to config the draw buffers for the attributes each time.
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE); // Must be before glClearColor and ShadowMapping, otherwise it remains untouched
 	glDepthFunc(GL_LEQUAL);
-	glDepthRange(0, 1);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
 	gBufferShader->useProgram();
@@ -383,12 +383,11 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 			glDepthMask(GL_FALSE); // prevents depth reading in the stencil, needed for shadows before
 			glDisable(GL_CULL_FACE);
 
-			glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, viewMatrixP); // stencil.vert
-			glUniformMatrix4fv(ModelNode::projectionMatrixStencilLocation, 1, GL_FALSE, projectionMatrixP); // stencil.vert
-			vec3 distance = vec3(ln->light.position) - ml->sphere01->position;
-			glm::mat4 sphereModelMatrix = glm::scale(glm::translate(glm::mat4(), distance), glm::vec3(ln->lightSphereRadius)); // Transalte then scale sphere model matrix
+			glm::mat4 sphereModelMatrix = glm::scale(glm::translate(glm::mat4(), glm::vec3(ln->light.position)), glm::vec3(ln->lightSphereRadius)); // Transalte then scale sphere model matrix
 			const float* sphereModelMatrixP = glm::value_ptr(ml->sphere01->hirachicalModelMatrix = sphereModelMatrix);
 			glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, sphereModelMatrixP);
+			glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, viewMatrixP); // stencil.vert
+			glUniformMatrix4fv(ModelNode::projectionMatrixStencilLocation, 1, GL_FALSE, projectionMatrixP); // stencil.vert
 
 			for(Mesh* m: ml->sphere01->meshes)
 				m->draw(GL_TRIANGLES, true);
@@ -397,8 +396,6 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 			//Light pass
 			deferredShader->useProgram();
 			gBuffer->bindTextures();
-			glClearColor(0, 0, 0, 1); // set fallback color for non touched fragments
-			glClear(GL_COLOR_BUFFER_BIT); // set buffer color
 			realmOfShadows->bindTexture(); 	//Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
 			glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
 			glStencilMask(0x00);
@@ -421,9 +418,9 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 			glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 			// Render the light sphere positions through the deferred shading shader.vert
+			glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, sphereModelMatrixP); // deferredShading.vert
 			glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, viewMatrixP); // deferredShading.vert
 			glUniformMatrix4fv(ModelNode::projectionMatrixStencilLocation, 1, GL_FALSE, projectionMatrixP); // deferredShading.vert
-			glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, sphereModelMatrixP); // deferredShading.vert
 
 			for (Mesh* m : ml->sphere01->meshes)
 				m->draw(GL_TRIANGLES, true);

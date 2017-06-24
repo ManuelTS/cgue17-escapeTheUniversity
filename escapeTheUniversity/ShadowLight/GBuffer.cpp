@@ -45,13 +45,20 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 	glBindVertexArray(0);
 }
 
+void GBuffer::clearLastAccumulationBuffer()
+{
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
+	glDrawBuffer(GL_COLOR_ATTACHMENT2);
+	glClearColor(0, 0, 0, 1); // set fallback color for non touched fragments
+	glClear(GL_COLOR_BUFFER_BIT); // set buffer color
+}
+
 void GBuffer::bindForGeometryPass()
 {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
 	const unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, attachments);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
+	
 }
 
 void GBuffer::bind4LightPass()
@@ -63,8 +70,6 @@ void GBuffer::bind4LightPass()
 void GBuffer::bindTextures()
 {
 	glDrawBuffer(GL_COLOR_ATTACHMENT2); // attach auxiliary color buffer
-	glClearColor(0, 0, 0, 1); // set fallback color for non touched fragments
-	glClear(GL_COLOR_BUFFER_BIT); // set buffer color
 
 	for (int i = 0; i < deferredShadingColorTextureCount; i++)
 	{
@@ -95,7 +100,7 @@ void GBuffer::finalPass(const unsigned int width, const unsigned int height)
 float GBuffer::calcPointLightBSphere(LightNode* ln)
 {
 	glm::vec3 lightLuminance = glm::cross(glm::vec3(ln->light.diffuse), glm::vec3(0.2126, 0.7152, 0.0722));// Get light's luminance using Rec 709 luminance formula
-	const float maxLuminance = 0.02 / fmax(fmax(lightLuminance.x, lightLuminance.y), lightLuminance.z); // min luminance threshold divided by max luminance, from https://gamedev.stackexchange.com/questions/51291/deferred-rendering-and-point-light-radius
+	const float maxLuminance = 0.03 / fmax(fmax(lightLuminance.x, lightLuminance.y), lightLuminance.z); // min luminance threshold divided by max luminance, from https://gamedev.stackexchange.com/questions/51291/deferred-rendering-and-point-light-radius
 	const float maxChannel = fmax(fmax(ln->light.diffuse.x, ln->light.diffuse.y), ln->light.diffuse.z);
 
 	// Calculation on: http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html
