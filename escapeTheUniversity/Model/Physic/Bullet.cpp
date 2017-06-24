@@ -257,7 +257,7 @@ void Bullet::createDoorHinge(ModelNode* mn)
 
 	btHingeConstraint* hingeDoorConstraint;
 	hingeDoorConstraint = new btHingeConstraint(*mydoor, distance, btVector3(0, 1, 0), true);
-
+	//void hingeDoorConstraint->setLimit(btScalar low, btScalar high, btScalar softness = 0.9f, btScalar_biasFactor = 0.3f, btScalar relaxationFactor = 1.0f)
 	if (mn->name.find("_reverse") != string::npos)
 		hingeDoorConstraint->setLimit((-140.0f * (3.141592f / 180.0f)), (0.0f * (3.141592f / 180.0f)), 0.5f, 0.3f, 1.0f);
 	else
