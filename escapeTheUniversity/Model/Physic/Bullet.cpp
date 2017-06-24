@@ -174,15 +174,43 @@ void Bullet::createBuilding(ModelNode* mn)
 
 void Bullet::createDoorHinge(ModelNode* mn) 
 {
-
 	ModelNode* parentAngle = dynamic_cast<ModelNode*>(mn->parent);
 	/* create door */
-	btCylinderShape* shape = new btCylinderShape(btVector3(0.5f, 2.2f, 0.2f));
+	
+	//btCylinderShape* shape = new btCylinderShape(btVector3(0.5f, 2.2f, 0.2f));
 		//new btCylinderShape(btVector3(0.3,2.2,0.9));
-	shape->setMargin(DEFAULT_COLLISION_MARGIN);
+	btTriangleIndexVertexArray* meshArray = new btTriangleIndexVertexArray();
+	//BVG* bvg = new BVG(); // VHACD calculation causes a bullet exception which should net happen according to their own comments
+
+	for (unsigned int meshIndex = 0, STRIDE = 3; meshIndex < mn->meshes.size(); meshIndex++) // For vertex indices and vertices, see BVG.cpp for explanation is the stride
+	{
+		Mesh* glMesh = mn->meshes.at(meshIndex);
+		btIndexedMesh btMesh;
+
+		btMesh.m_indexType = PHY_INTEGER;
+		btMesh.m_numTriangles = glMesh->indices.size() / STRIDE;
+		btMesh.m_triangleIndexStride = STRIDE * sizeof(unsigned int);
+		btMesh.m_triangleIndexBase = (const unsigned char*)glMesh->indices.data();// Allocate memory for the mesh
+
+		vector<float>* vertices = glMesh->getAllVertices();
+
+		btMesh.m_vertexType = PHY_FLOAT;
+		btMesh.m_numVertices = vertices->size() / STRIDE;
+		btMesh.m_vertexStride = STRIDE * sizeof(float);
+		btMesh.m_vertexBase = (const unsigned char*)vertices->data();// Allocate memory for the mesh
+		meshArray->addIndexedMesh(btMesh);
+	}
+
+	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshArray, true, true); // A single mesh with all vertices of a big object in it confuses bullet and generateds an "overflow in AABB..." error
+
+	shape->buildOptimizedBvh();
+	
+	//btConvexHullShape* shape = pureBulletConvexHullGeneration(mn); //this brings something ugly and "destroyed"
+	shape->setLocalScaling(btVector3(0.8f, 0.8f, 0.8f));  //we cannot use a collision as big as the door itself, due to collision of surrounding building
+ 	shape->setMargin(DEFAULT_COLLISION_MARGIN);
 	const float mass = 1.0;
-	btVector3 localInertia = btVector3(0, 0, 0);
-	shape->calculateLocalInertia(mass, localInertia);
+	btVector3 localInertia = btVector3(1, 1, 1); //setting localInertia to 0,0,0 breaks the program!
+	//shape->calculateLocalInertia(mass, localInertia);
 
 	mat4 matrix = mat4();
 	vec3 temp = vec3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y, mn->hirachicalModelMatrix[3].z);
@@ -195,6 +223,7 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
 	btRigidBody *mydoor = new btRigidBody(groundRigidBodyCI);
+	mn->rigidBody = mydoor;
 
 	mydoor->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
 														// and movement only x-z (but basically 
@@ -203,16 +232,38 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	mydoor->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); // https://en.wikipedia.org/wiki/Angular_velocity
 																   //c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
 																   //c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
-	mydoor->setFriction(0.5f);
-	mydoor->setDamping(0.5f, 0.5f); //sets linear damping + angular damping
+	mydoor->setFriction(0.0f);
+	mydoor->setDamping(0.7f, 0.7f); //sets linear damping + angular damping
 										  //btVector3 inertia;
 										  //c->rigitBody->getCollisionShape()->calculateLocalInertia(mass, inertia);
 	mydoor->setMassProps(mass, localInertia);
 
-	mydoor->setRestitution(0); //switch off bouncing 
+	mydoor->setRestitution(0.0f); // 0 for switch off bouncing 
+
+	//mn->collisionObject = mydoor; // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
+	//mn->collisionObject->setCollisionShape(shape);
+	//mn->collisionObject->setWorldTransform(trans);
 
 	shapes.push_back(shape);
+
 	dynamicsWorld->addRigidBody(mydoor);
+
+	btVector3 mnposition = btVector3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y, mn->hirachicalModelMatrix[3].z);
+	btVector3 parentPosition = btVector3(parentAngle->hirachicalModelMatrix[3].x, parentAngle->hirachicalModelMatrix[3].y, parentAngle->hirachicalModelMatrix[3].z);
+	btVector3 distance = btVector3(parentAngle->hirachicalModelMatrix[3].x - mn->hirachicalModelMatrix[3].x,
+		parentAngle->hirachicalModelMatrix[3].y - mn->hirachicalModelMatrix[3].y,
+		parentAngle->hirachicalModelMatrix[3].z - mn->hirachicalModelMatrix[3].z
+	);
+
+	btHingeConstraint* hingeDoorConstraint;
+	hingeDoorConstraint = new btHingeConstraint(*mydoor, distance, btVector3(0, 1, 0), true);
+
+	if (mn->name.find("_reverse") != string::npos)
+		hingeDoorConstraint->setLimit((-140.0f * (3.141592f / 180.0f)), (0.0f * (3.141592f / 180.0f)), 0.5f, 0.3f, 1.0f);
+	else
+		hingeDoorConstraint->setLimit((0.0f * (3.141592f / 180.0f)), (140.0f * (3.141592f / 180.0f)), 0.5f, 0.3f, 1.0f);
+
+	dynamicsWorld->addConstraint(hingeDoorConstraint);
 
 	/* door ended */
 
@@ -255,19 +306,14 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	dynamicsWorld->addRigidBody(myAngle);
 	/*angle rigitbody end*/
 
-	btVector3 mnposition = btVector3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y, mn->hirachicalModelMatrix[3].z);
-	btVector3 parentPosition = btVector3(parentAngle->hirachicalModelMatrix[3].x, parentAngle->hirachicalModelMatrix[3].y, parentAngle->hirachicalModelMatrix[3].z);
-	btVector3 distance = btVector3(parentAngle->hirachicalModelMatrix[3].x-mn->hirachicalModelMatrix[3].x,
-		parentAngle->hirachicalModelMatrix[3].y - mn->hirachicalModelMatrix[3].y,
-		parentAngle->hirachicalModelMatrix[3].z - mn->hirachicalModelMatrix[3].z
-	);
+
 	// btHingeConstraint(btRigidBody& rbA,btRigidBody& rbB, const btVector3& pivotInA,const btVector3& pivotInB, const btVector3& axisInA,const btVector3& axisInB, bool useReferenceFrameA = false);
 	/*btHingeConstraint* hingeDoorConstraint;
 	hingeDoorConstraint = new btHingeConstraint(*mydoor, *myAngle, mnposition, parentPosition, btVector3(0, 0, 0), btVector3(0, 1, 0), true);
 	hingeDoorConstraint->setLimit((0.0f * (3.141592f / 180.0f)), (140.0f * (3.141592f / 180.0f)), 0.5f, 0.3f, 1.0f);
 	dynamicsWorld->addConstraint(hingeDoorConstraint,true);
 	/*create contraint to world */
-	btHingeConstraint* hingeDoorConstraint;
+
 	//	btHingeConstraint(btRigidBody& rbA, const btVector3& pivotInA, const btVector3& axisInA, bool useReferenceFrameA = false);
 	//                    the body          the point of the body//parent?               axis in body          iDont know
 	//                                      pivot is relativ to the body
@@ -275,10 +321,9 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	//btVector3 parentPosition = btVector3(parentAngle->hirachicalModelMatrix[3].x, parentAngle->hirachicalModelMatrix[3].y, parentAngle->hirachicalModelMatrix[3].z);
 	//hingeDoorConstraint = new btHingeConstraint(*mydoor, parentPosition, btVector3(0, 1, 0), false);
 	//hingeDoorConstraint = new btHingeConstraint(*mydoor, parentPosition, btVector3(0,1,0), true);
-	hingeDoorConstraint = new btHingeConstraint(*mydoor, distance, btVector3(0, 1, 0), true);
-	hingeDoorConstraint->setLimit((0.0f * (3.141592f / 180.0f)), (140.0f * (3.141592f / 180.0f)), 0.5f, 0.3f, 1.0f);
+
 	//hingeDoorConstraint->setLimit(0.0f, 140.0f, 0.5f, 0.3f, 1.0f);
-	dynamicsWorld->addConstraint(hingeDoorConstraint);
+
 	/*create contraint to world ended (not functionable)*/
 
 }

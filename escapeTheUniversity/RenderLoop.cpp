@@ -109,7 +109,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	//	Base::getSingletonPtr()->m_btWorld->rayTest(origin, distance, res); // m_btWorld is btDiscreteDynamicsWorld
 
 		if (res.hasHit()) {
-			printf("Collision at: <%.2f, %.2f, %.2f>\n", res.m_hitPointWorld.getX(), res.m_hitPointWorld.getY(), res.m_hitPointWorld.getZ());
+			printf("Raycast hit at: <%.2f, %.2f, %.2f>\n", res.m_hitPointWorld.getX(), res.m_hitPointWorld.getY(), res.m_hitPointWorld.getZ());
 		}
 		if (res.hasHit() && res.m_collisionObject->CO_RIGID_BODY) 
 		{
@@ -118,7 +118,6 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			body->activate();
 			//body->applyCentralForce(btVector3(4.0f, 0.0f,4.0f));
 			body->applyCentralImpulse(btVector3(-4.0f, 0.0f, -4.0f));
-			int i = 2;
 		}
 		//res.m_collisionObject->set
 		//	btRigidBody* dn = (btRigidBody)res.m_collisionObject[0];
