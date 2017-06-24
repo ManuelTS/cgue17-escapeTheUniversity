@@ -107,6 +107,11 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			//btRigidBody* body = (btRigidBody*)btRigidBody::upcast(res.m_collisionObject); //this upcast does not work!!
 			body->activate();
 			//body->applyCentralForce(btVector3(4.0f, 0.0f,4.0f));
+
+			if (rl->gamePhaseKey) {  //this "unlockes" the locked door
+				body->setAngularFactor(btVector3(0, 1, 0));
+			}
+
 			if (key == GLFW_KEY_Q)                                    //push
 			{
 				//body->applyCentralForce(btVector3(-4.0f, 0.0f, -4.0f));
@@ -199,6 +204,9 @@ void RenderLoop::doMovement(double timeDelta)
 	{
 		//camera->processKeyboard(camera->UP, timeDelta);
 		camera->rigitBody->setActivationState(true);
+		//
+		//camera->rigitBody->applyCentralImpulse(btVector3(0, 80.0, 0));//, btVector3(camera->position.x, camera->position.y, camera->position.z));
+		//neither applyForce, applyImpulse, work
 		camera->rigitBody->setLinearVelocity(btVector3(0, 5, 0));
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)

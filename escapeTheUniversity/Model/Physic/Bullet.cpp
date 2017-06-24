@@ -227,7 +227,11 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	mn->rigidBody = mydoor;
 
 	mydoor->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
-	//values may only be positive here
+	
+	if(mn->name.find("lockedDoor") != string::npos) //set the locked door to "locked"
+		mydoor->setAngularFactor(btVector3(0, 0, 0));
+
+	 //values may only be positive here
 
 	mydoor->setLinearFactor(btVector3(1, 0, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
 													   //angular velocity should be 
@@ -339,7 +343,7 @@ void Bullet::createCamera(Camera* c)
 {
 	btCylinderShape* shape= new btCylinderShape(btVector3(0.7f, 1.4f, 0.2f));
 	shape->setMargin(DEFAULT_COLLISION_MARGIN);
-	const float mass = 80.0;
+	const float mass = 20.0;
 	btVector3 localInertia = btVector3(0, 0, 0);
 	shape->calculateLocalInertia(mass, localInertia);
 
