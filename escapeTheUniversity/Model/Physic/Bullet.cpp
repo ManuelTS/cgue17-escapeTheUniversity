@@ -16,8 +16,9 @@ void Bullet::init()
 		overlappingPairCache = new btDbvtBroadphase();
 		//the default constraint solver. For parallel processing you can use a different solver(see Extras / BulletMultiThreaded)
 		solver = new btSequentialImpulseConstraintSolver;
+		
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-		dynamicsWorld->setGravity(btVector3(0, -1.0f, 0));
+		dynamicsWorld->setGravity(btVector3(0, -9.81f, 0)); //earthgravity
 		
 		#if _DEBUG
 			debugDrawer = new BulletDebugDrawer();
@@ -207,11 +208,11 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	
 	//btConvexHullShape* shape = pureBulletConvexHullGeneration(mn); //this brings something ugly and "destroyed"
 	shape->setLocalScaling(btVector3(0.8f, 0.8f, 0.8f));  //we cannot use a collision as big as the door itself, due to collision of surrounding building
- 	shape->setMargin(DEFAULT_COLLISION_MARGIN);
+ 
 	const float mass = 1.0;
 	btVector3 localInertia = btVector3(1, 1, 1); //setting localInertia to 0,0,0 breaks the program!
 	//shape->calculateLocalInertia(mass, localInertia);
-
+	shape->setMargin(DEFAULT_COLLISION_MARGIN);
 	mat4 matrix = mat4();
 	vec3 temp = vec3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y, mn->hirachicalModelMatrix[3].z);
 	matrix[3] = vec4(temp, 1.0f);
@@ -341,10 +342,10 @@ void Bullet::createDoorHinge(ModelNode* mn)
 
 void Bullet::createCamera(Camera* c) 
 {
-	btCylinderShape* shape= new btCylinderShape(btVector3(0.7f, 1.4f, 0.2f));
+	btCylinderShape* shape= new btCylinderShape(btVector3(0.7f, 2.1f, 0.2f));
 	shape->setMargin(DEFAULT_COLLISION_MARGIN);
-	const float mass = 20.0;
-	btVector3 localInertia = btVector3(0, 0, 0);
+	const float mass = 5.0;
+	btVector3 localInertia = btVector3(1.0, 1.0, 1.0);
 	shape->calculateLocalInertia(mass, localInertia);
 
 	mat4 matrix = mat4();
@@ -352,24 +353,29 @@ void Bullet::createCamera(Camera* c)
 
 	btTransform trans;
 	trans.setIdentity();
+	//trans.setOrigin(btVector3(0.0f, 2.0f, 0.0f)); //set the camera to the "head" does not affect kamera?
 	removeScaleMatrix(matrix, shape, &trans);
+	trans.setOrigin(btVector3(0.0f, 2.0f, 0.0f)); //set the camera to the "head" does not affect kamera?
 
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
 	c->rigitBody = new btRigidBody(groundRigidBodyCI);
 	// we want a turn only on y-Axis
 	c->rigitBody->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
-	// and movement only x-z (but basically 
-	c->rigitBody->setLinearFactor(btVector3(1, 0, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+	// and movement only x-z (normally)
+	//but we need a 1 in y-Axis for the LinearFactor, otherwise Collision-Detection gets nullified in this Axis
+	c->rigitBody->setLinearFactor(btVector3(1, 1, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
 	//angular velocity should be 
 	c->rigitBody->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); // https://en.wikipedia.org/wiki/Angular_velocity
 	//c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
 	//c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
-	c->rigitBody->setFriction(0.0f);
-	c->rigitBody->setDamping(0.1f,0.1f); //sets linear damping + angular damping
+	c->rigitBody->setFriction(btScalar(0.8f));
+	c->rigitBody->setDamping(btScalar(0.1f), btScalar(0.25f)); //sets linear damping + angular damping
+	c->rigitBody->setRestitution(btScalar(0.1f)); //little bounce on the body
+	c->rigitBody->setSleepingThresholds(btScalar(0.2f), btScalar(0.2f)); // linear, angular 
 	//btVector3 inertia;
 	//c->rigitBody->getCollisionShape()->calculateLocalInertia(mass, inertia);
-	c->rigitBody->setMassProps(mass, localInertia);
+	//c->rigitBody->setMassProps(mass, localInertia); //unnecessary?
 	//c->rigitBody->setAngularFactor(btVector3(0, 0, 0));
 	/*
 	You just need to call btRigidBody::setAngularFactor(btVector3(Yaw, Pitch, Roll)); Calling it with all 0s will prevent your object from rotating on any angle.

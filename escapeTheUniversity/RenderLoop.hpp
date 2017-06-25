@@ -27,6 +27,7 @@ class RenderLoop
 		void calculateDeltaTime(); // Calculates the delta time, e.g. the time between frames
 		void draw(Node* current); // Draws all lights which checking their dependencies and condition (no Light Node drawing, frustum culling, flag setting)
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
+		glm::vec3 lastImpulse; //for correction of movement impulses
  		
 	public:
 		struct Time // variables of this game, approach of http://gafferongames.com/game-physics/fix-your-timestep/
@@ -72,7 +73,7 @@ class RenderLoop
 		void checkGamePhasePaper(ModelNode* paper);  //indicates the game-section of the paper
 		bool gamePhaseEnd = false; // reached the safe zone
 		void checkGamePhaseEnd(ModelNode* paper);  //indicates the game-section of the end
-
+	
 		// Sampling states
 		int textureSampling = 1; // Texture Sampling Quality: 0 = Nearest Neighbor, 1 = Bilinear, default: 1 see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping
 		int mipMapping = 2; // Maping-Quality: 0 = Off, 1 = Nearest Neigbor, 2 = Bilinear, default: 2
