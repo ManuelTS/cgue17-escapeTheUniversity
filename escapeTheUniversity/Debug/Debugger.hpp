@@ -6,6 +6,7 @@
 #include <vector>
 
 class ModelLoader;
+class LightNode;
 
 class Debugger
 {
@@ -49,7 +50,7 @@ public:
 	void checkWholeFramebufferCompleteness();
 	void writeAllVertices(std::vector<float>* vertices, std::string fileNameWithoutEnding); // Writes all vectors to a log file
 	void writeLogFile(std::string fileNameWithoutEnding, std::string text); // Writes a log file in the settings folder
-	void drawLightBoundingSpheres(); // Draws the light spheres based on their location and intensity radius
+	void drawLightBoundingSpheres(LightNode* ln); // Draws the light spheres based on their location and intensity radius
 	void renderShadowMap(float farPlane, unsigned int depthMapTextureHandle); // Renders a shadow map on screen
 };
 

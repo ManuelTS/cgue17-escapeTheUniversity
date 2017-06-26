@@ -50,7 +50,7 @@ void ModelLoader::linkLightUBO()
 {
 		glGenBuffers(1, &lightUBO);
 		glBindBuffer(GL_UNIFORM_BUFFER, lightUBO);
-		glBufferData(GL_UNIFORM_BUFFER, LIGHT_NUMBER * sizeof(LightNode::Light), NULL, GL_DYNAMIC_DRAW); // Play with last param 4 performance
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(LightNode::Light), NULL, GL_DYNAMIC_DRAW); // Play with last param 4 performance
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		//glUniformBlockBinding(shader->programHandle, xxx,xxx); // done by index attribute in shader
 }
@@ -150,7 +150,7 @@ LightNode* ModelLoader::processLightNode(string* name, Node* parent, aiNode* nod
 			if (ln->light.position.x == 0.0f && ln->light.position.y == 0.0f && ln->light.position.z == 0.0f) // Position in light node often not set, but in the normal node representation it is...
 				ln->light.position = glm::vec4(getTransformationVec(&node->mTransformation), ln->light.position.w);
 
-			ln->light.diffuse = glm::vec4(lightNode->mColorDiffuse.r, lightNode->mColorDiffuse.g, lightNode->mColorDiffuse.b, 0.01f);// Ambient light is in the shader ambient = diffuse.rbg * diffuse.a where .a is a simple coefficient
+			ln->light.diffuse = glm::vec4(lightNode->mColorDiffuse.r, lightNode->mColorDiffuse.g, lightNode->mColorDiffuse.b, ln->light.diffuse.a);// Ambient light is in the shader ambient = diffuse.rbg * diffuse.a where .a is a simple coefficient
 			ln->light.shiConLinQua = glm::vec4(64.0f, lightNode->mAttenuationConstant, lightNode->mAttenuationLinear, lightNode->mAttenuationQuadratic);
 			// Shin,Lin, Qua values with distance: http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Point+Light+Attenuation
 
@@ -164,9 +164,6 @@ LightNode* ModelLoader::processLightNode(string* name, Node* parent, aiNode* nod
 		Debugger::getInstance()->pauseExit("Malfunction: Light node " + *name + " not found.");
 
 	lights.push_back(ln);
-
-	if(lights.size() > LIGHT_NUMBER)
-		Debugger::getInstance()->pauseExit("Malfunction: Too much lights in .dae file, game has less lights defined.");
 
 	return ln;
 }

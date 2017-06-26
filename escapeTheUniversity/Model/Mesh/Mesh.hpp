@@ -34,6 +34,7 @@ public:
 	std::vector<Texture> textures; // Textures
 
 	ModelNode* modelNode; // Is the node this mesh belongs to
+	const static unsigned int positionsLocation = 0; // In gBuffer.vert, stencil.vert, stencilDebug.vert, deferredShading.vert
 
 	Mesh();
 	~Mesh();
@@ -52,7 +53,6 @@ private:
 	unsigned int materialVBO;
 
 	int maxTextureUnits = 0;
-	const unsigned int positionsLocation = 0; // In gBuffer.vert and stencil.vert
 	const unsigned int normalsLocation = 1; // In gBuffer.vert
 	const unsigned int uvLocation = 2; // UVs, In gBuffer.vert
 	const unsigned int boneIndicesLocation = 3; // Bone indices inside all the bonde matrices on the shader

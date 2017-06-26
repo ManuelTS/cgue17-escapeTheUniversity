@@ -25,6 +25,11 @@ Shader::Shader(const char* shader)
 		loadShader(DEFERRED_SHADING_VERT, GL_VERTEX_SHADER, vertexHandle);
 		loadShader(DEFERRED_SHADING_FRAG, GL_FRAGMENT_SHADER, fragmentHandle);
 	}
+	else if (strcmp(shader, "stencil") == 0)
+	{
+		loadShader(STENCIL_VERT, GL_VERTEX_SHADER, vertexHandle);
+		loadShader(STENCIL_FRAG, GL_FRAGMENT_SHADER, fragmentHandle);
+	}
 	else if (strcmp(shader, "shadow") == 0)
 	{
 		loadShader(SHADOW_VERT, GL_VERTEX_SHADER, vertexHandle);

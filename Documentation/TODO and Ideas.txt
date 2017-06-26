@@ -2,45 +2,27 @@ All ordered by priority!
 
 Programming (Manuel):
 
-render generated bounding Shapes:
-Uncomment camera setting in #doMovement method
-
 Skymap, with a beautiful night sky von NASA deep field image full of stars in OGLSB as cube map on page 640. Before doing that check "seamless cube map / sky box2".
 
 Game over screen, If the player fails, show a game over screen with text, sound, or music, and restart.
 
 Fade for sound
 
-check vertical sync impact on the game
-
-in stencil and gbuffer vertex shader combine this parameters with using only vec4 s
-layout (location = 0) in vec3 position; // Usage in: Mesh.cpp link(); // Of a point of the light sphere, used in .cpp, w is unused and must be one
-layout (location = 1) in vec3 normal;   // Usage in: Mesh.cpp link();
-layout (location = 2) in vec2 tc;       // Usage in: Mesh.cpp link();
-layout (location = 3) in vec4 material; // Usage in: Mesh.cpp link();, rgb unused
-
 in the gBuffer try to reduce the single GL_** bit attachments from GL_DEPTH32F_STENCIL8 to GL_DEPTH24F_STENCIL8 for example
 
 DONE: Rim lighting openGL super Bibile page 634, but only if object is lit from the back, now only use it
 
-Visualize depth: https://learnopengl.com/#!Advanced-OpenGL/Depth-testing
-
-make an camera transition intro
-
-update all external libs
+Visualize depth (for overall game not only light perspective): https://learnopengl.com/#!Advanced-OpenGL/Depth-testing
 
 Optimization:
+merge the shadow map FBO into de gbuffer FBO, the latter would only have an additional depth attachment
+update all external libs
+try to run all in VS 2017
 Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines
 http://leifnode.com/2015/05/tiled-deferred-shading/
-try to run all in VS 2017
 
 
 Textures (Stefan):
-
-Hang up Poster_002 and our game design poster in a aisle and our game design poster too.
-Our real life pictures somewhere in an office on the wall as framed pictures.
-
-if you exit the left wing to the right wing through the door and you look right, place a NPC on the roof looking at you.
 
 University interriors,
 - Furnitures, books, bookshelfs, pc, monitors, bakets
@@ -63,21 +45,15 @@ Critical books, use only critical literature about the following topics:
 - Books from Ulrich Mohr
 ...
 
-Perspective Room from https://youtu.be/xleyq2oJt_8?t=30m53s as art installation in a room with a sign beside the door which says "There is only a perspective seeing, only a perspective "knowing"". - Friedrich Nietzsche 1844 - 1900
-
-Elevator, from the basement up to to roof top, must be with typical elevator music.
-
-
-
-
+Infunctional elevator, from the basement up to to roof top, must be with typical elevator music.
 
 Ideas (both):
+
+Perspective Room from https://youtu.be/xleyq2oJt_8?t=30m53s as art installation in a room with a sign beside the door which says "There is only a perspective seeing, only a perspective "knowing"". - Friedrich Nietzsche 1844 - 1900
 
 Generator which changes physics, negative gravity?...
 
 If a charater is camping giv an NPC the position and let him walk to that position to detect him
-
-SSAO as alternative to vertex skinning
 
 Link the sound to the view frustum culling, if outside the cull it is decreased
 

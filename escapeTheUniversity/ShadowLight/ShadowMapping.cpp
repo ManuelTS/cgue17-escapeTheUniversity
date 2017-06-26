@@ -35,7 +35,7 @@ void ShadowMapping::renderInDepthMap(Node* root, LightNode* ln, const float FOV,
 	const float near_plane = 0.1f; // Check debugger.cpp#renderShadowMap
 	Frustum* frustum = Frustum::getInstance();
 	// Calculate light space matirx
-	glm::mat4 lightProjection = glm::perspective(frustum->degreesToRadians(95.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, ln->lightSphereRadius * 2); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
+	glm::mat4 lightProjection = glm::perspective(frustum->degreesToRadians(95.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, ln->light.position.w); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
 	//lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, ln->lightSphereRadius);
 	glm::vec3 lightPosition = glm::vec3(ln->light.position);
 	glm::vec3 lightFront = glm::normalize(glm::vec3(0, -1, 0));
@@ -50,12 +50,13 @@ void ShadowMapping::renderInDepthMap(Node* root, LightNode* ln, const float FOV,
 	glUniformMatrix4fv(shadowShader->SHADOW_LIGHT_SPACE_MATRIX_LOCATION, 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glCullFace(GL_FRONT);
-
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // No color is needed, only depth
 	//frustum->setCamDef(lightPosition, lightFront, lightUp);
 	//frustum->setCamInternals(degreesFOV, SHADOW_WIDTH, SHADOW_HEIGHT);
 
 	draw(root);
 
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glCullFace(GL_BACK);
 	unbindTexture();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
