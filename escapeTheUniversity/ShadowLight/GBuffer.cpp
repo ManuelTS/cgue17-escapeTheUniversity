@@ -65,15 +65,18 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void GBuffer::bindForGeometryPass()
-{
+void GBuffer::clearFrame() {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
 	glDrawBuffer(GL_COLOR_ATTACHMENT2);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
-	glClear(GL_COLOR_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
+
+}
+
+void GBuffer::bindForGeometryPass()
+{
 	const unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, attachments);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
 }
 
 void GBuffer::bind4LightPass()

@@ -327,7 +327,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	if (fps)
 		drawnTriangles = 0;
 
-	Frustum* frustum = Frustum::getInstance();
+	Frustum* frustumCulling = Frustum::getInstance();
 	Shader* gBufferShader = gBuffer->gBufferShader;
 
 	// Deferred Shading: Geometry Pass, put scene's gemoetry/color data into gbuffer
@@ -335,10 +335,12 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE); // Must be before glClearColor and ShadowMapping, otherwise it remains untouched
 	glDepthFunc(GL_LEQUAL);
+	gBuffer->clearFrame();
 	gBuffer->bindForGeometryPass(); // Previously the FBO in the G Buffer was static (in terms of its configuration) and was set up in advance so we just had to bind it for writing when the geometry pass started. Now we keep changing the FBO to we need to config the draw buffers for the attributes each time.
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
 	gBufferShader->useProgram();
-	const float* projectionMatrixP = glm::value_ptr(glm::perspective(frustum->degreesToRadians(camera->zoom), (float)width / (float)height, frustum->nearD, frustum->farD));
-	const float* viewMatrixP = glm::value_ptr(camera->getViewMatrix());
+	const float const* projectionMatrixP = glm::value_ptr(glm::perspective(frustumCulling->degreesToRadians(camera->zoom), (float)width / (float)height, frustumCulling->nearD, frustumCulling->farD));
+	const float const* viewMatrixP = glm::value_ptr(camera->getViewMatrix());
 	glUniformMatrix4fv(gBufferShader->projectionLocation, 1, GL_FALSE, projectionMatrixP);
 	glUniformMatrix4fv(gBufferShader->viewLocation, 1, GL_FALSE, viewMatrixP);
 	glUniform4f(ModelNode::debugFlagLocation, 0, 0, 0, 0); // x = flag for debugging to render bullet wireframe with value 1
@@ -347,20 +349,23 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	if (drawBulletDebug) // Draws the bullet debug context, see bullet.cpp#bulle
 		Bullet::getInstance()->debugDraw();
 	
-	
 	// Stencil and light passes
 	Shader* deferredShader = gBuffer->deferredShader;
 	for (unsigned int i = 0; i < ml->lights.size(); i++) // Look which lights intersect or are in the frustum
 	{
 		LightNode* ln = ml->lights.at(i);
 		ln->light.position.w = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
-		bool lightInFrustum = frustum->sphereInFrustum(vec3(ln->light.position), ln->light.position.w) > -1;// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
+		bool lightInFrustum = frustumCulling->sphereInFrustum(vec3(ln->light.position), ln->light.position.w) > -1;// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
 	
-		if (lightInFrustum)
+		if (drawLightBoundingSpheres) // Draws the light bounding sphere of all lights
 		{
-			if (drawLightBoundingSpheres) // Draws the light bounding sphere of all lights
-				Debugger::getInstance()->drawLightBoundingSpheres(ln);
+			gBuffer->bindForGeometryPass();
+			gBufferShader->useProgram();
+			Debugger::getInstance()->drawLightBoundingSpheres(ln); // TODO buggy
+		}
 
+		if (frustum || lightInFrustum)
+		{
 			glEnable(GL_DEPTH_TEST);
 			glDepthMask(GL_TRUE);
 			realmOfShadows->renderInDepthMap(ml->root, ln, initVar->zoom, width, height); // far plane is the spheres radius
@@ -383,11 +388,11 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				glDisable(GL_CULL_FACE);
 
 				glm::mat4 sphereModelMatrix = glm::scale(glm::translate(glm::mat4(), glm::vec3(ln->light.position)), glm::vec3(ln->light.position.w)); // Transalte then scale sphere model matrix
-				const float* sphereModelMatrixP = glm::value_ptr(ml->sphere01->hirachicalModelMatrix = sphereModelMatrix);
+				const float const* sphereModelMatrixP = glm::value_ptr(ml->sphere01->hirachicalModelMatrix = sphereModelMatrix);
 				glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, sphereModelMatrixP);
 				glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, viewMatrixP); // stencil.vert
 				glUniformMatrix4fv(ModelNode::projectionMatrixStencilLocation, 1, GL_FALSE, projectionMatrixP); // stencil.vert
-
+					
 				for(Mesh* m: ml->sphere01->meshes)
 					m->draw(GL_TRIANGLES, true);
 
@@ -435,6 +440,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				realmOfShadows->unbindTexture();
 			}
 		}
+		break;
 	}
 
 	// Directional light pass, it light does not need a stencil or depth test because its volume is unlimited and the final pass simply copies the texture, in our case this is obly the ambient light
@@ -488,7 +494,10 @@ void RenderLoop::draw(Node* current)
 			// If model node and (no frustum or transformationNode or modelNode bounding frustum sphere (modelNode center, radius) inside frustum):
 			// ... render only when the model node schould be rendered
 
-			if (mn->render && (frustum || Frustum::getInstance()->sphereInFrustum(vec3(mn->hirachicalModelMatrix[3]), mn->radius) > -1)) // World position is [3]
+			if (mn->name.find("Scene") != string::npos || 
+				(mn->render && 
+					(frustum || 
+					 Frustum::getInstance()->sphereInFrustum(vec3(mn->hirachicalModelMatrix[3]), mn->radius) > -1))) // World position is [3]
 			{
 				AnimatNode* an = dynamic_cast<AnimatNode*>(mn);
 

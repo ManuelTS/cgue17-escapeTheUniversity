@@ -94,5 +94,4 @@ void Camera::updateCameraVectors()
 	up = glm::cross(front, right); // Both already normalized
 
 	Frustum::getInstance()->setCamDef(position, front, right, up);
-
 }

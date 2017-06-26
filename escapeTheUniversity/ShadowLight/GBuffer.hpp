@@ -28,6 +28,7 @@ public:
 	GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT);
 	~GBuffer();
 
+	void clearFrame();
 	void bindForGeometryPass(); // Previously the FBO in the G Buffer was static (in terms of its configuration) and was set up in advance so we just had to bind it for writing when the geometry pass started. Now we keep changing the FBO to we need to config the draw buffers for the attributes each time.
 	void bind4LightPass(); // Binds the FBO as draw and sets the attachment 2 as target
 	void bindTextures(); // Bindes the textures used
