@@ -174,11 +174,11 @@ private:
 	})glsl";
 	const char* DEFERRED_SHADING_VERT = R"glsl(
 	#version 430 core
-	layout (location = 0) in vec3 position;              // of the rendered vertex, correlates in location value with gbuffer.vert
+	layout (location = 0) in vec3 position;           // of the rendered vertex, correlates in location value with gbuffer.vert
 
 	layout (location = 0) uniform mat4 model;	      // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
 	layout (location = 4) uniform mat4 view;	      // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
-	layout (location = 8) uniform mat4 projection;   // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
+	layout (location = 8) uniform mat4 projection;    // Usage in: RenderLoop.cpp#doDeferredShading Stencil Pass
 
 	void main(void)
 	{
@@ -197,7 +197,7 @@ private:
 
 	struct LightStruct 
 	{ // Same as LightNode.hpp#Light
-		vec4 position;     // xyz = world coord position of light, w = unused
+		vec4 position;     // xyz = world coord position of light, w = light sphere radius
 		vec4 diffuse;      // rgb = diffuse light, a = ambient coefficient
 		vec4 shiConLinQua; // x = shininess, y = constant attentuation, z = linear attentuation, w = quadratic attentuation value
 	};
@@ -251,6 +251,26 @@ private:
 		return shadow; // 0.x in shadow, 1 not in shadow
 	}
 
+	// Source https://imdoingitwrong.wordpress.com/tag/glsl/
+	float calculateAttentuation(vec3 lightPosition, vec3 normals, vec3 lightCentre, float lightRadius, float cutoff)
+	{
+		// calculate normalized light vector and distance to sphere light surface
+		vec3 L = lightCentre - lightPosition;
+		float distance = length(L);
+		float d = max(distance - lightRadius, 0);
+		L /= distance;
+     
+		// calculate basic attenuation
+		float denom = d / lightRadius + 1;
+		float attenuation = 1 / (denom*denom);
+     
+		attenuation = (attenuation - cutoff) / (1 - cutoff); // scale and bias attenuation such that: attenuation == 0 at extent of max influence and attenuation == 1 when d == 0
+		attenuation = max(attenuation, 0);
+     
+		float dot = max(dot(L, normals), 0);
+		return dot * attenuation;
+	}
+
 	// Blinn Phong light
 	vec3 calculateLight(LightStruct light, vec3 diffuse, float materialShininess, vec3 norm, vec3 fragmentPosition, vec3 viewDirection)
 	{
@@ -268,18 +288,15 @@ private:
 		float spec = pow(max(dot(norm, halfwayDir), 0.0), light.shiConLinQua.x);
 		vec3 specularColor = light.diffuse.rgb * spec * materialShininess;
 
-		//Calculate attenuation
+		//Calculate attenuation, calculateAttentuation(fragmentPosition, norm, lightPosition, light.position.w, 0.001f);
 		float lightFragDist = length(lightPosition - fragmentPosition);
 		float attenuation = 1.0 / (light.shiConLinQua.y + light.shiConLinQua.z * lightFragDist + light.shiConLinQua.w * (lightFragDist * lightFragDist));
 
-		diffuseColor *= attenuation;
-		specularColor *= attenuation;
-
 		//Calculate shadow
-	    float shadow = calculateShadow(fragmentPosition, lightDirection, norm);  
+	    float shadow = calculateShadow(fragmentPosition, lightDirection, norm);   // No cutoff
 
 		// Calculate Final color	
-		return ambientColor + ((diffuseColor + specularColor) * shadow);// + calculateRim(norm, viewDirection);
+		return ambientColor + ((diffuseColor + specularColor) * attenuation * shadow);// + calculateRim(norm, viewDirection);
 	}
 
 	void main()
@@ -290,7 +307,9 @@ private:
 
 		vec3 diffuse = vec3(unpackHalf2x16(gColorAndNormal.x), temp.x);
 
-		if(gPosition.w == 1.0f)
+		if(l.light.position.x == 0 && l.light.position.y == 0 && l.light.position.z == 0) // Directional ambient light
+			gl_FragColor = vec4(diffuse * l.light.diffuse.a, 1.0f);
+		else if(gPosition.w == 1.0f)
 			gl_FragColor = vec4(diffuse, 1.0f);
 		else
 		{

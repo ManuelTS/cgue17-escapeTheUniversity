@@ -81,7 +81,7 @@ void Debugger::drawLightBoundingSpheres(LightNode* ln) // Draws the light sphere
 	bool actualBounding = ml->sphere01->bounding;
 	ml->sphere01->bounding = false; // Draw regardless of bounding
 
-	glm::mat4 m = glm::scale(glm::translate(glm::mat4(), glm::vec3(ln->light.position)), glm::vec3(ln->lightSphereRadius)); // Translate to light center and then scale the sphere to the light radius
+	glm::mat4 m = glm::scale(glm::translate(glm::mat4(), glm::vec3(ln->light.position)), glm::vec3(ln->light.position.w)); // Translate to light center and then scale the sphere to the light radius
 	ml->sphere01->hirachicalModelMatrix = m; // Set new model matrix
 	ml->sphere01->inverseHirachicalModelMatrix = glm::inverseTranspose(m);
 	RenderLoop::getInstance()->pureDraw(ml->sphere01);
