@@ -99,9 +99,15 @@ btConvexHullShape* Bullet::pureBulletConvexHullGeneration(ModelNode* mn)
 
 bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 {
+	printf("%s\n", mn->name.c_str()); //note the use of c_str
+
 	if(mn->name.find("_hinge") != string::npos)
 	{
 		createDoorHinge(mn);
+	}
+	else if (mn->name.find("MilitaryWoman") != string::npos)
+	{
+		createEnemy(mn);
 	}
 	else if (mn->name.find(ModelLoader::getInstance()->IMMOVABLE_SUFFIX) != string::npos)
 		createBuilding(mn);
@@ -353,9 +359,8 @@ void Bullet::createCamera(Camera* c)
 
 	btTransform trans;
 	trans.setIdentity();
-	//trans.setOrigin(btVector3(0.0f, 2.0f, 0.0f)); //set the camera to the "head" does not affect kamera?
 	removeScaleMatrix(matrix, shape, &trans);
-	trans.setOrigin(btVector3(0.0f, 2.0f, 0.0f)); //set the camera to the "head" does not affect kamera?
+	//trans.setOrigin(btVector3(0.0f, 2.0f, 0.0f)); //set the camera to the "head" does not affect kamera? just moves the position, nothing else
 
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
@@ -389,6 +394,52 @@ void Bullet::createCamera(Camera* c)
 	dynamicsWorld->addRigidBody(c->rigitBody);
 }
 
+void Bullet::createEnemy(ModelNode* mn)
+{
+	btCylinderShape* shape = new btCylinderShape(btVector3(0.7f, 0.05f, 0.2f));
+	shape->setMargin(DEFAULT_COLLISION_MARGIN);
+	const float mass = 5.0;
+	btVector3 localInertia = btVector3(1.0, 1.0, 1.0);
+	shape->calculateLocalInertia(mass, localInertia);
+
+	mat4 matrix = mat4();
+	//ModelNode* parent = dynamic_cast<ModelNode*>(mn->parent);
+	
+	vec3 enemyPosition = vec3(0,0,0); //set to origin, because i cannot figure out the real position
+	matrix[3] = vec4(mn->position, 1.0f);
+	//vec3 test = mn->getWorldPosition();
+
+	btTransform trans;
+	trans.setIdentity();
+	removeScaleMatrix(matrix, shape, &trans);
+
+	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
+	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
+	btRigidBody *myEnemy = new btRigidBody(groundRigidBodyCI);
+	//mydoor->
+	mn->rigidBody = myEnemy;
+	// we want a turn only on y-Axis
+	mn->rigidBody->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+														// and movement only x-z (normally)
+														//but we need a 1 in y-Axis for the LinearFactor, otherwise Collision-Detection gets nullified in this Axis
+	mn->rigidBody->setLinearFactor(btVector3(1, 1, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+													   //angular velocity should be 
+	mn->rigidBody->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); // https://en.wikipedia.org/wiki/Angular_velocity
+																   //c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
+																   //c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
+	//mn->rigidBody->setFriction(btScalar(0.8f));
+	//mn->rigidBody->setDamping(btScalar(0.1f), btScalar(0.25f)); //sets linear damping + angular damping
+	//mn->rigidBody->setRestitution(btScalar(0.1f)); //little bounce on the body
+	//mn->rigidBody->setSleepingThresholds(btScalar(0.2f), btScalar(0.2f)); // linear, angular 
+	//mn->modelMatrix = glm::translate(mn->modelMatrix, glm::vec3(-5.4f, 0.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene															
+	mn->rigidBody->activate(true);
+	mn->rigidBody->translate(btVector3(-5.4f, 0, 0)); //put her into the floor
+	mn->rigidBody->setActivationState(DISABLE_DEACTIVATION);
+	shapes.push_back(shape);
+	dynamicsWorld->addRigidBody(mn->rigidBody);
+}
+
+
 btDiscreteDynamicsWorld* Bullet::getDynamicsWorld()
 {
 	return dynamicsWorld;
@@ -396,6 +447,16 @@ btDiscreteDynamicsWorld* Bullet::getDynamicsWorld()
 
 Bullet::~Bullet()
 {
+
+
+	for (int i = dynamicsWorld->getNumConstraints() - 1; i >= 0; i--)	//remove the contraints before the rigitbodys from the dynamics world and delete them
+	{
+		btTypedConstraint * constraint = dynamicsWorld->getConstraint(i);
+		dynamicsWorld->removeConstraint(constraint);
+
+		delete constraint;
+	}
+
 	for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)	//remove the rigidbodies from the dynamics world and delete them
 	{
 		btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
@@ -407,6 +468,8 @@ Bullet::~Bullet()
 		dynamicsWorld->removeCollisionObject(obj);
 		delete obj;
 	}
+
+	
 
 	for (int j = 0; j<shapes.size(); j++)	//delete collision shapes
 	{

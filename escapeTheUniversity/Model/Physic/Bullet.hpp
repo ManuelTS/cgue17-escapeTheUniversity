@@ -47,6 +47,7 @@ public:
 	void init(); // Initalizes the bullet world, called only once
 	void createAndAddBoundingObjects(Node* current); // Creates and adds the bounding volumes into the bullet world and to the nodes
 	void createDoorHinge(ModelNode* mn); //creates a hinge between door + angle, whereas angle is immovable standallone
+	void createEnemy(ModelNode* mn); //creates a box of the enemy
 	void join();// Waits and removes all threads that where created for collision object creation
 	void createCamera(Camera* camera); // Creates the bounding object for the camera
 	btDiscreteDynamicsWorld* getDynamicsWorld();
