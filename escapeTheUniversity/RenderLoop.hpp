@@ -73,7 +73,8 @@ class RenderLoop
 		void checkGamePhasePaper(ModelNode* paper);  //indicates the game-section of the paper
 		bool gamePhaseEnd = false; // reached the safe zone
 		void checkGamePhaseEnd(ModelNode* paper);  //indicates the game-section of the end
-	
+		bool gameOver = false; //indicates if you have been caught and game is over!
+
 		// Sampling states
 		int textureSampling = 1; // Texture Sampling Quality: 0 = Nearest Neighbor, 1 = Bilinear, default: 1 see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping
 		int mipMapping = 2; // Maping-Quality: 0 = Off, 1 = Nearest Neigbor, 2 = Bilinear, default: 2

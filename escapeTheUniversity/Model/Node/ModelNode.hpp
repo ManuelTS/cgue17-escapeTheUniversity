@@ -30,6 +30,7 @@ public:
 	bool stencil = false; // True if an extra stencil FBO for this node VAO should be generated in the mesh constructor, false if not. Default: false
 	bool bounding = false; // True if an bounding VHACD should be generated, false if not. Default: false
 	bool shadow = false; // True if shadow shaders are used, false if not. The GLSL locations are equal of the same, needed objects
+	bool isEnemy = false; // true if this is the modelnode of the Enemy (for raycasting)
 
 	/*This is the default node containing information about a model.*/
 	ModelNode();

@@ -399,6 +399,7 @@ void Text::help()
 	i = copyInBuffer(help, i, (const unsigned char*) "Left click = ?", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Right click = ?", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Print = Screenshot", true);
+	i = copyInBuffer(help, i, (const unsigned char*) "O = Reset GameOver indicator", true);
 	i = copyInBuffer(help, i, (const unsigned char*) "Escape/End = Close game", true);
 	i = copyInBuffer(help, i, (const unsigned char*) " F1= Help", true);
 	i = copyInBuffer(help, i, (const unsigned char*) " F2= Toggle FPS and triangle count", true);

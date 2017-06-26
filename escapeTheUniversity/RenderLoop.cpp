@@ -95,6 +95,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		Bullet* b = Bullet::getInstance();
 		vec3 origin = vec3(rl->camera->position.x, rl->camera->position.y, rl->camera->position.z);
 		vec3 distance = origin + rl->camera->front * 5.0f;
+		//jep, this has to be done that way with the raytest!
 		btCollisionWorld::ClosestRayResultCallback res(btVector3(origin.x, origin.y, origin.z), btVector3(distance.x, distance.y, distance.z));
 		b->getDynamicsWorld()->rayTest(btVector3(origin.x, origin.y, origin.z), btVector3(distance.x, distance.y, distance.z), res);
 		if (res.hasHit()) {
@@ -111,7 +112,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			if (rl->gamePhaseKey) {  //this "unlockes" the locked door
 				body->setAngularFactor(btVector3(0, 1, 0));
 			}
-
+			
+		
 			if (key == GLFW_KEY_Q)                                    //push
 			{
 				//body->applyCentralForce(btVector3(-4.0f, 0.0f, -4.0f));
@@ -133,10 +135,12 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 	else if (key == GLFW_KEY_LEFT_BRACKET && action == GLFW_PRESS) // ü on german keyboard, ü is for überflieger
 		rl->freeCamera = !rl->freeCamera;
+
 	else if (key == GLFW_KEY_O && action == GLFW_PRESS)
 	{
-		Text::getInstance()->addText2Display(Text::GAME_OVER);
-		SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
+		rl->gameOver = false;  
+		//Text::getInstance()->addText2Display(Text::GAME_OVER);
+		//SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
 	}
 	else if (key == GLFW_KEY_I && action == GLFW_PRESS)
 	{
@@ -181,6 +185,7 @@ void RenderLoop::doMovement(double timeDelta)
 		vec3 movement = camera->front*movementVectorXYAxis;
 		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
 		rl->lastImpulse = vec3(-movement.x, -movement.y, -movement.z);
+		//int i = camera->rigitBody->getWorldArrayIndex(); //this works for identification of the object	
 		//camera->rigitBody->applyCentralForce(btVector3(movement.x, movement.y, movement.z));
 	}
 	
@@ -569,7 +574,55 @@ void RenderLoop::draw(Node* current)
 		{	
 			checkGamePhaseKey(mn);			
 		}
+		
+		/* do check if in enemy sight for GAMEOver!*/
+		if (mn && mn->isEnemy && !gameOver)
+		{
+	
+			Bullet* b = Bullet::getInstance();
+			
+			//+3.90f for setting the "camera of the enemy" to the height of the eyes
+			vec3 enemyPosition = vec3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y + 3.90f, mn->hirachicalModelMatrix[3].z);
+			vec3 targetDirectionPlayer = vec3(camera->position.x, camera->position.y, camera->position.z); //* 15.0f;
+			vec3 targetNormalized = glm::normalize(targetDirectionPlayer);
+			vec3 targetFinalPoint = enemyPosition + targetNormalized * 100.0f;
+			//vec3 distanceFromEnemy = targetDirectionPlayer * 15.0f;
 
+			//jep, this has to be done that way with the raytest!
+			btCollisionWorld::ClosestRayResultCallback res(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetFinalPoint.x, targetFinalPoint.y, targetFinalPoint.z));
+			b->getDynamicsWorld()->rayTest(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetFinalPoint.x, targetFinalPoint.y, targetFinalPoint.z), res);
+			if (res.hasHit() && res.m_collisionObject->CO_RIGID_BODY)
+				{
+					btRigidBody* body;
+					body = (btRigidBody*)res.m_collisionObject;
+
+					//see if it really the player that got hit and nothing else like a door
+					if(body->getWorldArrayIndex() == camera->rigitBody->getWorldArrayIndex()){
+						printf("Player raycast hit at: <%.2f, %.2f, %.2f>\n", res.m_hitPointWorld.getX(), res.m_hitPointWorld.getY(), res.m_hitPointWorld.getZ());
+
+							gameOver = true; //only play sound once!
+							Text::getInstance()->addText2Display(Text::GAME_OVER);
+							SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
+					}
+
+				}
+		/*	vec3 distance = origin + rl->camera->front * 5.0f;
+
+			btCollisionWorld::ClosestRayResultCallback res(btVector3(origin.x, origin.y, origin.z), btVector3(distance.x, distance.y, distance.z));
+			b->getDynamicsWorld()->rayTest(btVector3(origin.x, origin.y, origin.z), btVector3(distance.x, distance.y, distance.z), res);
+			if (res.hasHit()) {
+				printf("Raycast hit at: <%.2f, %.2f, %.2f>\n", res.m_hitPointWorld.getX(), res.m_hitPointWorld.getY(), res.m_hitPointWorld.getZ());
+			}
+			if (res.hasHit() && res.m_collisionObject->CO_RIGID_BODY)
+			{
+				btRigidBody* body;
+				body = (btRigidBody*)res.m_collisionObject;
+
+
+			mn->rigidBody
+			*/
+		}
+		/* GameOver Criteria ended. */
 
 // continue normal renderloop
 		
@@ -662,6 +715,8 @@ void RenderLoop::renderText()
 { // It is important to leave the if else structure here as it is
 	if (fps)
 		Text::getInstance()->fps(time.now, time.delta, drawnTriangles);
+		//Text::getInstance()->fps(time.now, time.delta, drawnTriangles);
+	
 
 	if (wireFrameMode)
 		Text::getInstance()->wireframe();
