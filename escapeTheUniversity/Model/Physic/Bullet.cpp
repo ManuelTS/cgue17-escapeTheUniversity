@@ -99,9 +99,7 @@ btConvexHullShape* Bullet::pureBulletConvexHullGeneration(ModelNode* mn)
 
 bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 {
-	printf("%s\n", mn->name.c_str()); //note the use of c_str
-
-	if(mn->name.find("_hinge") != string::npos)
+		if(mn->name.find("_hinge") != string::npos)
 	{
 		createDoorHinge(mn);
 	}
