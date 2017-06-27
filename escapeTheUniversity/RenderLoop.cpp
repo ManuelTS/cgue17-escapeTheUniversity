@@ -86,7 +86,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		bool minus = key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT; // In- or decrease ambient light coefficient
 
 		for (LightNode* ln : ModelLoader::getInstance()->lights)
-			ln->light.diffuse.a += minus ? -0.01f : 0.01f;
+			ln->light.diffuse.a += minus ? -ln->AMBIENT_LIGHT: ln->AMBIENT_LIGHT;
 	}
 	//else if (key == GLFW_KEY_E && action == GLFW_PRESS) is obsolete
 	//	rl->move(ModelLoader::getInstance()->root);
@@ -607,7 +607,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	{
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
-		glBlendFunc(GL_ZERO, GL_ZERO);
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
 	}
 
 	gBuffer->drawDirectionalLight();
