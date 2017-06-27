@@ -156,6 +156,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		rl->drawLightBoundingSpheres = !rl->drawLightBoundingSpheres;
 	else if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) // Num enter on german keyboard
 		rl->drawShadowMap = !rl->drawShadowMap;
+	else if (key == GLFW_KEY_LEFT_BRACKET && action == GLFW_PRESS) // ü on german keyboard, ü is for überflieger
+		rl->freeCamera = !rl->freeCamera;
 }
 
 /*Listens for user input.*/
@@ -524,12 +526,12 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 			realmOfShadows->renderInDepthMap(ml->root, ln, initVar->zoom, width, height); // far plane is the spheres radius
 
 			if (drawShadowMap) // Draw light depth map on screen
-				Debugger::getInstance()->renderShadowMap(ln->light.position.w, realmOfShadows->dephMapTextureHandle);
+				Debugger::getInstance()->renderShadowMap(ln->light.position.w, realmOfShadows->dephMapTextureHandle); // TODO buggy
 			else // Render this light into attachment 2
 			{
 				// Stencil
-				gBuffer->bind4LightPass(); // Return from shadow FBO to light FBO
-				glDrawBuffer(GL_NONE); // detach MRTs from FBO, no color drawing
+				gBuffer->bind4StencilPass(); // Return from shadow FBO to light FBO
+				
 				gBuffer->stencilShader->useProgram();
 				glEnable(GL_STENCIL_TEST);
 				glStencilMask(0xFF);
@@ -537,7 +539,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				glStencilFunc(GL_ALWAYS, 0, 0x00);
 				glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 				glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
-				glDepthMask(GL_FALSE); // prevents depth reading in the stencil, needed for shadows before
+				glDepthMask(GL_FALSE); // No depth writing, only reading
 				glDisable(GL_CULL_FACE);
 
 				glm::mat4 sphereModelMatrix = glm::scale(glm::translate(glm::mat4(), glm::vec3(ln->light.position)), glm::vec3(ln->light.position.w)); // Transalte then scale sphere model matrix
@@ -549,13 +551,15 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				for (Mesh* m : ml->sphere01->meshes)
 					m->draw(GL_TRIANGLES, true);
 
+				glStencilFunc(GL_NOTEQUAL, 0, 0xFF); // Only write values that have a non zero stencil value
+				glStencilMask(0x00); // Writing disallowed, reading allowed
 				glDisable(GL_DEPTH_TEST);
+
 				//Light pass
+				gBuffer->bind4LightPass();
 				deferredShader->useProgram();
 				gBuffer->bindTextures();
 				realmOfShadows->bindTexture(); 	//Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
-				glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
-				glStencilMask(0x00);
 
 				if (blending)
 				{
