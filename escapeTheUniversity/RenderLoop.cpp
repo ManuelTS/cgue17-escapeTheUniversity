@@ -607,7 +607,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	{
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+		glBlendFunc(GL_ONE, GL_ZERO);
 	}
 
 	gBuffer->drawDirectionalLight();

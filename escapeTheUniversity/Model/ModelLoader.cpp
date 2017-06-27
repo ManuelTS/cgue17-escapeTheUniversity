@@ -148,7 +148,7 @@ LightNode* ModelLoader::processLightNode(string* name, Node* parent, aiNode* nod
 				ln->light.position = glm::vec4(getTransformationVec(&node->mTransformation), ln->light.position.w);
 
 			ln->light.diffuse = glm::vec4(lightNode->mColorDiffuse.r, lightNode->mColorDiffuse.g, lightNode->mColorDiffuse.b, ln->light.diffuse.a);// Ambient light is in the shader ambient = diffuse.rbg * diffuse.a where .a is a simple coefficient
-			ln->light.shiConLinQua = glm::vec4(64.0f, lightNode->mAttenuationConstant, lightNode->mAttenuationLinear, lightNode->mAttenuationQuadratic);
+			ln->light.shiConLinQua = glm::vec4(ln->light.shiConLinQua.x, lightNode->mAttenuationConstant, lightNode->mAttenuationLinear, lightNode->mAttenuationQuadratic);
 			// Shin,Lin, Qua values with distance: http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Point+Light+Attenuation
 
 			ln->name = *name;
