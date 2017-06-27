@@ -133,7 +133,7 @@ void GBuffer::finalPass(const unsigned int width, const unsigned int height)
 float GBuffer::calcPointLightBSphere(LightNode* ln)
 {
 	glm::vec3 lightLuminance = glm::cross(glm::vec3(ln->light.diffuse), glm::vec3(0.2126, 0.7152, 0.0722));// Get light's luminance using Rec 709 luminance formula
-	const float maxLuminance = 0.03 / fmax(fmax(lightLuminance.x, lightLuminance.y), lightLuminance.z); // min luminance threshold divided by max luminance, from https://gamedev.stackexchange.com/questions/51291/deferred-rendering-and-point-light-radius
+	const float maxLuminance = 0.02 / fmax(fmax(lightLuminance.x, lightLuminance.y), lightLuminance.z); // min luminance threshold divided by max luminance, from https://gamedev.stackexchange.com/questions/51291/deferred-rendering-and-point-light-radius
 	const float maxChannel = fmax(fmax(ln->light.diffuse.x, ln->light.diffuse.y), ln->light.diffuse.z);
 
 	// Calculation on: http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html

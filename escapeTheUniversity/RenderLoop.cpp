@@ -514,7 +514,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				gBuffer->bindForGeometryPass();
 				gBufferShader->useProgram();
 				const float const* inverseSphereModelMatrixP = glm::value_ptr(glm::inverseTranspose(sphereModelMatrix)); // Set manually to omit bullet
-				drawSphere(ml->sphere01, sphereModelMatrixP, inverseSphereModelMatrixP, viewMatrixP, projectionMatrixP);
+				drawSphere(ml->sphere01, sphereModelMatrixP, inverseSphereModelMatrixP, viewMatrixP, projectionMatrixP); // draw light bouding sphere
 			}
 
 			glEnable(GL_DEPTH_TEST);
@@ -537,7 +537,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				glDepthMask(GL_FALSE); // No depth writing, only reading
 				glDisable(GL_CULL_FACE);
 
-				drawSphere(ml->sphere01, sphereModelMatrixP, nullptr, viewMatrixP, projectionMatrixP);
+				drawSphere(ml->sphere01, sphereModelMatrixP, nullptr, viewMatrixP, projectionMatrixP); // Render spehre into stencil buffer
 
 				glStencilFunc(GL_NOTEQUAL, 0, 0xFF); // Only write values that have a non zero stencil value
 				glStencilMask(0x00); // Writing disallowed, reading allowed
@@ -596,13 +596,13 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	const float const* unitMatrixP = glm::value_ptr(glm::mat4()); // No cam perspective or view needed because the whole gbuffer is rendered
-	drawSphere(nullptr, unitMatrixP, nullptr, unitMatrixP, unitMatrixP);
+	drawSphere(nullptr, unitMatrixP, nullptr, unitMatrixP, unitMatrixP); // Set matrices for quad rendering
 
 	if (blending)
 	{
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
-		glBlendFunc(GL_ONE, GL_ONE);
+		glBlendFunc(GL_ZERO, GL_ZERO);
 	}
 
 	gBuffer->drawDirectionalLight();
