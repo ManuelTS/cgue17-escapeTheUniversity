@@ -170,7 +170,10 @@ void RenderLoop::doMovement(double timeDelta)
 		trans.getOpenGLMatrix(glm::value_ptr(matrix));
 		camera->position = vec3(matrix[3]); // only update the position of the camera!
 	}
-	vec3 movementVectorXYAxis = vec3(1.0f, 1.0f, 1.0f); //direction of possible axis + factor 2 (otherwise slow)	
+
+	float factor = 0.8f;
+	vec3 movementVectorXYAxis = vec3(1.0f * factor, 1.0f * factor, 1.0f *factor); //direction of possible axis * factor  (otherwise fast)	
+
 
 	//Camera controls
     //jitter cannot be solved through applying the force just on key-tap 
