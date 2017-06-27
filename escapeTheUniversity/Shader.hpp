@@ -7,8 +7,8 @@ class Shader
 {
 public:
 	// gBufferShader location constants
-	const int viewLocation = 8; // Matrix, gBuffer.vert
-	const int projectionLocation = 12; // Matrix, gBuffer.vert
+	const static unsigned int viewLocation = 8; // Matrix, gBuffer.vert
+	const static unsigned int projectionLocation = 12; // Matrix, gBuffer.vert
 	// deferredShader location constants
 	const int viewPositionLocation = 12; // defferredShader.frag
 	// shadowShader location constants
@@ -262,7 +262,7 @@ private:
      
 		// calculate basic attenuation
 		float denom = d / lightRadius + 1;
-		float attenuation = 1 / (denom*denom);
+		float attenuation = 1 / (denom * denom);
      
 		attenuation = (attenuation - cutoff) / (1 - cutoff); // scale and bias attenuation such that: attenuation == 0 at extent of max influence and attenuation == 1 when d == 0
 		attenuation = max(attenuation, 0);
@@ -288,12 +288,12 @@ private:
 		float spec = pow(max(dot(norm, halfwayDir), 0.0), light.shiConLinQua.x);
 		vec3 specularColor = light.diffuse.rgb * spec * materialShininess;
 
-		//Calculate attenuation, calculateAttentuation(fragmentPosition, norm, lightPosition, light.position.w, 0.001f);
+		//Calculate attenuation, calculateAttentuation(fragmentPosition, norm, lightPosition, light.position.w, 0.9f);
 		float lightFragDist = length(lightPosition - fragmentPosition);
 		float attenuation = 1.0 / (light.shiConLinQua.y + light.shiConLinQua.z * lightFragDist + light.shiConLinQua.w * (lightFragDist * lightFragDist));
 
 		//Calculate shadow
-	    float shadow = calculateShadow(fragmentPosition, lightDirection, norm);   // No cutoff
+	    float shadow = calculateShadow(fragmentPosition, lightDirection, norm); 
 
 		// Calculate Final color	
 		return ambientColor + ((diffuseColor + specularColor) * attenuation * shadow);// + calculateRim(norm, viewDirection);

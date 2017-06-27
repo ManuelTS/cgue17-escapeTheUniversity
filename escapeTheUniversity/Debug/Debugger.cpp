@@ -76,20 +76,6 @@ void Debugger::renderShadowMap(float farPlane, unsigned int depthMapTextureHandl
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Debugger::drawLightBoundingSpheres(LightNode* ln) // Draws the light spheres based on their location and intensity radius
-{
-	ModelLoader* ml = ModelLoader::getInstance();
-	bool actualBounding = ml->sphere01->bounding;
-	ml->sphere01->bounding = false; // Draw regardless of bounding
-
-	glm::mat4 m = glm::scale(glm::translate(glm::mat4(), glm::vec3(ln->light.position)), glm::vec3(ln->light.position.w)); // Translate to light center and then scale the sphere to the light radius
-	ml->sphere01->hirachicalModelMatrix = m; // Set new model matrix
-	ml->sphere01->inverseHirachicalModelMatrix = glm::inverseTranspose(m);
-	RenderLoop::getInstance()->pureDraw(ml->sphere01);
-
-	ml->sphere01->bounding = actualBounding; // Sphere position overwritten on its next rendering
-}
-
 void Debugger::writeAllVertices(vector<float>* vertices, string fileNameWithoutEnding)
 {
 	string coords = "";
