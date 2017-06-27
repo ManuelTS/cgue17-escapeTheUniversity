@@ -843,7 +843,7 @@ void RenderLoop::renderText()
 
 }
 
-// Calculates the delta time, e.g. the time between frames
+// Calculates the delta time, e.g. the time between frames, http://gafferongames.com/game-physics/fix-your-timestep/
 void RenderLoop::calculateDeltaTime()
 {
 	time.now = glfwGetTime();
@@ -861,13 +861,13 @@ void RenderLoop::calculateDeltaTime()
 
 	while (time.accumulator >= time.differentialDelta)
 	{
-		b->getDynamicsWorld()->stepSimulation(time.differentialDelta);
-		//a->UpdateAnimation(time.differentialDelta, a->ANIMATION_TICKS_PER_SECOND);
+		b->getDynamicsWorld()->stepSimulation(time.differentialDelta, 100, 0.01f);
 		time.accumulator -= time.differentialDelta;
 	}
 
 	const double alpha = time.accumulator / time.differentialDelta;
 	time.delta = time.delta * alpha + time.lastDelta * (1 - alpha); // weak https://en.wikipedia.org/wiki/Interpolation#Linear_interpolation
+	a->UpdateAnimation(time.delta, a->ANIMATION_TICKS_PER_SECOND);
 }
 
 
