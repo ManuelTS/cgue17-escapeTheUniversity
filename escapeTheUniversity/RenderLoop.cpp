@@ -794,8 +794,7 @@ void RenderLoop::checkGameOverCondition(ModelNode* mn)
 		activeSightPoint = sightPoint3;
 	else if (!endOf4Reached)
 		activeSightPoint = sightPoint4;
-
-
+  //TODO: Make Test of a range of Positions
 	vec3 targetDirectionSightPoint = vec3(
 		activeSightPoint.x - enemyPosition.x,
 		activeSightPoint.y - enemyPosition.y,
