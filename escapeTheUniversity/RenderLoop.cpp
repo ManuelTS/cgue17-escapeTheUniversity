@@ -593,20 +593,20 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				gBuffer->unbindTexture();
 				realmOfShadows->unbindTexture();
 			}
-			glDisable(GL_DEPTH_TEST); 
+			glDisable(GL_DEPTH_TEST);
 		}
 	}
 
 	// Directional light pass, it light does not need a stencil or depth test because its volume is unlimited and the final pass simply copies the texture, in our case this is obly the ambient light
+	glDisable(GL_DEPTH_TEST);
 	gBuffer->bind4LightPass(); // Return from shadow FBO to light FBO
 	deferredShader->useProgram();
 	gBuffer->bindTextures();
-	realmOfShadows->bindTexture(); // Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
+	//realmOfShadows->bindTexture(); // Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
 	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);// Write light data to deferred shader.frag
 	glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLB: S. 169, always execute after new program is used
 	glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
 	LightNode::Light ambientLight = LightNode::Light();
-	ambientLight.diffuse = vec4(1, 0, 0, ambientLight.diffuse.a);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ambientLight), &ambientLight);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
@@ -628,7 +628,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		glDisable(GL_BLEND);
 
 	gBuffer->unbindTexture();
-	realmOfShadows->unbindTexture();
+//	realmOfShadows->unbindTexture();
 
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -869,9 +869,6 @@ void RenderLoop::calculateDeltaTime()
 
 	const double alpha = time.accumulator / time.DIFFERNTIAL_DELTA;
 	time.delta = time.delta * alpha + time.lastDelta * (1 - alpha); // weak https://en.wikipedia.org/wiki/Interpolation#Linear_interpolation
-
-	Animator* a = ModelLoader::getInstance()->animator;
-	a->UpdateAnimation(time.delta, a->ANIMATION_TICKS_PER_SECOND);
 }
 
 

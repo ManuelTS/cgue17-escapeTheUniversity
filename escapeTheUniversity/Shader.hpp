@@ -307,9 +307,7 @@ private:
 
 		vec3 diffuse = vec3(unpackHalf2x16(gColorAndNormal.x), temp.x);
 
-		if(l.light.position.x == 0 && l.light.position.y == 0 && l.light.position.z == 0) // Directional ambient light
-			gl_FragColor = vec4(diffuse * l.light.diffuse.a, 1.0f);
-		else if(gPosition.w == 1.0f)
+		if(gPosition.w == 1.0f)
 			gl_FragColor = vec4(diffuse, 1.0f);
 		else
 		{

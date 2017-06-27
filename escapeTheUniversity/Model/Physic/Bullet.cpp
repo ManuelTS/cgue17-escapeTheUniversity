@@ -420,7 +420,6 @@ void Bullet::createEnemy(ModelNode* mn)
 	dynamicsWorld->addRigidBody(mn->rigidBody);
 }
 
-
 btDiscreteDynamicsWorld* Bullet::getDynamicsWorld()
 {
 	return dynamicsWorld;
