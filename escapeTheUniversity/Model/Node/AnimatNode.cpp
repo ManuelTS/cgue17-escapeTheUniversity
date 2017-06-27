@@ -37,10 +37,7 @@ void AnimatNode::moveEnemy()
 		{
 			endOf1Reached = true;
 			endOf4Reached = false;
-			dn->hirachicalModelMatrix = glm::rotate(dn->hirachicalModelMatrix, Frustum::getInstance()->degreesToRadians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));// Rotate it
-			//this->rigidBody->getTotalTorque();
-			//this->rigidBody->applyTorque(btVector3(0.0f, 90.0f, 0.0f));
-
+			setBulletRotation(90.0f);
 		}
 	}
 	else if (!endOf2Reached) 
@@ -48,14 +45,20 @@ void AnimatNode::moveEnemy()
 		//positionEnemy.x = positionEnemy.x + 0.05;
 		this->rigidBody->translate(btVector3(MOVESTEP, 0, 0)); //move her around the floor
 		if (positionEnemy.x >= walkPoint2.x) //take care of +/- !
+		{
 			endOf2Reached = true;
+			setBulletRotation(180.0f);
+		}
 	}
 	else if (!endOf3Reached)
 	{
 		//positionEnemy.z = positionEnemy.z - 0.05;
 		this->rigidBody->translate(btVector3(0, 0, -MOVESTEP)); //move her around the floor
 		if (positionEnemy.z <= walkPoint3.z) //take care of +/- !
+		{
 			endOf3Reached = true;
+			setBulletRotation(270.0f);
+		}
 	}
 	else //if (!endOf4Reached) we never need this
 	{
@@ -66,7 +69,19 @@ void AnimatNode::moveEnemy()
 			endOf4Reached = true;
 			endOf1Reached = false;
 			endOf2Reached = false;
-			endOf3Reached = false;
+			endOf3Reached = false;		
+			setBulletRotation(0.0f);
 		}
 	}
+}
+
+void AnimatNode::setBulletRotation(float finalRotateInDegree)
+{
+	glm::vec3 positionEnemy = ModelNode::hirachicalModelMatrix[3];
+	btTransform trans(btQuaternion(btVector3(0, 1, 0), btRadians(finalRotateInDegree)), btVector3(positionEnemy.x, positionEnemy.y, positionEnemy.z));
+	trans.setIdentity();
+	trans.setRotation(btQuaternion(btVector3(0, 1, 0), btRadians(finalRotateInDegree)));
+	this->rigidBody->setCenterOfMassTransform(trans);
+	this->rigidBody->setWorldTransform(trans);
+	this->rigidBody->translate(btVector3(positionEnemy.x, positionEnemy.y, positionEnemy.z)); //put her into the floor
 }

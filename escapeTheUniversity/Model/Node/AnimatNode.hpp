@@ -16,6 +16,7 @@ class AnimatNode : public TransformationNode
 		const float MOVESTEP = 0.06f;
 
 		void moveEnemy(); //moves the enemy along the walkingpoints
+		void setBulletRotation(float finalRotateInDegree);
 
 
 	public:
