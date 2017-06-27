@@ -663,15 +663,16 @@ void RenderLoop::draw(Node* current)
 		if (mn && mn->isEnemy && !gameOver)
 		{
 	
-			Bullet* b = Bullet::getInstance();
-			
+			Bullet* b = Bullet::getInstance();			
 			//+3.90f for setting the "camera of the enemy" to the height of the eyes
 			vec3 enemyPosition = vec3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y + 3.90f, mn->hirachicalModelMatrix[3].z);
-			vec3 targetDirectionPlayer = vec3(camera->position.x, camera->position.y, camera->position.z); //* 15.0f;
+			vec3 targetDirectionPlayer = vec3(
+				camera->position.x - enemyPosition.x , 
+				camera->position.y - enemyPosition.y,
+				camera->position.z - enemyPosition.z); 
 			vec3 targetNormalized = glm::normalize(targetDirectionPlayer);
-			vec3 targetFinalPoint = enemyPosition + targetNormalized * 100.0f;
+			vec3 targetFinalPoint = enemyPosition + targetNormalized * 8.0f; //working radius for exmatriculation!
 			//vec3 distanceFromEnemy = targetDirectionPlayer * 15.0f;
-
 			//jep, this has to be done that way with the raytest!
 			btCollisionWorld::ClosestRayResultCallback res(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetFinalPoint.x, targetFinalPoint.y, targetFinalPoint.z));
 			b->getDynamicsWorld()->rayTest(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetFinalPoint.x, targetFinalPoint.y, targetFinalPoint.z), res);
