@@ -560,8 +560,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				if (blending)
 				{
 					glEnable(GL_BLEND);
-					glBlendEquation(GL_FUNC_ADD);
 					glBlendFunc(GL_ONE, GL_ONE);
+					glBlendEquation(GL_FUNC_ADD);
 				}
 
 				glEnable(GL_CULL_FACE);
@@ -857,17 +857,18 @@ void RenderLoop::calculateDeltaTime()
 	time.past = time.now;
 	time.accumulator += time.delta;
 
-	Animator* a = ModelLoader::getInstance()->animator;
 	Bullet* b = Bullet::getInstance();
 
-	while (time.accumulator >= time.differentialDelta)
+	while (time.accumulator >= time.DIFFERNTIAL_DELTA)
 	{
-		b->getDynamicsWorld()->stepSimulation(time.differentialDelta, 100, 0.01f);
-		time.accumulator -= time.differentialDelta;
+		b->getDynamicsWorld()->stepSimulation(time.DIFFERNTIAL_DELTA, time.BULLET_MAX_SUB_STEPS, time.BULLET_FIXED_TIME_STEP); // http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_the_World
+		time.accumulator -= time.DIFFERNTIAL_DELTA;
 	}
 
-	const double alpha = time.accumulator / time.differentialDelta;
+	const double alpha = time.accumulator / time.DIFFERNTIAL_DELTA;
 	time.delta = time.delta * alpha + time.lastDelta * (1 - alpha); // weak https://en.wikipedia.org/wiki/Interpolation#Linear_interpolation
+
+	Animator* a = ModelLoader::getInstance()->animator;
 	a->UpdateAnimation(time.delta, a->ANIMATION_TICKS_PER_SECOND);
 }
 
