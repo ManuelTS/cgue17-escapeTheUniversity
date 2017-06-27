@@ -93,12 +93,13 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 	trans = glm::scale(trans, glm::vec3(scale, scale, 1));
 	trans = glm::rotate(trans, glm::radians(angle), glm::vec3(0.0, 0.0, 1.0));
 
+	const RenderLoop* rl = RenderLoop::getInstance();
+
 	glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(trans));
 	glUniform4f(colorScaleLocation, color.x, color.y, color.z, scale);
 
 	vector<float>* vertices = new vector<float>;
 	float cursor = 0.0f, row = 0.0f;
-	const RenderLoop* rl = RenderLoop::getInstance();
 	const float advance = scale * charSize / (float)rl->width;
 	x /= scale;
 	y /= scale;

@@ -100,11 +100,13 @@ btConvexHullShape* Bullet::pureBulletConvexHullGeneration(ModelNode* mn)
 
 bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 {
-	if(mn->name.find("_hinge") != string::npos)
+	ModelLoader* ml = ModelLoader::getInstance();
+
+	if(mn->name.find(ml->HINGE_SUFFIX) != string::npos)
 		createDoorHinge(mn);
 	else if (mn->name.find("MilitaryWoman") != string::npos)
 		createEnemy(mn);
-	else if (mn->name.find(ModelLoader::getInstance()->IMMOVABLE_SUFFIX) != string::npos)
+	else if (mn->name.find(ml->IMMOVABLE_SUFFIX) != string::npos)
 		createBuilding(mn);
 	else
 	{
@@ -115,7 +117,7 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		shape->initializePolyhedralFeatures(); // Changing the collision shape now bad idea,  That will make the debug rendering more pretty, but doesn't change anything related to collision detection etc. http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11385&p=38354&hilit=initializePolyhedralFeatures#p38354
 		float mass = 5.0f;
 
-		if (mn->name.find(ModelLoader::getInstance()->TABLE_NAME) != string::npos)
+		if (mn->name.find(ml->TABLE_NAME) != string::npos)
 			mass = 40.0f;
 
 		btVector3 localInertia = btVector3(0, 0, 0);
@@ -165,6 +167,7 @@ void Bullet::createBuilding(ModelNode* mn)
 	shape->setMargin(DEFAULT_COLLISION_MARGIN);
 
 	mn->collisionObject = new btCollisionObject(); // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
+	mn->collisionObject->setUserPointer(mn); // Bidirectional pointer relation
 	mn->collisionObject->setCollisionShape(shape);
 
 	btTransform trans;
@@ -195,7 +198,8 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
 	btRigidBody *mydoor = new btRigidBody(groundRigidBodyCI);
-	mn->rigidBody = mydoor;
+	mn->rigidBody = mydoor; // Bidirectional pointer link
+	mydoor->setUserPointer(mn);
 	
 	if(mn->name.find("lockedDoor") != string::npos) //set the locked door to "locked"
 		mydoor->setAngularFactor(btVector3(0, 0, 0));
@@ -253,8 +257,8 @@ void Bullet::createCamera(Camera* c)
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
 	c->rigitBody = new btRigidBody(groundRigidBodyCI);
-	// we want a turn only on y-Axis
-	c->rigitBody->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+	c->rigitBody->setUserPointer(c); // Bidirectional pointer relation
+	c->rigitBody->setAngularFactor(btVector3(0, 1, 0)); // we want a turn only on y-Axis, http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
 	// and movement only x-z (normally)
 	//but we need a 1 in y-Axis for the LinearFactor, otherwise Collision-Detection gets nullified in this Axis
 	c->rigitBody->setLinearFactor(btVector3(1, 1, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
@@ -297,8 +301,8 @@ void Bullet::createEnemy(ModelNode* mn)
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
 	btRigidBody *myEnemy = new btRigidBody(groundRigidBodyCI);
-	//mydoor->
-	mn->rigidBody = myEnemy;
+	mn->rigidBody = myEnemy; // Bidirectional pointer relation
+	myEnemy->setUserPointer(mn);
 	// we want a turn only on y-Axis
 	mn->rigidBody->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); //angular velocity should be https://en.wikipedia.org/wiki/Angular_velocity
 	mn->rigidBody->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes

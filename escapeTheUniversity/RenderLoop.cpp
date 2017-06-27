@@ -103,19 +103,23 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 		if (res.hasHit() && res.m_collisionObject->CO_RIGID_BODY) 
 		{
-			btRigidBody* body;
-			body = (btRigidBody*)res.m_collisionObject;
-			body->activate();
+			btRigidBody* body = (btRigidBody*)res.m_collisionObject;
+			ModelNode* mn = (ModelNode*)body->getUserPointer();
 
-			if (rl->gamePhaseKey)  //this "unlockes" the locked door
-				body->setAngularFactor(btVector3(0, 1, 0));
-		
-			const float Y_IMPULSE = 400.0f;
+			if (mn && mn->name.find(ModelLoader::getInstance()->HINGE_SUFFIX) != string::npos)
+			{
+				body->activate();
 
-			if (key == GLFW_KEY_Q) // Close
-				body->applyTorqueImpulse(btVector3(0.0f, -Y_IMPULSE, 0.0f));
-			else // Open
-				body->applyTorqueImpulse(btVector3(0.0f, Y_IMPULSE, 0.0f));
+				if (rl->gamePhaseKey)  //this "unlockes" the locked door
+					body->setAngularFactor(btVector3(0, 1, 0));
+
+				const float Y_IMPULSE = 400.0f;
+
+				if (key == GLFW_KEY_Q) // Close
+					body->applyTorqueImpulse(btVector3(0.0f, -Y_IMPULSE, 0.0f));
+				else // Open
+					body->applyTorqueImpulse(btVector3(0.0f, Y_IMPULSE, 0.0f));
+			}
 		}
 	
 	}	
