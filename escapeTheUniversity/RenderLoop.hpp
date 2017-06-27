@@ -34,6 +34,7 @@ class RenderLoop
 		{
 			double past; // Last, past time  in mili or nano seconds, according to glfw its system dependend
 			double now; // New, current time in mili or nano seconds, according to glfw its system dependend
+			double lastDelta; // Difference of variable timeNew and timeOld in mili or nano seconds, according to glfw its system dependend from the last run
 			double delta; // Difference of variable timeNew and timeOld in mili or nano seconds, according to glfw its system dependend
 			const double differentialDelta = 0.01; //dt, The renderer produces time and the simulation consumes it in discrete dt sized chunks.
 			double accumulator = 0.0; // Notice that we only process with steps sized dt. Hence, in the common case we have some unsimulated time left over at the end of each frame passed on to the next frame via the accumulator variable and is not thrown away.

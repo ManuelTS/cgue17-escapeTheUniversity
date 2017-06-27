@@ -801,7 +801,6 @@ void RenderLoop::renderText()
 { // It is important to leave the if else structure here as it is
 	if (fps)
 		Text::getInstance()->fps(time.now, time.delta, drawnTriangles);
-		//Text::getInstance()->fps(time.now, time.delta, drawnTriangles);
 
 	if (wireFrameMode)
 		Text::getInstance()->wireframe();
@@ -817,7 +816,7 @@ void RenderLoop::renderText()
 	else if (!render)
 		Text::getInstance()->pause();
 	else if (Text::getInstance()->hasTimeLeft())
-		Text::getInstance()->removeTime(time.differentialDelta);
+		Text::getInstance()->removeTime(time.delta);
 
 }
 
@@ -825,6 +824,7 @@ void RenderLoop::renderText()
 void RenderLoop::calculateDeltaTime()
 {
 	time.now = glfwGetTime();
+	time.lastDelta = time.delta;
 	time.delta = time.now - time.past;
 
 	if (time.delta > 0.25)
@@ -844,7 +844,7 @@ void RenderLoop::calculateDeltaTime()
 	}
 
 	const double alpha = time.accumulator / time.differentialDelta;
-	time.delta = time.now * alpha + time.past * (1 - alpha);
+	time.delta = time.delta * alpha + time.lastDelta * (1 - alpha); // weak https://en.wikipedia.org/wiki/Interpolation#Linear_interpolation
 }
 
 
