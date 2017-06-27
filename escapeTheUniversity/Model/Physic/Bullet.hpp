@@ -52,6 +52,5 @@ public:
 	void createCamera(Camera* camera); // Creates the bounding object for the camera
 	btDiscreteDynamicsWorld* getDynamicsWorld();
 	void Bullet::debugDraw(); // Draws the whole debug world of bullet, see constructor and BulletDebugDraw.cpp and .hpp
-	btCollisionObject* createBox(float mass); // Creates a bounding box
 };
 

@@ -18,7 +18,7 @@ void Bullet::init()
 		solver = new btSequentialImpulseConstraintSolver;
 		
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-		dynamicsWorld->setGravity(btVector3(0, -9.81f, 0)); //earthgravity
+		dynamicsWorld->setGravity(btVector3(0, -10.0f, 0)); //earthgravity
 		
 		#if _DEBUG
 			debugDrawer = new BulletDebugDrawer();
@@ -99,20 +99,16 @@ btConvexHullShape* Bullet::pureBulletConvexHullGeneration(ModelNode* mn)
 
 bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 {
-		if(mn->name.find("_hinge") != string::npos)
-	{
+	if(mn->name.find("_hinge") != string::npos)
 		createDoorHinge(mn);
-	}
 	else if (mn->name.find("MilitaryWoman") != string::npos)
-	{
 		createEnemy(mn);
-	}
 	else if (mn->name.find(ModelLoader::getInstance()->IMMOVABLE_SUFFIX) != string::npos)
 		createBuilding(mn);
 	else
 	{
 		//BVG* bvg = new BVG(); // VHACD calculation
-		btConvexHullShape* shape = pureBulletConvexHullGeneration(mn); // bvg->nodeCalculation(mn); // Buggy, false parameters? Max 100 vertices
+		btConvexHullShape* shape = pureBulletConvexHullGeneration(mn); // bvg->nodeCalculation(mn);
 		//delete bvg;
 		
 		shape->initializePolyhedralFeatures(); // Changing the collision shape now bad idea,  That will make the debug rendering more pretty, but doesn't change anything related to collision detection etc. http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11385&p=38354&hilit=initializePolyhedralFeatures#p38354
@@ -138,9 +134,7 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 
 void Bullet::createBuilding(ModelNode* mn)
 {
-
 	btTriangleIndexVertexArray* meshArray = new btTriangleIndexVertexArray();
-	//BVG* bvg = new BVG(); // VHACD calculation causes a bullet exception which should net happen according to their own comments
 
 	for (unsigned int meshIndex = 0, STRIDE = 3; meshIndex < mn->meshes.size(); meshIndex++) // For vertex indices and vertices, see BVG.cpp for explanation is the stride
 	{
@@ -180,12 +174,8 @@ void Bullet::createBuilding(ModelNode* mn)
 void Bullet::createDoorHinge(ModelNode* mn) 
 {
 	ModelNode* parentAngle = dynamic_cast<ModelNode*>(mn->parent);
-	/* create door */
-	
-	//btCylinderShape* shape = new btCylinderShape(btVector3(0.5f, 2.2f, 0.2f));
-		//new btCylinderShape(btVector3(0.3,2.2,0.9));
 	btTriangleIndexVertexArray* meshArray = new btTriangleIndexVertexArray();
-	//BVG* bvg = new BVG(); // VHACD calculation causes a bullet exception which should net happen according to their own comments
+	//btConvexHullShape* shape = pureBulletConvexHullGeneration(mn); //this brings something ugly and "destroyed"
 
 	for (unsigned int meshIndex = 0, STRIDE = 3; meshIndex < mn->meshes.size(); meshIndex++) // For vertex indices and vertices, see BVG.cpp for explanation is the stride
 	{
@@ -209,8 +199,6 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshArray, true, true); // A single mesh with all vertices of a big object in it confuses bullet and generateds an "overflow in AABB..." error
 
 	shape->buildOptimizedBvh();
-	
-	//btConvexHullShape* shape = pureBulletConvexHullGeneration(mn); //this brings something ugly and "destroyed"
 	shape->setLocalScaling(btVector3(0.8f, 0.8f, 0.8f));  //we cannot use a collision as big as the door itself, due to collision of surrounding building
  
 	const float mass = 1.0;
@@ -228,27 +216,20 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
 	btRigidBody *mydoor = new btRigidBody(groundRigidBodyCI);
-	//mydoor->
 	mn->rigidBody = mydoor;
-
-	mydoor->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
 	
 	if(mn->name.find("lockedDoor") != string::npos) //set the locked door to "locked"
 		mydoor->setAngularFactor(btVector3(0, 0, 0));
 
 	 //values may only be positive here
-
 	mydoor->setLinearFactor(btVector3(1, 0, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
-													   //angular velocity should be 
-	mydoor->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); // https://en.wikipedia.org/wiki/Angular_velocity
-																   //c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
-																   //c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
+	mydoor->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+	mydoor->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); // should be 0 0 0, https://en.wikipedia.org/wiki/Angular_velocity
+	//c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
+	//c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
 	mydoor->setFriction(0.0f);
 	mydoor->setDamping(0.7f, 0.7f); //sets linear damping + angular damping
-										  //btVector3 inertia;
-										  //c->rigitBody->getCollisionShape()->calculateLocalInertia(mass, inertia);
 	mydoor->setMassProps(mass, localInertia);
-
 	mydoor->setRestitution(0.0f); // 0 for switch off bouncing 
 
 	//mn->collisionObject = mydoor; // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
@@ -256,7 +237,6 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	//mn->collisionObject->setWorldTransform(trans);
 
 	shapes.push_back(shape);
-
 	dynamicsWorld->addRigidBody(mydoor);
 
 	btVector3 mnposition = btVector3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y, mn->hirachicalModelMatrix[3].z);
@@ -446,8 +426,6 @@ btDiscreteDynamicsWorld* Bullet::getDynamicsWorld()
 
 Bullet::~Bullet()
 {
-
-
 	for (int i = dynamicsWorld->getNumConstraints() - 1; i >= 0; i--)	//remove the contraints before the rigitbodys from the dynamics world and delete them
 	{
 		btTypedConstraint * constraint = dynamicsWorld->getConstraint(i);
@@ -468,8 +446,6 @@ Bullet::~Bullet()
 		delete obj;
 	}
 
-	
-
 	for (int j = 0; j<shapes.size(); j++)	//delete collision shapes
 	{
 		btCollisionShape* shape = shapes[j];
@@ -477,12 +453,6 @@ Bullet::~Bullet()
 		delete shape;
 	}
 
-/*	TODO: clean up proberly	
-int numConstraints = dynamicsWorld->getNumConstraints;
-	for (int i = 0; i < numConstraints; i++) {
-		dynamicsWorld->removeConstraint[i];
-	}
-*/
 	delete dynamicsWorld;//delete dynamics world
 	delete solver;//delete solver
 	delete overlappingPairCache;//delete broadphase
@@ -498,41 +468,12 @@ void Bullet::debugDraw() {
 
 void Bullet::removeScaleMatrix(glm::mat4 matrix, btCollisionShape* shape, btTransform* trans)
 {
-	/*const float scaleX = glm::length(glm::vec3(matrix[0][0], matrix[0][1], matrix[0][2]));
+	const float scaleX = glm::length(glm::vec3(matrix[0][0], matrix[0][1], matrix[0][2]));
 	const float scaleY = glm::length(glm::vec3(matrix[1][0], matrix[1][1], matrix[1][2]));
 	const float scaleZ = glm::length(glm::vec3(matrix[2][0], matrix[2][1], matrix[2][2]));
 	glm::mat4 matWithoutScale = glm::scale(matrix, glm::vec3(1.0f / scaleX, 1.0f / scaleY, 1.0f / scaleZ));
 
 	shape->setLocalScaling(btVector3(scaleX, scaleY, scaleZ));
-	trans->setFromOpenGLMatrix(glm::value_ptr(matWithoutScale)); //InverseHirachical causes perfectly skinned, but only for 1 building-colission mesh (last)
-	*/
-	trans->setFromOpenGLMatrix(glm::value_ptr(matrix));
-}
-
-btCollisionObject* Bullet::createBox(float mass)
-{
-	//btCollisionShape* colShape = new btBoxShape(btScalar(sx));
-	//shapes.push_back(colShape);
-
-	//btTransform startTransform;
-	//startTransform.setIdentity();
-
-	//btScalar    tMass(mass);
-
-	////rigidbody is dynamic if and only if mass is non zero, otherwise static
-	//bool isDynamic = (tMass != 0.f);
-
-	//btVector3 localInertia(0, 0, 0);
-	//if (isDynamic)
-	//	colShape->calculateLocalInertia(tMass, localInertia);
-
-	//startTransform.setOrigin(btVector3(px, py, pz));
-
-	////using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
-	//btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
-	//btRigidBody::btRigidBodyConstructionInfo rbInfo(tMass, myMotionState, colShape, localInertia);
-	//btRigidBody* body = new btRigidBody(rbInfo);
-	//dynamicsWorld->addRigidBody(body);
-	//return body;
-	return nullptr;
+	trans->setFromOpenGLMatrix(glm::value_ptr(matWithoutScale));
+	//trans->setFromOpenGLMatrix(glm::value_ptr(matrix)); // Line to set original matrix
 }

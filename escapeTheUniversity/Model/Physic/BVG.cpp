@@ -6,7 +6,8 @@ using namespace std;
 void BVG::calculateVHACD(vector<int>* indices, vector<float>* points, IVHACD* interfaceVHACD)
 {
 	IVHACD::Parameters params; // V-HACD parameters: https://kmamou.blogspot.co.at/2014/12/v-hacd-20-parameters-description.html or in our own development source folder
-
+	params.m_resolution = 10000;
+	params.m_maxNumVerticesPerCH = 100; // Bullet suggests max 100 vertices per convexHull
 	/*#if _DEBUG
 		Callback callback;
 		Logger   logger(LOG_FILE_PATH);

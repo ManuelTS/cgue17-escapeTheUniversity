@@ -803,7 +803,6 @@ void RenderLoop::renderText()
 	if (fps)
 		Text::getInstance()->fps(time.now, time.delta, drawnTriangles);
 		//Text::getInstance()->fps(time.now, time.delta, drawnTriangles);
-	
 
 	if (wireFrameMode)
 		Text::getInstance()->wireframe();
@@ -833,7 +832,6 @@ void RenderLoop::calculateDeltaTime()
 		time.delta = 0.25;
 
 	time.past = time.now;
-
 	time.accumulator += time.delta;
 
 	Animator* a = ModelLoader::getInstance()->animator;
@@ -848,9 +846,6 @@ void RenderLoop::calculateDeltaTime()
 
 	const double alpha = time.accumulator / time.differentialDelta;
 	time.delta = time.now * alpha + time.past * (1 - alpha);
-	// Sets the timing syncronization of bullet physics, deltaTime is around 0.18
-	//Bullet::getInstance()->getDynamicsWorld()->stepSimulation(time.delta, 2, 0.16f); // Params: deltaTime, maxSubStepSize, fixedTimeStep in seconds. dt < msss * fts must hold!
-	//Bullet::getInstance()->getDynamicsWorld()->stepSimulation(time.delta, 2, 0.01f); // much much smoother
 }
 
 
