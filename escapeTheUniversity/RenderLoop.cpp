@@ -593,7 +593,6 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				realmOfShadows->unbindTexture();
 			}
 		}
-		break;
 	}
 
 	// Directional light pass, it light does not need a stencil or depth test because its volume is unlimited and the final pass simply copies the texture, in our case this is obly the ambient light
