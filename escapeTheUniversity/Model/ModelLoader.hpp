@@ -22,6 +22,7 @@ private:
 	const std::string DOOR_SUFFIX = "_door"; // Door xxx names
 	const std::string LIGHT_SUFFIX = "_light"; // Light nodes
 	const std::string SPHERE_01_NAME = "sphere01";
+	const std::string CHAIR_NAME = "Chair"; // is in chair nodes
 
 	bool loadModels = true; // Set this variable only once!
 	std::string directory;// Relative path to all models
@@ -43,6 +44,8 @@ private:
 	void linkLightUBO(); // Generates the Light UBO handle
 public:
 	const std::string ANGLE_SUFFIX = "_angle"; // Door parent on their pivot point
+	const std::string TABLE_NAME = "Table"; // is in table nodes
+
 	const std::string MODEL_DIR = ".\\Model\\";// Resource top folder directories
 
 	const std::string IMMOVABLE_SUFFIX = "_i"; // Suffix for immovable objects in bullet

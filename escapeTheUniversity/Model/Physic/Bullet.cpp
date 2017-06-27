@@ -2,6 +2,7 @@
 #include "BVG.hpp"
 #include "../ModelLoader.hpp"
 #include "../../Camera/Camera.hpp"
+#include "../../Camera/Frustum.hpp"
 //#include "../../Debug/MemoryLeakTracker.h" // Not possible in here because of "solver = new btSequentialImpulseConstraintSolver;"
 
 void Bullet::init()
@@ -112,7 +113,11 @@ bool Bullet::distributeBoundingGeneration(ModelNode* mn)
 		//delete bvg;
 		
 		shape->initializePolyhedralFeatures(); // Changing the collision shape now bad idea,  That will make the debug rendering more pretty, but doesn't change anything related to collision detection etc. http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=11385&p=38354&hilit=initializePolyhedralFeatures#p38354
-		const float mass = 5.0;
+		float mass = 5.0f;
+
+		if (mn->name.find(ModelLoader::getInstance()->TABLE_NAME) != string::npos)
+			mass = 40.0f;
+
 		btVector3 localInertia = btVector3(0, 0, 0);
 		shape->calculateLocalInertia(mass, localInertia);
 		shape->setMargin(DEFAULT_COLLISION_MARGIN);
@@ -174,45 +179,17 @@ void Bullet::createBuilding(ModelNode* mn)
 void Bullet::createDoorHinge(ModelNode* mn) 
 {
 	ModelNode* parentAngle = dynamic_cast<ModelNode*>(mn->parent);
-	btTriangleIndexVertexArray* meshArray = new btTriangleIndexVertexArray();
-	//btConvexHullShape* shape = pureBulletConvexHullGeneration(mn); //this brings something ugly and "destroyed"
-
-	for (unsigned int meshIndex = 0, STRIDE = 3; meshIndex < mn->meshes.size(); meshIndex++) // For vertex indices and vertices, see BVG.cpp for explanation is the stride
-	{
-		Mesh* glMesh = mn->meshes.at(meshIndex);
-		btIndexedMesh btMesh;
-
-		btMesh.m_indexType = PHY_INTEGER;
-		btMesh.m_numTriangles = glMesh->indices.size() / STRIDE;
-		btMesh.m_triangleIndexStride = STRIDE * sizeof(unsigned int);
-		btMesh.m_triangleIndexBase = (const unsigned char*)glMesh->indices.data();// Allocate memory for the mesh
-
-		vector<float>* vertices = glMesh->getAllVertices();
-
-		btMesh.m_vertexType = PHY_FLOAT;
-		btMesh.m_numVertices = vertices->size() / STRIDE;
-		btMesh.m_vertexStride = STRIDE * sizeof(float);
-		btMesh.m_vertexBase = (const unsigned char*)vertices->data();// Allocate memory for the mesh
-		meshArray->addIndexedMesh(btMesh);
-	}
-
-	btBvhTriangleMeshShape* shape = new btBvhTriangleMeshShape(meshArray, true, true); // A single mesh with all vertices of a big object in it confuses bullet and generateds an "overflow in AABB..." error
-
-	shape->buildOptimizedBvh();
+	btConvexHullShape* shape = pureBulletConvexHullGeneration(mn); //this brings something ugly and "destroyed"
 	shape->setLocalScaling(btVector3(0.8f, 0.8f, 0.8f));  //we cannot use a collision as big as the door itself, due to collision of surrounding building
  
-	const float mass = 1.0;
+	const float mass = 40.0f;
 	btVector3 localInertia = btVector3(1, 1, 1); //setting localInertia to 0,0,0 breaks the program!
-	//shape->calculateLocalInertia(mass, localInertia);
+	shape->calculateLocalInertia(mass, localInertia);
 	shape->setMargin(DEFAULT_COLLISION_MARGIN);
-	mat4 matrix = mat4();
-	vec3 temp = vec3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y, mn->hirachicalModelMatrix[3].z);
-	matrix[3] = vec4(temp, 1.0f);
 
 	btTransform trans;
 	trans.setIdentity();
-	removeScaleMatrix(matrix, shape, &trans);
-
+	removeScaleMatrix(mn->hirachicalModelMatrix, shape, &trans);
 	shape->setLocalScaling(btVector3(0.8f, 0.8f, 0.8f));  //scale has to be set after removeScaleMatrix<--!, otherwise Problems of resolving collisions!
 
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
@@ -238,87 +215,23 @@ void Bullet::createDoorHinge(ModelNode* mn)
 
 	btVector3 mnposition = btVector3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y, mn->hirachicalModelMatrix[3].z);
 	btVector3 parentPosition = btVector3(parentAngle->hirachicalModelMatrix[3].x, parentAngle->hirachicalModelMatrix[3].y, parentAngle->hirachicalModelMatrix[3].z);
-	btVector3 distance = btVector3(parentAngle->hirachicalModelMatrix[3].x - mn->hirachicalModelMatrix[3].x,
-		parentAngle->hirachicalModelMatrix[3].y - mn->hirachicalModelMatrix[3].y,
-		parentAngle->hirachicalModelMatrix[3].z - mn->hirachicalModelMatrix[3].z
-	);
+	btVector3 distanceDoorToHinge = btVector3(parentAngle->hirachicalModelMatrix[3].x - mn->hirachicalModelMatrix[3].x,
+								   parentAngle->hirachicalModelMatrix[3].y - mn->hirachicalModelMatrix[3].y,
+								   parentAngle->hirachicalModelMatrix[3].z - mn->hirachicalModelMatrix[3].z);
 
-	btHingeConstraint* hingeDoorConstraint;
-	hingeDoorConstraint = new btHingeConstraint(*mydoor, distance, btVector3(0, 1, 0), true);
-	//void hingeDoorConstraint->setLimit(btScalar low, btScalar high, btScalar softness = 0.9f, btScalar_biasFactor = 0.3f, btScalar relaxationFactor = 1.0f)
-	if (mn->name.find("_reverse") != string::npos) //we need other limits for the doors that should rotate in the respective direction
-	{		
-		hingeDoorConstraint->setLimit((-140.0f * (3.141592f / 180.0f)), (0.0f * (3.141592f / 180.0f)), 0.5f, 0.3f, 1.0f);
-	}
-	else 
+	btHingeConstraint* hingeDoorConstraint = new btHingeConstraint(*mydoor, distanceDoorToHinge, btVector3(0, 1, 0), true); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Constraints#Hinge_rotation_limits
+	float lowRadians = 0.0f;
+	float highRadians = Frustum::getInstance()->degreesToRadians(90.0f);
+
+	if (mn->name.find("_reverse") != string::npos) //Reverse door limits for the ones which open in the other direction
 	{
-		hingeDoorConstraint->setLimit((0.0f * (3.141592f / 180.0f)), (140.0f * (3.141592f / 180.0f)), 0.5f, 0.3f, 1.0f);
+		float temp = lowRadians;
+		lowRadians = -highRadians;
+		highRadians = temp;
 	}
-		
 
+	hingeDoorConstraint->setLimit(lowRadians, highRadians, 1.0f, 0.3f, 1.0f); // low, high, softness, biasFactor, relaxationFactor
 	dynamicsWorld->addConstraint(hingeDoorConstraint);
-
-	/* door ended */
-
-	/*create angle rigitbody*/
-/*	btCylinderShape* shape2 = new btCylinderShape(btVector3(0.1f, 2.6f, 0.1f));
-	//new btCylinderShape(btVector3(0.3,2.2,0.9));
-	shape2->setMargin(DEFAULT_COLLISION_MARGIN);
-	const float mass2 = 20.0;
-	btVector3 localInertia2 = btVector3(0, 0, 0);
-	shape2->calculateLocalInertia(mass2, localInertia2);
-
-	mat4 matrix2 = mat4();
-	vec3 temp2 = vec3(parentAngle->hirachicalModelMatrix[3].x, parentAngle->hirachicalModelMatrix[3].y, parentAngle->hirachicalModelMatrix[3].z);
-	matrix2[3] = vec4(temp2, 1.0f);
-
-	btTransform trans2;
-	trans2.setIdentity();
-	removeScaleMatrix(matrix2, shape2, &trans2);
-
-	btDefaultMotionState* groundMotionState2 = new btDefaultMotionState(trans2);
-	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI2(mass2, groundMotionState2, shape2, localInertia2); // To construct multiple rigit bodies with same construction info
-	btRigidBody *myAngle = new btRigidBody(groundRigidBodyCI2);
-
-	myAngle->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
-												  // and movement only x-z (but basically 
-	myAngle->setLinearFactor(btVector3(0, 0, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
-												 //angular velocity should be 
-	myAngle->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); // https://en.wikipedia.org/wiki/Angular_velocity
-															 //c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
-															 //c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
-	myAngle->setFriction(0.0f);
-	myAngle->setDamping(1.0f, 1.0f); //sets linear damping + angular damping
-									//btVector3 inertia;
-									//c->rigitBody->getCollisionShape()->calculateLocalInertia(mass, inertia);
-	myAngle->setMassProps(mass2, localInertia2);
-
-	myAngle->setRestitution(0); //switch off bouncing 
-
-	shapes.push_back(shape2);
-	dynamicsWorld->addRigidBody(myAngle);
-	/*angle rigitbody end*/
-
-
-	// btHingeConstraint(btRigidBody& rbA,btRigidBody& rbB, const btVector3& pivotInA,const btVector3& pivotInB, const btVector3& axisInA,const btVector3& axisInB, bool useReferenceFrameA = false);
-	/*btHingeConstraint* hingeDoorConstraint;
-	hingeDoorConstraint = new btHingeConstraint(*mydoor, *myAngle, mnposition, parentPosition, btVector3(0, 0, 0), btVector3(0, 1, 0), true);
-	hingeDoorConstraint->setLimit((0.0f * (3.141592f / 180.0f)), (140.0f * (3.141592f / 180.0f)), 0.5f, 0.3f, 1.0f);
-	dynamicsWorld->addConstraint(hingeDoorConstraint,true);
-	/*create contraint to world */
-
-	//	btHingeConstraint(btRigidBody& rbA, const btVector3& pivotInA, const btVector3& axisInA, bool useReferenceFrameA = false);
-	//                    the body          the point of the body//parent?               axis in body          iDont know
-	//                                      pivot is relativ to the body
-	//ModelNode* parentAngle = dynamic_cast<ModelNode*>(mn->parent); is oben definiert
-	//btVector3 parentPosition = btVector3(parentAngle->hirachicalModelMatrix[3].x, parentAngle->hirachicalModelMatrix[3].y, parentAngle->hirachicalModelMatrix[3].z);
-	//hingeDoorConstraint = new btHingeConstraint(*mydoor, parentPosition, btVector3(0, 1, 0), false);
-	//hingeDoorConstraint = new btHingeConstraint(*mydoor, parentPosition, btVector3(0,1,0), true);
-
-	//hingeDoorConstraint->setLimit(0.0f, 140.0f, 0.5f, 0.3f, 1.0f);
-
-	/*create contraint to world ended (not functionable)*/
-
 }
 
 void Bullet::createCamera(Camera* c) 
@@ -377,16 +290,9 @@ void Bullet::createEnemy(ModelNode* mn)
 	btVector3 localInertia = btVector3(1.0, 1.0, 1.0);
 	shape->calculateLocalInertia(mass, localInertia);
 
-	mat4 matrix = mat4();
-	//ModelNode* parent = dynamic_cast<ModelNode*>(mn->parent);
-	
-	vec3 enemyPosition = vec3(0,0,0); //set to origin, because i cannot figure out the real position
-	matrix[3] = vec4(mn->position, 1.0f);
-	//vec3 test = mn->getWorldPosition();
-
 	btTransform trans;
 	trans.setIdentity();
-	removeScaleMatrix(matrix, shape, &trans);
+	removeScaleMatrix(mn->hirachicalModelMatrix, shape, &trans);
 
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
@@ -394,14 +300,11 @@ void Bullet::createEnemy(ModelNode* mn)
 	//mydoor->
 	mn->rigidBody = myEnemy;
 	// we want a turn only on y-Axis
+	mn->rigidBody->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); //angular velocity should be https://en.wikipedia.org/wiki/Angular_velocity
 	mn->rigidBody->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
-														// and movement only x-z (normally)
-														//but we need a 1 in y-Axis for the LinearFactor, otherwise Collision-Detection gets nullified in this Axis
-	mn->rigidBody->setLinearFactor(btVector3(1, 1, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
-													   //angular velocity should be 
-	mn->rigidBody->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); // https://en.wikipedia.org/wiki/Angular_velocity
-																   //c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
-																   //c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
+	mn->rigidBody->setLinearFactor(btVector3(1, 1, 1)); // and movement only x-z (normally), but we need a 1 in y-Axis for the LinearFactor, otherwise Collision-Detection gets nullified in this Axis, http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+	//c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
+	//c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
 	//mn->rigidBody->setFriction(btScalar(0.8f));
 	//mn->rigidBody->setDamping(btScalar(0.1f), btScalar(0.25f)); //sets linear damping + angular damping
 	//mn->rigidBody->setRestitution(btScalar(0.1f)); //little bounce on the body
