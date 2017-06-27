@@ -28,6 +28,7 @@ Debugger::~Debugger()
 void Debugger::renderShadowMap(float farPlane, unsigned int depthMapTextureHandle)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
 
 	if (shadowDebug == nullptr)
 		shadowDebug = new Shader("shadowDebug");
@@ -39,7 +40,7 @@ void Debugger::renderShadowMap(float farPlane, unsigned int depthMapTextureHandl
 	shadowDebug->useProgram();
 
 	glUniform1f(NEAR_PLANE_LOCATION, 0.1f); // Check also shadowMapping#renderInDepthMap
-	glUniform1f(FAR_PLANE_LOCATION, farPlane * 2);
+	glUniform1f(FAR_PLANE_LOCATION, farPlane);
 	glActiveTexture(GL_TEXTURE0 + DEPTH_MAP_LOCATION);
 	glBindTexture(GL_TEXTURE_2D, depthMapTextureHandle);
 

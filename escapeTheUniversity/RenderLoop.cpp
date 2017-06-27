@@ -444,10 +444,10 @@ void RenderLoop::start()
 	{
 		calculateDeltaTime();
 		glfwPollEvents(); // Check and call events
+		doMovement(time.delta);
 
-		if (render)
+		if (render) // normal game rendering
 		{
-			doMovement(time.delta);
 			doDeferredShading(gBuffer, realmOfShadows, ml);
 			gameEventCheckIsOn = false; //we reset the actions for key/paper/end-zone every frame
 		}
@@ -525,13 +525,12 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 			glDepthMask(GL_TRUE);
 			realmOfShadows->renderInDepthMap(ml->root, ln, initVar->zoom, width, height); // far plane is the spheres radius
 
-			if (drawShadowMap) // Draw light depth map on screen
-				Debugger::getInstance()->renderShadowMap(ln->light.position.w, realmOfShadows->dephMapTextureHandle); // TODO buggy
-			else // Render this light into attachment 2
+			if (drawShadowMap)
+				Debugger::getInstance()->renderShadowMap(ln->light.position.w, realmOfShadows->dephMapTextureHandle); // TODO impossible since the foor loop and directional lights afterwards
+			else
 			{
 				// Stencil
 				gBuffer->bind4StencilPass(); // Return from shadow FBO to light FBO
-				
 				gBuffer->stencilShader->useProgram();
 				glEnable(GL_STENCIL_TEST);
 				glStencilMask(0xFF);
@@ -596,11 +595,11 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				gBuffer->unbindTexture();
 				realmOfShadows->unbindTexture();
 			}
+			glDisable(GL_DEPTH_TEST); 
 		}
 	}
 
 	// Directional light pass, it light does not need a stencil or depth test because its volume is unlimited and the final pass simply copies the texture, in our case this is obly the ambient light
-	glDisable(GL_DEPTH_TEST); // Just render whole geometry with ambient light
 	gBuffer->bind4LightPass(); // Return from shadow FBO to light FBO
 	deferredShader->useProgram();
 	gBuffer->bindTextures();
