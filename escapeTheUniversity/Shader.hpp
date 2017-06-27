@@ -291,6 +291,7 @@ private:
 		//Calculate attenuation, calculateAttentuation(fragmentPosition, norm, lightPosition, light.position.w, 0.9f);
 		float lightFragDist = length(lightPosition - fragmentPosition);
 		float attenuation = 1.0 / (light.shiConLinQua.y + light.shiConLinQua.z * lightFragDist + light.shiConLinQua.w * (lightFragDist * lightFragDist));
+		//float attenuation = calculateAttentuation(fragmentPosition, norm, lightPosition, light.position.w, 0.000f);
 
 		//Calculate shadow
 	    float shadow = calculateShadow(fragmentPosition, lightDirection, norm); 
