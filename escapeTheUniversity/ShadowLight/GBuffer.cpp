@@ -67,7 +67,8 @@ GBuffer::GBuffer(const int MAX_WIDTH, const int MAX_HEIGHT)
 
 void GBuffer::clearFrame() {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
-	glDrawBuffer(GL_COLOR_ATTACHMENT2);
+	const unsigned int attachment[1] = { GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(1, attachment);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
 
@@ -79,16 +80,22 @@ void GBuffer::bindForGeometryPass()
 	glDrawBuffers(2, attachments);
 }
 
-void GBuffer::bind4LightPass()
+void GBuffer::bind4StencilPass()
 {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
+	const unsigned int attachments[3] = { GL_NONE, GL_NONE, GL_NONE};
+	glDrawBuffers(3, attachments); // detach MRTs from FBO, no color drawing only stencil
+}
+
+void GBuffer::bind4LightPass()
+{
+	const unsigned int attachment[1] = { GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(1, attachment); // attach offscreen color buffer to render into
 }
 
 /*Binds the textures for usage in the shader to render into the frame buffer.*/
 void GBuffer::bindTextures()
 {
-	glDrawBuffer(GL_COLOR_ATTACHMENT2); // attach auxiliary color buffer
-
 	for (int i = 0; i < deferredShadingColorTextureCount; i++)
 	{
 		glActiveTexture(GL_TEXTURE0+i);
