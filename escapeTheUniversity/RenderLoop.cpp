@@ -510,15 +510,19 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		ln->light.position.w = gBuffer->calcPointLightBSphere(ln); // Calculate the light sphere radius
 		bool lightInFrustum = frustumCulling->sphereInFrustum(vec3(ln->light.position), ln->light.position.w) > -1;// See lightNode.hpp, use the radius of the light volume to cull lights not inside the frustum
 
-		if (drawLightBoundingSpheres) // Draws the light bounding sphere of all lights
-		{
-			gBuffer->bindForGeometryPass();
-			gBufferShader->useProgram();
-			Debugger::getInstance()->drawLightBoundingSpheres(ln); // TODO buggy
-		}
-
 		if (frustum || lightInFrustum)
 		{
+			glm::mat4 sphereModelMatrix = glm::scale(glm::translate(glm::mat4(), glm::vec3(ln->light.position)), glm::vec3(ln->light.position.w)); // Transalte then scale sphere model matrix
+			const float const* sphereModelMatrixP = glm::value_ptr(sphereModelMatrix);
+
+			if (drawLightBoundingSpheres) // Draws the light bounding sphere of this light as additional geometry pass with the gBuffer shader
+			{
+				gBuffer->bindForGeometryPass();
+				gBufferShader->useProgram();
+				const float const* inverseSphereModelMatrixP = glm::value_ptr(glm::inverseTranspose(sphereModelMatrix)); // Set manually to omit bullet
+				drawSphere(ml->sphere01, sphereModelMatrixP, inverseSphereModelMatrixP, viewMatrixP, projectionMatrixP);
+			}
+
 			glEnable(GL_DEPTH_TEST);
 			glDepthMask(GL_TRUE);
 			realmOfShadows->renderInDepthMap(ml->root, ln, initVar->zoom, width, height); // far plane is the spheres radius
@@ -539,14 +543,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				glDepthMask(GL_FALSE); // No depth writing, only reading
 				glDisable(GL_CULL_FACE);
 
-				glm::mat4 sphereModelMatrix = glm::scale(glm::translate(glm::mat4(), glm::vec3(ln->light.position)), glm::vec3(ln->light.position.w)); // Transalte then scale sphere model matrix
-				const float const* sphereModelMatrixP = glm::value_ptr(ml->sphere01->hirachicalModelMatrix = sphereModelMatrix);
-				glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, sphereModelMatrixP);
-				glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, viewMatrixP); // stencil.vert
-				glUniformMatrix4fv(ModelNode::projectionMatrixStencilLocation, 1, GL_FALSE, projectionMatrixP); // stencil.vert
-
-				for (Mesh* m : ml->sphere01->meshes)
-					m->draw(GL_TRIANGLES, true);
+				drawSphere(ml->sphere01, sphereModelMatrixP, nullptr, viewMatrixP, projectionMatrixP);
 
 				glStencilFunc(GL_NOTEQUAL, 0, 0xFF); // Only write values that have a non zero stencil value
 				glStencilMask(0x00); // Writing disallowed, reading allowed
@@ -575,13 +572,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ln->light), &ln->light);
 				glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-				// Render the light sphere positions through the deferred shading shader.vert and blend them together with already existing result in attachment 2
-				glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, sphereModelMatrixP); // deferredShading.vert
-				glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, viewMatrixP); // deferredShading.vert
-				glUniformMatrix4fv(ModelNode::projectionMatrixStencilLocation, 1, GL_FALSE, projectionMatrixP); // deferredShading.vert
-
-				for (Mesh* m : ml->sphere01->meshes)
-					m->draw(GL_TRIANGLES, true);
+				drawSphere(ml->sphere01, sphereModelMatrixP, nullptr, viewMatrixP, projectionMatrixP);// Render the light sphere positions through the deferred shading shader.vert and blend them together with already existing result in attachment 2
 
 				glCullFace(GL_BACK);
 				if (blending)
@@ -602,7 +593,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	gBuffer->bind4LightPass(); // Return from shadow FBO to light FBO
 	deferredShader->useProgram();
 	gBuffer->bindTextures();
-	//realmOfShadows->bindTexture(); // Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
+	realmOfShadows->bindTexture(); // Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
 	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);// Write light data to deferred shader.frag
 	glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLB: S. 169, always execute after new program is used
 	glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
@@ -610,10 +601,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ambientLight), &ambientLight);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	const float* unitMatrixP = glm::value_ptr(glm::mat4()); // No cam perspective or view needed because the whole gbuffer is rendered
-	glUniformMatrix4fv(ModelNode::modelLocation, 1, GL_FALSE, unitMatrixP); // deferredShading.vert
-	glUniformMatrix4fv(ModelNode::viewMatrixStencilLocation, 1, GL_FALSE, unitMatrixP); // deferredShading.vert
-	glUniformMatrix4fv(ModelNode::projectionMatrixStencilLocation, 1, GL_FALSE, unitMatrixP); // deferredShading.vert
+	const float const* unitMatrixP = glm::value_ptr(glm::mat4()); // No cam perspective or view needed because the whole gbuffer is rendered
+	drawSphere(nullptr, unitMatrixP, nullptr, unitMatrixP, unitMatrixP);
 
 	if (blending)
 	{
@@ -628,12 +617,34 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		glDisable(GL_BLEND);
 
 	gBuffer->unbindTexture();
-//	realmOfShadows->unbindTexture();
+	realmOfShadows->unbindTexture();
 
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	gBuffer->finalPass(width, height);// Final pass, blit attachment2 to standard FBO (screen)
+}
+
+void RenderLoop::drawSphere(ModelNode* sphereNode, const float const* modelMatrix, const float const* inverseModelMatrix, const float const* viewMatrix, const float const* projectionMatrix)
+{
+	unsigned int modelL = ModelNode::modelLocation;
+	unsigned int viewL = ModelNode::viewMatrixStencilLocation;
+	unsigned int projL = ModelNode::projectionMatrixStencilLocation;
+
+	if (inverseModelMatrix != nullptr)
+	{
+		viewL = Shader::viewLocation;
+		projL = Shader::projectionLocation;
+		glUniformMatrix4fv(ModelNode::inverseModelLocation, 1, GL_FALSE, inverseModelMatrix); // gbuffer.vert 
+	}
+
+	glUniformMatrix4fv(modelL, 1, GL_FALSE, modelMatrix); // stencil, deferredShading, gbuffer.vert 
+	glUniformMatrix4fv(viewL, 1, GL_FALSE, viewMatrix); // stencil, deferredShading.vert or gbuffer.vert (inverseModelMatrix != nullptr)
+	glUniformMatrix4fv(projL, 1, GL_FALSE, projectionMatrix); // stencil, deferredShading.vert or gbuffer.vert (inverseModelMatrix != nullptr)
+
+	if(sphereNode)
+		for (Mesh* m : sphereNode->meshes)
+			m->draw(GL_TRIANGLES, true);
 }
 
 void RenderLoop::draw(Node* current)
