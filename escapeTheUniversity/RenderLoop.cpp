@@ -662,6 +662,7 @@ void RenderLoop::draw(Node* current)
 		/* do check if in enemy sight for GAMEOver!*/
 		if (mn && mn->isEnemy && !gameOver)
 		{
+			moveEnemy(mn);
 			checkGameOverCondition(mn);			
 		}
 
@@ -822,6 +823,13 @@ void RenderLoop::checkGameOverCondition(ModelNode* mn)
 	
 }
 
+void RenderLoop::moveEnemy(ModelNode* enemy)
+{
+	if (!endOf1Reached)
+	{
+		
+	}
+}
 
 void RenderLoop::renderText()
 { // It is important to leave the if else structure here as it is

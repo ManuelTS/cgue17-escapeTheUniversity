@@ -27,6 +27,7 @@ class RenderLoop
 		void calculateDeltaTime(); // Calculates the delta time, e.g. the time between frames
 		void draw(Node* current); // Draws all lights which checking their dependencies and condition (no Light Node drawing, frustum culling, flag setting)
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
+		void moveEnemy(ModelNode* mn); //moves the enemy along the walkingpoints
 		void checkGameOverCondition(ModelNode* mn); //checks if the play is too near of the enemy or in sight
 
  		
