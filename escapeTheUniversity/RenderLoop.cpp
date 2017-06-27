@@ -86,7 +86,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		bool minus = key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT; // In- or decrease ambient light coefficient
 
 		for (LightNode* ln : ModelLoader::getInstance()->lights)
-			ln->light.diffuse.a += minus ? -ln->AMBIENT_LIGHT: ln->AMBIENT_LIGHT;
+			ln->light.diffuse.a += minus ? -0.1f: 0.1f;
 	}
 	//else if (key == GLFW_KEY_E && action == GLFW_PRESS) is obsolete
 	//	rl->move(ModelLoader::getInstance()->root);
