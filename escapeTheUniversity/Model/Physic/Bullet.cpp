@@ -18,7 +18,7 @@ void Bullet::init()
 		solver = new btSequentialImpulseConstraintSolver;
 		
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-		dynamicsWorld->setGravity(btVector3(0, -10.0f, 0)); //earthgravity
+		dynamicsWorld->setGravity(btVector3(0, -8.0f, 0)); //earthgravity //10 is too high
 		
 		#if _DEBUG
 			debugDrawer = new BulletDebugDrawer();
@@ -213,6 +213,8 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	trans.setIdentity();
 	removeScaleMatrix(matrix, shape, &trans);
 
+	shape->setLocalScaling(btVector3(0.8f, 0.8f, 0.8f));  //scale has to be set after removeScaleMatrix<--!, otherwise Problems of resolving collisions!
+
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
 	btRigidBody *mydoor = new btRigidBody(groundRigidBodyCI);
@@ -231,11 +233,6 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	mydoor->setDamping(0.7f, 0.7f); //sets linear damping + angular damping
 	mydoor->setMassProps(mass, localInertia);
 	mydoor->setRestitution(0.0f); // 0 for switch off bouncing 
-
-	//mn->collisionObject = mydoor; // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
-	//mn->collisionObject->setCollisionShape(shape);
-	//mn->collisionObject->setWorldTransform(trans);
-
 	shapes.push_back(shape);
 	dynamicsWorld->addRigidBody(mydoor);
 

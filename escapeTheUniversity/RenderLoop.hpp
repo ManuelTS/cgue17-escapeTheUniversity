@@ -27,6 +27,8 @@ class RenderLoop
 		void calculateDeltaTime(); // Calculates the delta time, e.g. the time between frames
 		void draw(Node* current); // Draws all lights which checking their dependencies and condition (no Light Node drawing, frustum culling, flag setting)
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
+		void checkGameOverCondition(ModelNode* mn); //checks if the play is too near of the enemy or in sight
+
 		glm::vec3 lastImpulse; //for correction of movement impulses
  		
 	public:
@@ -77,6 +79,22 @@ class RenderLoop
 		bool gamePhaseEnd = false; // reached the safe zone
 		void checkGamePhaseEnd(ModelNode* paper);  //indicates the game-section of the end
 		bool gameOver = false; //indicates if you have been caught and game is over!
+
+		glm::vec3 sightPoint1 = glm::vec3(-5.7f, 2.3f, 14.0f); //View-Direction Node at center of d09_hinge for sight of enemy
+		glm::vec3 sightPoint2 = glm::vec3(24.0f, 2.3f, 11.75f); //View-Direction Node at edge of OfficeDesk.003
+		glm::vec3 sightPoint3 = glm::vec3(20.5f, 2.3f, -15.0f); //View-Direction Node near at Poster3.002
+		glm::vec3 sightPoint4 = glm::vec3(-13.4f, 2.3f, -14.1f); //View-Direction Node-Point near to DoorFrameSteel
+
+		glm::vec3 walkPoint1 = glm::vec3(-5.7f, -0.3275f, 12.0f);
+		glm::vec3 walkPoint2 = glm::vec3(20.5f, -0.3275f, 12.0f);
+		glm::vec3 walkPoint3 = glm::vec3(20.5f, -0.3275f, -13.75f);
+		glm::vec3 walkPoint4 = glm::vec3(-5.7f, -0.3275f, -13.75f);
+		
+		bool endOf1Reached = false; //inidicates that we have to turn and go over to the next point (2)
+		bool endOf2Reached = false; //inidicates that we have to turn and go over to the next point (3)
+		bool endOf3Reached = false; //inidicates that we have to turn and go over to the next point (4)
+		bool endOf4Reached = false; //inidicates that we have to turn and go over to the next point (1) 
+
 
 		// Sampling states
 		int textureSampling = 1; // Texture Sampling Quality: 0 = Nearest Neighbor, 1 = Bilinear, default: 1 see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping
