@@ -242,7 +242,7 @@ void Bullet::createCamera(Camera* c)
 {
 	btCylinderShape* shape= new btCylinderShape(btVector3(0.7f, 2.1f, 0.2f));
 	shape->setMargin(DEFAULT_COLLISION_MARGIN);
-	const float mass = 5.0;
+	const float mass = 1.0;
 	btVector3 localInertia = btVector3(1.0, 1.0, 1.0);
 	shape->calculateLocalInertia(mass, localInertia);
 
@@ -256,6 +256,7 @@ void Bullet::createCamera(Camera* c)
 
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
+	groundRigidBodyCI.m_linearSleepingThreshold = 0.05f;
 	c->rigitBody = new btRigidBody(groundRigidBodyCI);
 	c->rigitBody->setUserPointer(c); // Bidirectional pointer relation
 	c->rigitBody->setAngularFactor(btVector3(0, 1, 0)); // we want a turn only on y-Axis, http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
@@ -266,10 +267,11 @@ void Bullet::createCamera(Camera* c)
 	c->rigitBody->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); // https://en.wikipedia.org/wiki/Angular_velocity
 	//c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
 	//c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
-	c->rigitBody->setFriction(btScalar(0.8f));
+	c->rigitBody->setFriction(btScalar(0.1f));
 	c->rigitBody->setDamping(btScalar(0.1f), btScalar(0.25f)); //sets linear damping + angular damping
-	c->rigitBody->setRestitution(btScalar(0.1f)); //little bounce on the body
+	c->rigitBody->setRestitution(btScalar(0.0f)); //little bounce on the body
 	c->rigitBody->setSleepingThresholds(btScalar(0.2f), btScalar(0.2f)); // linear, angular 
+
 	//btVector3 inertia;
 	//c->rigitBody->getCollisionShape()->calculateLocalInertia(mass, inertia);
 	//c->rigitBody->setMassProps(mass, localInertia); //unnecessary?
@@ -282,6 +284,9 @@ void Bullet::createCamera(Camera* c)
 	c->rigitBody.m_angularSleepingThreshold = 0.2f;
 	c->rigitBody.m_restitution = 0.5f;
 	*/
+
+	//c->rigitBody->setCcdMotionThreshold
+
 	shapes.push_back(shape);
 	dynamicsWorld->addRigidBody(c->rigitBody);
 }
@@ -316,7 +321,7 @@ void Bullet::createEnemy(ModelNode* mn)
 	//mn->modelMatrix = glm::translate(mn->modelMatrix, glm::vec3(-5.4f, 0.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene															
 	mn->rigidBody->activate(true);
 	mn->isEnemy = true;
-	//mn->rigidBody->translate(btVector3(-5.4f, 0, 0)); //put her into the floor
+	mn->rigidBody->translate(btVector3(-5.4f, 0, 0)); //put her into the floor
 	mn->rigidBody->setActivationState(DISABLE_DEACTIVATION);
 	shapes.push_back(shape);
 	dynamicsWorld->addRigidBody(mn->rigidBody);

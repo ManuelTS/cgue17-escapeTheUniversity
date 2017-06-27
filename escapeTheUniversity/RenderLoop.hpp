@@ -27,10 +27,12 @@ class RenderLoop
 		void calculateDeltaTime(); // Calculates the delta time, e.g. the time between frames
 		void draw(Node* current); // Draws all lights which checking their dependencies and condition (no Light Node drawing, frustum culling, flag setting)
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
+	
 		void checkGameOverCondition(ModelNode* mn); //checks if the play is too near of the enemy or in sight
 		void drawSphere(ModelNode* sphereNode, const float const* modelMatrix, const float const* inverseModelMatrix, const float const* viewMatrix, const float const* projectionMatrix); // Sets the arguments in the shaders and draws the sphere, if the node is nulltpr nothing is drawn but set. If the second argument is not nullptr other locations are used, used for debugging to draw spheres uneffected by bullet
 
-		glm::vec3 lastImpulse; //for correction of movement impulses
+		const float SIGHTRANGEOFENEMY = 20.0f;
+
  		
 	public:
 		struct Time // variables of this game, approach of http://gafferongames.com/game-physics/fix-your-timestep/
@@ -85,17 +87,6 @@ class RenderLoop
 		glm::vec3 sightPoint2 = glm::vec3(24.0f, 2.3f, 11.75f); //View-Direction Node at edge of OfficeDesk.003
 		glm::vec3 sightPoint3 = glm::vec3(20.5f, 2.3f, -15.0f); //View-Direction Node near at Poster3.002
 		glm::vec3 sightPoint4 = glm::vec3(-13.4f, 2.3f, -14.1f); //View-Direction Node-Point near to DoorFrameSteel
-
-		glm::vec3 walkPoint1 = glm::vec3(-5.7f, -0.3275f, 12.0f);
-		glm::vec3 walkPoint2 = glm::vec3(20.5f, -0.3275f, 12.0f);
-		glm::vec3 walkPoint3 = glm::vec3(20.5f, -0.3275f, -13.75f);
-		glm::vec3 walkPoint4 = glm::vec3(-5.7f, -0.3275f, -13.75f);
-		
-		bool endOf1Reached = false; //inidicates that we have to turn and go over to the next point (2)
-		bool endOf2Reached = false; //inidicates that we have to turn and go over to the next point (3)
-		bool endOf3Reached = false; //inidicates that we have to turn and go over to the next point (4)
-		bool endOf4Reached = false; //inidicates that we have to turn and go over to the next point (1) 
-
 
 		// Sampling states
 		int textureSampling = 1; // Texture Sampling Quality: 0 = Nearest Neighbor, 1 = Bilinear, default: 1 see https://www.informatik-forum.at/showthread.php?107156-Textur-Sampling-Mip-Mapping
