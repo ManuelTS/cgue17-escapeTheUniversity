@@ -656,7 +656,6 @@ void RenderLoop::draw(Node* current)
 		/* do check if in enemy sight for GAMEOver!*/
 		if (mn && mn->isEnemy && !gameOver)
 		{
-			moveEnemy(mn);
 			checkGameOverCondition(mn);			
 		}
 
@@ -752,78 +751,74 @@ void RenderLoop::checkGamePhaseEnd(ModelNode* zone)
 
 void RenderLoop::checkGameOverCondition(ModelNode* mn)
 {
-	Bullet* b = Bullet::getInstance();
-	//+3.90f for setting the "camera of the enemy" to the height of the eyes
-	vec3 enemyPosition = vec3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y + 3.90f, mn->hirachicalModelMatrix[3].z);
+	AnimatNode* an = dynamic_cast<AnimatNode*>(mn);
+	if(an){
+		Bullet* b = Bullet::getInstance();
+		//+3.90f for setting the "camera of the enemy" to the height of the eyes
+		vec3 enemyPosition = vec3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y + 3.90f, mn->hirachicalModelMatrix[3].z);
 	
-	/* No Radius detection for  gameplay
-	// check always for the radius, e.g. player is too near
-	vec3 targetDirectionPlayer = vec3(
-		camera->position.x - enemyPosition.x,
-		camera->position.y - enemyPosition.y,
-		camera->position.z - enemyPosition.z); //we need the vector from Enemy -> Player
-	vec3 targetNormalized = glm::normalize(targetDirectionPlayer); //and normalize it
-	vec3 targetFinalPoint = enemyPosition + targetNormalized * 7.0f; //working radius for exmatriculation! Same procedure as with doors
+		/* No Radius detection for  gameplay
+		// check always for the radius, e.g. player is too near
+		vec3 targetDirectionPlayer = vec3(
+			camera->position.x - enemyPosition.x,
+			camera->position.y - enemyPosition.y,
+			camera->position.z - enemyPosition.z); //we need the vector from Enemy -> Player
+		vec3 targetNormalized = glm::normalize(targetDirectionPlayer); //and normalize it
+		vec3 targetFinalPoint = enemyPosition + targetNormalized * 7.0f; //working radius for exmatriculation! Same procedure as with doors
 																	
-	 //jep, this has to be done that way with the raytest!
-	btCollisionWorld::ClosestRayResultCallback res(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetFinalPoint.x, targetFinalPoint.y, targetFinalPoint.z));
-	b->getDynamicsWorld()->rayTest(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetFinalPoint.x, targetFinalPoint.y, targetFinalPoint.z), res);
-	if (res.hasHit() && res.m_collisionObject->CO_RIGID_BODY)
-	{
-		btRigidBody* body;
-		body = (btRigidBody*)res.m_collisionObject;
-		//see if it really the player that got hit and nothing else like a door
-		if (body->getWorldArrayIndex() == camera->rigitBody->getWorldArrayIndex()) { //ArrayWorldIndex is the only thing that works and we have access to via methods
-			printf("Player raycast hit in radius at: <%.2f, %.2f, %.2f>\n", res.m_hitPointWorld.getX(), res.m_hitPointWorld.getY(), res.m_hitPointWorld.getZ());
-			gameOver = true; //only play sound once!
-			Text::getInstance()->addText2Display(Text::GAME_OVER);
-			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
-		}
-	} //check radius finished
-	*/
-	//check LineOfSight 
-	vec3 activeSightPoint;
-	if (!endOf1Reached)
-		activeSightPoint = sightPoint1;
-	else if (!endOf2Reached)
-		activeSightPoint = sightPoint2;
-	else if (!endOf3Reached)
-		activeSightPoint = sightPoint3;
-	else if (!endOf4Reached)
-		activeSightPoint = sightPoint4;
-  //TODO: Make Camera-FRONT of enemy, not sightpoints
-	for (float variance = -2.0; variance <= 2.0f; variance += 0.5f) {
-		vec3 targetDirectionSightPoint = vec3(
-			(activeSightPoint.x + variance) - enemyPosition.x,
-			activeSightPoint.y - enemyPosition.y,
-			(activeSightPoint.z + variance) - enemyPosition.z); //we need the vector from Enemy -> Sightpoint
-		vec3 targetSightFinalPoint = enemyPosition + glm::normalize(targetDirectionSightPoint) * 16.0f; //working lineOfSight for exmatriculation! Same procedure as with doors
-
-		btCollisionWorld::ClosestRayResultCallback resultSightLine(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetSightFinalPoint.x, targetSightFinalPoint.y, targetSightFinalPoint.z));
-		b->getDynamicsWorld()->rayTest(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetSightFinalPoint.x, targetSightFinalPoint.y, targetSightFinalPoint.z), resultSightLine);
-		if (resultSightLine.hasHit() && resultSightLine.m_collisionObject->CO_RIGID_BODY)
+		 //jep, this has to be done that way with the raytest!
+		btCollisionWorld::ClosestRayResultCallback res(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetFinalPoint.x, targetFinalPoint.y, targetFinalPoint.z));
+		b->getDynamicsWorld()->rayTest(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetFinalPoint.x, targetFinalPoint.y, targetFinalPoint.z), res);
+		if (res.hasHit() && res.m_collisionObject->CO_RIGID_BODY)
 		{
 			btRigidBody* body;
-			body = (btRigidBody*)resultSightLine.m_collisionObject;
+			body = (btRigidBody*)res.m_collisionObject;
 			//see if it really the player that got hit and nothing else like a door
 			if (body->getWorldArrayIndex() == camera->rigitBody->getWorldArrayIndex()) { //ArrayWorldIndex is the only thing that works and we have access to via methods
-				printf("Player raycast hit in sightline at: <%.2f, %.2f, %.2f>\n", resultSightLine.m_hitPointWorld.getX(), resultSightLine.m_hitPointWorld.getY(), resultSightLine.m_hitPointWorld.getZ());
+				printf("Player raycast hit in radius at: <%.2f, %.2f, %.2f>\n", res.m_hitPointWorld.getX(), res.m_hitPointWorld.getY(), res.m_hitPointWorld.getZ());
 				gameOver = true; //only play sound once!
 				Text::getInstance()->addText2Display(Text::GAME_OVER);
 				SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
 			}
-		} //check sightOfLine finished
-	}
+		} //check radius finished
+		*/
+		//check LineOfSight 
 	
+		vec3 activeSightPoint;
+		if (!an->endOf1Reached)
+			activeSightPoint = sightPoint1;
+		else if (!an->endOf2Reached)
+			activeSightPoint = sightPoint2;
+		else if (!an->endOf3Reached)
+			activeSightPoint = sightPoint3;
+		else if (!an->endOf4Reached)
+			activeSightPoint = sightPoint4;
+	  //TODO: Make Camera-FRONT of enemy, not sightpoints
+		for (float variance = -2.0; variance <= 2.0f; variance += 0.5f) {
+			vec3 targetDirectionSightPoint = vec3(
+				(activeSightPoint.x + variance) - enemyPosition.x,
+				activeSightPoint.y - enemyPosition.y,
+				(activeSightPoint.z + variance) - enemyPosition.z); //we need the vector from Enemy -> Sightpoint
+			vec3 targetSightFinalPoint = enemyPosition + glm::normalize(targetDirectionSightPoint) * SIGHTRANGEOFENEMY; //working lineOfSight for exmatriculation! Same procedure as with doors
+
+			btCollisionWorld::ClosestRayResultCallback resultSightLine(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetSightFinalPoint.x, targetSightFinalPoint.y, targetSightFinalPoint.z));
+			b->getDynamicsWorld()->rayTest(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetSightFinalPoint.x, targetSightFinalPoint.y, targetSightFinalPoint.z), resultSightLine);
+			if (resultSightLine.hasHit() && resultSightLine.m_collisionObject->CO_RIGID_BODY && !gameOver) //we only want "1" hit
+			{
+				btRigidBody* body;
+				body = (btRigidBody*)resultSightLine.m_collisionObject;
+				//see if it really the player that got hit and nothing else like a door
+				if (body->getWorldArrayIndex() == camera->rigitBody->getWorldArrayIndex()) { //ArrayWorldIndex is the only thing that works and we have access to via methods
+					printf("Player raycast hit in sightline at: <%.2f, %.2f, %.2f>\n", resultSightLine.m_hitPointWorld.getX(), resultSightLine.m_hitPointWorld.getY(), resultSightLine.m_hitPointWorld.getZ());
+					gameOver = true; //only play sound once!
+					Text::getInstance()->addText2Display(Text::GAME_OVER);
+					SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
+				}
+			} //check sightOfLine finished
+		}
+	}//if animatNode
 }
 
-void RenderLoop::moveEnemy(ModelNode* enemy)
-{
-	if (!endOf1Reached)
-	{
-		
-	}
-}
 
 void RenderLoop::renderText()
 { // It is important to leave the if else structure here as it is

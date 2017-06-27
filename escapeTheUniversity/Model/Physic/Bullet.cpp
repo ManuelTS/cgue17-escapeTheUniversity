@@ -321,7 +321,7 @@ void Bullet::createEnemy(ModelNode* mn)
 	//mn->modelMatrix = glm::translate(mn->modelMatrix, glm::vec3(-5.4f, 0.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene															
 	mn->rigidBody->activate(true);
 	mn->isEnemy = true;
-	//mn->rigidBody->translate(btVector3(-5.4f, 0, 0)); //put her into the floor
+	mn->rigidBody->translate(btVector3(-5.4f, 0, 0)); //put her into the floor
 	mn->rigidBody->setActivationState(DISABLE_DEACTIVATION);
 	shapes.push_back(shape);
 	dynamicsWorld->addRigidBody(mn->rigidBody);
