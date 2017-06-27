@@ -94,37 +94,31 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	{		
 		Bullet* b = Bullet::getInstance();
 		vec3 origin = vec3(rl->camera->position.x, rl->camera->position.y, rl->camera->position.z);
-		vec3 distance = origin + rl->camera->front * 5.0f;
-		//jep, this has to be done that way with the raytest!
+		vec3 distance = origin + rl->camera->front * 5.0f;//jep, this has to be done that way with the raytest!
 		btCollisionWorld::ClosestRayResultCallback res(btVector3(origin.x, origin.y, origin.z), btVector3(distance.x, distance.y, distance.z));
 		b->getDynamicsWorld()->rayTest(btVector3(origin.x, origin.y, origin.z), btVector3(distance.x, distance.y, distance.z), res);
-		if (res.hasHit()) {
-			printf("Raycast hit at: <%.2f, %.2f, %.2f>\n", res.m_hitPointWorld.getX(), res.m_hitPointWorld.getY(), res.m_hitPointWorld.getZ());
-		}
+		
+		//if (res.hasHit())
+			//printf("Raycast hit at: <%.2f, %.2f, %.2f>\n", res.m_hitPointWorld.getX(), res.m_hitPointWorld.getY(), res.m_hitPointWorld.getZ());
+
 		if (res.hasHit() && res.m_collisionObject->CO_RIGID_BODY) 
 		{
-			btRigidBody* body;
-			body = (btRigidBody*)res.m_collisionObject;
-			//btRigidBody* body = (btRigidBody*)btRigidBody::upcast(res.m_collisionObject); //this upcast does not work!!
-			body->activate();
-			//body->applyCentralForce(btVector3(4.0f, 0.0f,4.0f));
+			btRigidBody* body = (btRigidBody*)res.m_collisionObject;
+			ModelNode* mn = (ModelNode*)body->getUserPointer();
 
-			if (rl->gamePhaseKey) {  //this "unlockes" the locked door
-				body->setAngularFactor(btVector3(0, 1, 0));
-			}
-			
-		
-			if (key == GLFW_KEY_Q)                                    //push
+			if (mn && mn->name.find(ModelLoader::getInstance()->HINGE_SUFFIX) != string::npos)
 			{
-				//body->applyCentralForce(btVector3(-4.0f, 0.0f, -4.0f));
-				body->applyTorqueImpulse(btVector3(0.0f, -4.0f, 0.0f)); //this is the way to go!
-				//body->applyCentralImpulse(btVector3(-4.0f, 0.0f, -4.0f)); 
-			}
-			else 
-			{
-				body->applyTorqueImpulse(btVector3(0.0f, 4.0f, 0.0f));   //pull
-				//body->applyCentralForce(btVector3(4.0f, 0.0f, 4.0f));
-				//body->applyCentralImpulse(btVector3(4.0f, 0.0f, 4.0f));
+				body->activate();
+
+				if (rl->gamePhaseKey)  //this "unlockes" the locked door
+					body->setAngularFactor(btVector3(0, 1, 0));
+
+				const float Y_IMPULSE = 400.0f;
+
+				if (key == GLFW_KEY_Q) // Close
+					body->applyTorqueImpulse(btVector3(0.0f, -Y_IMPULSE, 0.0f));
+				else // Open
+					body->applyTorqueImpulse(btVector3(0.0f, Y_IMPULSE, 0.0f));
 			}
 		}
 	
