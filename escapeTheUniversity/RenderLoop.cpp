@@ -173,7 +173,7 @@ void RenderLoop::doMovement(double timeDelta)
 		camera->position = vec3(matrix[3]); // only update the position of the camera!
 	}
 
-	float factor = 0.8f;
+	float factor = 0.35f; //todo, make factor by setting and adjustable?
 	vec3 movementVectorXYAxis = vec3(1.0f * factor, 1.0f * factor, 1.0f *factor); //direction of possible axis * factor  (otherwise fast)	
 
 
@@ -190,7 +190,6 @@ void RenderLoop::doMovement(double timeDelta)
 		camera->rigitBody->setActivationState(true);
 		vec3 movement = camera->front*movementVectorXYAxis;
 		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
-		rl->lastImpulse = vec3(-movement.x, -movement.y, -movement.z);
 		//int i = camera->rigitBody->getWorldArrayIndex(); //this works for identification of the object	
 		//camera->rigitBody->applyCentralForce(btVector3(movement.x, movement.y, movement.z));
 	}	
@@ -201,7 +200,6 @@ void RenderLoop::doMovement(double timeDelta)
 		camera->rigitBody->setActivationState(true);
 		vec3 movement = camera->front*(-movementVectorXYAxis); //we want to walk backwards
 		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
-		rl->lastImpulse = vec3(-movement.x, -movement.y, -movement.z);
 	//	printf("Detection down: <%.2f>\n", camera->rigitBody->getWorldTransform());
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
@@ -211,7 +209,6 @@ void RenderLoop::doMovement(double timeDelta)
 		camera->rigitBody->setActivationState(true);
 		vec3 movement = glm::normalize(glm::cross(camera->front, camera->up))*(-movementVectorXYAxis); //going left!
 		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
-		rl->lastImpulse = vec3(-movement.x, -movement.y, -movement.z);
 	}
 	else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
@@ -220,7 +217,6 @@ void RenderLoop::doMovement(double timeDelta)
 		camera->rigitBody->setActivationState(true);
 		vec3 movement = glm::normalize(glm::cross(camera->front, camera->up))*(movementVectorXYAxis); //going Right!
 		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
-		rl->lastImpulse = vec3(-movement.x, -movement.y, -movement.z);
 	}
 	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) //make jump forward
 	{
@@ -232,7 +228,7 @@ void RenderLoop::doMovement(double timeDelta)
 		//neither applyForce, applyImpulse, work
 		vec3 movement = camera->front*movementVectorXYAxis;
 		//camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
-		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, 3.0f, movement.z));
+		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, 1.0f*(factor*2), movement.z));
 		//printf("Detection Space: <%.2f>\n", camera->rigitBody->getFlags());
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
@@ -240,7 +236,7 @@ void RenderLoop::doMovement(double timeDelta)
 		//camera->processKeyboard(camera->UP, timeDelta);
 		camera->rigitBody->setActivationState(true);
 	//	camera->rigitBody->setLinearVelocity(btVector3(0, -3, 0));
-		camera->rigitBody->applyCentralImpulse(btVector3(0, -3.0f, 0));
+		camera->rigitBody->applyCentralImpulse(btVector3(0, -1.0f, 0));
 	}
 	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_RELEASE && 
 		glfwGetKey(window, GLFW_KEY_W) == GLFW_RELEASE &&
@@ -251,9 +247,7 @@ void RenderLoop::doMovement(double timeDelta)
 		//camera->rigitBody->setLinearVelocity(btVector3(movement.x, movement.y, movement.z));
 		camera->rigitBody->setActivationState(true);
 		camera->rigitBody->setLinearVelocity(btVector3(0, 0, 0));
-		//camera->rigitBody->applyCentralImpulse(btVector3(rl->lastImpulse.x*2, rl->lastImpulse.y*2, rl->lastImpulse.z*2));
 		camera->rigitBody->applyCentralImpulse(btVector3(0, -5, 0));
-		rl->lastImpulse = vec3(0, 0.0f, 0);
 	}
 	else { // if the key of movement stops, we should put the velocity to 0 (otherwise it will continue to move)
 		camera->rigitBody->setActivationState(true);
@@ -803,28 +797,29 @@ void RenderLoop::checkGameOverCondition(ModelNode* mn)
 		activeSightPoint = sightPoint3;
 	else if (!endOf4Reached)
 		activeSightPoint = sightPoint4;
-  //TODO: Make Test of a range of Positions
-	vec3 targetDirectionSightPoint = vec3(
-		activeSightPoint.x - enemyPosition.x,
-		activeSightPoint.y - enemyPosition.y,
-		activeSightPoint.z - enemyPosition.z); //we need the vector from Enemy -> Sightpoint
-	vec3 targetSightFinalPoint = enemyPosition + glm::normalize(targetDirectionSightPoint) * 16.0f; //working lineOfSight for exmatriculation! Same procedure as with doors
+  //TODO: Make Camera-FRONT of enemy, not sightpoints
+	for (float variance = -2.0; variance <= 2.0f; variance += 0.5f) {
+		vec3 targetDirectionSightPoint = vec3(
+			(activeSightPoint.x + variance) - enemyPosition.x,
+			activeSightPoint.y - enemyPosition.y,
+			(activeSightPoint.z + variance) - enemyPosition.z); //we need the vector from Enemy -> Sightpoint
+		vec3 targetSightFinalPoint = enemyPosition + glm::normalize(targetDirectionSightPoint) * 16.0f; //working lineOfSight for exmatriculation! Same procedure as with doors
 
-	btCollisionWorld::ClosestRayResultCallback resultSightLine(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetSightFinalPoint.x, targetSightFinalPoint.y, targetSightFinalPoint.z));
-	b->getDynamicsWorld()->rayTest(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetSightFinalPoint.x, targetSightFinalPoint.y, targetSightFinalPoint.z), resultSightLine);
-	if (resultSightLine.hasHit() && resultSightLine.m_collisionObject->CO_RIGID_BODY)
-	{
-		btRigidBody* body;
-		body = (btRigidBody*)resultSightLine.m_collisionObject;
-		//see if it really the player that got hit and nothing else like a door
-		if (body->getWorldArrayIndex() == camera->rigitBody->getWorldArrayIndex()) { //ArrayWorldIndex is the only thing that works and we have access to via methods
-			printf("Player raycast hit in sightline at: <%.2f, %.2f, %.2f>\n", resultSightLine.m_hitPointWorld.getX(), resultSightLine.m_hitPointWorld.getY(), resultSightLine.m_hitPointWorld.getZ());
-			gameOver = true; //only play sound once!
-			Text::getInstance()->addText2Display(Text::GAME_OVER);
-			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
-		}
-	} //check sightOfLine finished
-
+		btCollisionWorld::ClosestRayResultCallback resultSightLine(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetSightFinalPoint.x, targetSightFinalPoint.y, targetSightFinalPoint.z));
+		b->getDynamicsWorld()->rayTest(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetSightFinalPoint.x, targetSightFinalPoint.y, targetSightFinalPoint.z), resultSightLine);
+		if (resultSightLine.hasHit() && resultSightLine.m_collisionObject->CO_RIGID_BODY)
+		{
+			btRigidBody* body;
+			body = (btRigidBody*)resultSightLine.m_collisionObject;
+			//see if it really the player that got hit and nothing else like a door
+			if (body->getWorldArrayIndex() == camera->rigitBody->getWorldArrayIndex()) { //ArrayWorldIndex is the only thing that works and we have access to via methods
+				printf("Player raycast hit in sightline at: <%.2f, %.2f, %.2f>\n", resultSightLine.m_hitPointWorld.getX(), resultSightLine.m_hitPointWorld.getY(), resultSightLine.m_hitPointWorld.getZ());
+				gameOver = true; //only play sound once!
+				Text::getInstance()->addText2Display(Text::GAME_OVER);
+				SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
+			}
+		} //check sightOfLine finished
+	}
 	
 }
 

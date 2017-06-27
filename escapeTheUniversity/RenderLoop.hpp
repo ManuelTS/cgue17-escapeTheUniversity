@@ -29,7 +29,6 @@ class RenderLoop
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
 		void checkGameOverCondition(ModelNode* mn); //checks if the play is too near of the enemy or in sight
 
-		glm::vec3 lastImpulse; //for correction of movement impulses
  		
 	public:
 		struct Time // variables of this game, approach of http://gafferongames.com/game-physics/fix-your-timestep/
