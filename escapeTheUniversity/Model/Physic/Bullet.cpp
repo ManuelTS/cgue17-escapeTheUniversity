@@ -18,7 +18,7 @@ void Bullet::init()
 		solver = new btSequentialImpulseConstraintSolver;
 		
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-		dynamicsWorld->setGravity(btVector3(0, -10.0f, 0)); //earthgravity
+		dynamicsWorld->setGravity(btVector3(0, -8.0f, 0)); //earthgravity //10 is too high
 		
 		#if _DEBUG
 			debugDrawer = new BulletDebugDrawer();
@@ -212,6 +212,8 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	btTransform trans;
 	trans.setIdentity();
 	removeScaleMatrix(matrix, shape, &trans);
+
+	shape->setLocalScaling(btVector3(0.8f, 0.8f, 0.8f));  //scale has to be set after removeScaleMatrix<--!, otherwise Problems of resolving collisions!
 
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(trans);
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info

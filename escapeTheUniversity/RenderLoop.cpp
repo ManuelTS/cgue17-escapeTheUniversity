@@ -661,52 +661,9 @@ void RenderLoop::draw(Node* current)
 		/* do check if in enemy sight for GAMEOver!*/
 		if (mn && mn->isEnemy && !gameOver)
 		{
-	
-			Bullet* b = Bullet::getInstance();			
-			//+3.90f for setting the "camera of the enemy" to the height of the eyes
-			vec3 enemyPosition = vec3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y + 3.90f, mn->hirachicalModelMatrix[3].z);
-			vec3 targetDirectionPlayer = vec3(
-				camera->position.x - enemyPosition.x , 
-				camera->position.y - enemyPosition.y,
-				camera->position.z - enemyPosition.z); 
-			vec3 targetNormalized = glm::normalize(targetDirectionPlayer);
-			vec3 targetFinalPoint = enemyPosition + targetNormalized * 8.0f; //working radius for exmatriculation!
-			//vec3 distanceFromEnemy = targetDirectionPlayer * 15.0f;
-			//jep, this has to be done that way with the raytest!
-			btCollisionWorld::ClosestRayResultCallback res(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetFinalPoint.x, targetFinalPoint.y, targetFinalPoint.z));
-			b->getDynamicsWorld()->rayTest(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetFinalPoint.x, targetFinalPoint.y, targetFinalPoint.z), res);
-			if (res.hasHit() && res.m_collisionObject->CO_RIGID_BODY)
-				{
-					btRigidBody* body;
-					body = (btRigidBody*)res.m_collisionObject;
-
-					//see if it really the player that got hit and nothing else like a door
-					if(body->getWorldArrayIndex() == camera->rigitBody->getWorldArrayIndex()){
-						printf("Player raycast hit at: <%.2f, %.2f, %.2f>\n", res.m_hitPointWorld.getX(), res.m_hitPointWorld.getY(), res.m_hitPointWorld.getZ());
-
-							gameOver = true; //only play sound once!
-							Text::getInstance()->addText2Display(Text::GAME_OVER);
-							SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
-					}
-
-				}
-		/*	vec3 distance = origin + rl->camera->front * 5.0f;
-
-			btCollisionWorld::ClosestRayResultCallback res(btVector3(origin.x, origin.y, origin.z), btVector3(distance.x, distance.y, distance.z));
-			b->getDynamicsWorld()->rayTest(btVector3(origin.x, origin.y, origin.z), btVector3(distance.x, distance.y, distance.z), res);
-			if (res.hasHit()) {
-				printf("Raycast hit at: <%.2f, %.2f, %.2f>\n", res.m_hitPointWorld.getX(), res.m_hitPointWorld.getY(), res.m_hitPointWorld.getZ());
-			}
-			if (res.hasHit() && res.m_collisionObject->CO_RIGID_BODY)
-			{
-				btRigidBody* body;
-				body = (btRigidBody*)res.m_collisionObject;
-
-
-			mn->rigidBody
-			*/
+			checkGameOverCondition(mn);			
 		}
-		/* GameOver Criteria ended. */
+
 
 // continue normal renderloop
 		
@@ -795,6 +752,72 @@ void RenderLoop::checkGamePhaseEnd(ModelNode* zone)
 			Text::getInstance()->addText2Display(Text::PAPER_FOUND);
 		}
 	}
+}
+
+void RenderLoop::checkGameOverCondition(ModelNode* mn)
+{
+	Bullet* b = Bullet::getInstance();
+	//+3.90f for setting the "camera of the enemy" to the height of the eyes
+	vec3 enemyPosition = vec3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y + 3.90f, mn->hirachicalModelMatrix[3].z);
+	
+	/* check always for the radius, e.g. player is too near*/
+	vec3 targetDirectionPlayer = vec3(
+		camera->position.x - enemyPosition.x,
+		camera->position.y - enemyPosition.y,
+		camera->position.z - enemyPosition.z); //we need the vector from Enemy -> Player
+	vec3 targetNormalized = glm::normalize(targetDirectionPlayer); //and normalize it
+	vec3 targetFinalPoint = enemyPosition + targetNormalized * 7.0f; //working radius for exmatriculation! Same procedure as with doors
+																	
+	 //jep, this has to be done that way with the raytest!
+	btCollisionWorld::ClosestRayResultCallback res(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetFinalPoint.x, targetFinalPoint.y, targetFinalPoint.z));
+	b->getDynamicsWorld()->rayTest(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetFinalPoint.x, targetFinalPoint.y, targetFinalPoint.z), res);
+	if (res.hasHit() && res.m_collisionObject->CO_RIGID_BODY)
+	{
+		btRigidBody* body;
+		body = (btRigidBody*)res.m_collisionObject;
+		//see if it really the player that got hit and nothing else like a door
+		if (body->getWorldArrayIndex() == camera->rigitBody->getWorldArrayIndex()) { //ArrayWorldIndex is the only thing that works and we have access to via methods
+			printf("Player raycast hit in radius at: <%.2f, %.2f, %.2f>\n", res.m_hitPointWorld.getX(), res.m_hitPointWorld.getY(), res.m_hitPointWorld.getZ());
+			gameOver = true; //only play sound once!
+			Text::getInstance()->addText2Display(Text::GAME_OVER);
+			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
+		}
+	} //check radius finished
+	
+	//check LineOfSight 
+	vec3 activeSightPoint;
+	if (!endOf1Reached)
+		activeSightPoint = sightPoint1;
+	else if (!endOf2Reached)
+		activeSightPoint = sightPoint2;
+	else if (!endOf3Reached)
+		activeSightPoint = sightPoint3;
+	else if (!endOf4Reached)
+		activeSightPoint = sightPoint4;
+
+
+	vec3 targetDirectionSightPoint = vec3(
+		activeSightPoint.x - enemyPosition.x,
+		activeSightPoint.y - enemyPosition.y,
+		activeSightPoint.z - enemyPosition.z); //we need the vector from Enemy -> Sightpoint
+	vec3 targetSightFinalPoint = enemyPosition + glm::normalize(targetDirectionSightPoint) * 16.0f; //working lineOfSight for exmatriculation! Same procedure as with doors
+
+	btCollisionWorld::ClosestRayResultCallback resultSightLine(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetSightFinalPoint.x, targetSightFinalPoint.y, targetSightFinalPoint.z));
+	b->getDynamicsWorld()->rayTest(btVector3(enemyPosition.x, enemyPosition.y, enemyPosition.z), btVector3(targetSightFinalPoint.x, targetSightFinalPoint.y, targetSightFinalPoint.z), resultSightLine);
+	if (resultSightLine.hasHit() && resultSightLine.m_collisionObject->CO_RIGID_BODY)
+	{
+		btRigidBody* body;
+		body = (btRigidBody*)resultSightLine.m_collisionObject;
+		//see if it really the player that got hit and nothing else like a door
+		if (body->getWorldArrayIndex() == camera->rigitBody->getWorldArrayIndex()) { //ArrayWorldIndex is the only thing that works and we have access to via methods
+			printf("Player raycast hit in sightline at: <%.2f, %.2f, %.2f>\n", resultSightLine.m_hitPointWorld.getX(), resultSightLine.m_hitPointWorld.getY(), resultSightLine.m_hitPointWorld.getZ());
+			gameOver = true; //only play sound once!
+			Text::getInstance()->addText2Display(Text::GAME_OVER);
+			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
+		}
+	} //check sightOfLine finished
+
+	
 }
 
 

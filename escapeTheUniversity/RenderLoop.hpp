@@ -27,6 +27,8 @@ class RenderLoop
 		void calculateDeltaTime(); // Calculates the delta time, e.g. the time between frames
 		void draw(Node* current); // Draws all lights which checking their dependencies and condition (no Light Node drawing, frustum culling, flag setting)
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
+		void checkGameOverCondition(ModelNode* mn); //checks if the play is too near of the enemy or in sight
+
 		glm::vec3 lastImpulse; //for correction of movement impulses
  		
 	public:
@@ -85,7 +87,6 @@ class RenderLoop
 		glm::vec3 walkPoint3 = glm::vec3(20.5f, -0.3275f, -13.75f);
 		glm::vec3 walkPoint4 = glm::vec3(-5.7f, -0.3275f, -13.75f);
 		
-
 		bool endOf1Reached = false; //inidicates that we have to turn and go over to the next point (2)
 		bool endOf2Reached = false; //inidicates that we have to turn and go over to the next point (3)
 		bool endOf3Reached = false; //inidicates that we have to turn and go over to the next point (4)
