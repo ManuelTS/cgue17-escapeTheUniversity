@@ -89,6 +89,7 @@ void GBuffer::bind4StencilPass()
 
 void GBuffer::bind4LightPass()
 {
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
 	const unsigned int attachment[1] = { GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(1, attachment); // attach offscreen color buffer to render into
 }

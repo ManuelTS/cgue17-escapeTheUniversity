@@ -42,6 +42,7 @@ class RenderLoop
 			double accumulator = 0.0; // Notice that we only process with steps sized dt. Hence, in the common case we have some unsimulated time left over at the end of each frame passed on to the next frame via the accumulator variable and is not thrown away.
 			const double BULLET_MAX_SUB_STEPS = 1.0; //  is the maximum number of steps that Bullet is allowed to take each time you call it. If you pass a very large timeStep as the first parameter [say, five times the size of the fixed internal time step], then you must increase the number of maxSubSteps to compensate for this, otherwise your simulation is “losing” time.
 			const double BULLET_FIXED_TIME_STEP = 1.0 / 60.0; // Bullet maintains an internal clock, in order to keep the actual length of ticks constant.
+			double animationAccumulator = 0.0; // Accumulates the animation time
 		} time;
 
 		Camera* camera;
