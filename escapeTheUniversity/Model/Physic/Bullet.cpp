@@ -225,7 +225,7 @@ void Bullet::createDoorHinge(ModelNode* mn)
 
 	btHingeConstraint* hingeDoorConstraint = new btHingeConstraint(*mydoor, distanceDoorToHinge, btVector3(0, 1, 0), true); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Constraints#Hinge_rotation_limits
 	float lowRadians = 0.0f;
-	float highRadians = Frustum::getInstance()->degreesToRadians(90.0f);
+	float highRadians = Frustum::getInstance()->degreesToRadians(120.0f); //leave that!
 
 	if (mn->name.find("_reverse") != string::npos) //Reverse door limits for the ones which open in the other direction
 	{

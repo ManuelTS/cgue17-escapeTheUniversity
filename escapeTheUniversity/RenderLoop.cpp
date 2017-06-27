@@ -183,7 +183,7 @@ void RenderLoop::doMovement(double timeDelta)
 		//camera->rigitBody->applyCentralForce(
 		camera->rigitBody->setActivationState(true);
 		vec3 movement = camera->front*movementVectorXYAxis;
-		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
+		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, /*movement.y*/ 0, movement.z));
 		//int i = camera->rigitBody->getWorldArrayIndex(); //this works for identification of the object	
 		//camera->rigitBody->applyCentralForce(btVector3(movement.x, movement.y, movement.z));
 	}	
@@ -193,7 +193,7 @@ void RenderLoop::doMovement(double timeDelta)
 				camera->processKeyboard(camera->BACKWARD, timeDelta);
 		camera->rigitBody->setActivationState(true);
 		vec3 movement = camera->front*(-movementVectorXYAxis); //we want to walk backwards
-		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
+		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, /*movement.y*/ 0, movement.z));
 	//	printf("Detection down: <%.2f>\n", camera->rigitBody->getWorldTransform());
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
@@ -202,7 +202,7 @@ void RenderLoop::doMovement(double timeDelta)
 			camera->processKeyboard(camera->LEFT, timeDelta); 
 		camera->rigitBody->setActivationState(true);
 		vec3 movement = glm::normalize(glm::cross(camera->front, camera->up))*(-movementVectorXYAxis); //going left!
-		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
+		camera->rigitBody->applyCentralImpulse(btVector3(movement.x,/*movement.y*/ 0, movement.z));
 	}
 	else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
@@ -210,27 +210,29 @@ void RenderLoop::doMovement(double timeDelta)
 			camera->processKeyboard(camera->RIGHT, timeDelta); 
 		camera->rigitBody->setActivationState(true);
 		vec3 movement = glm::normalize(glm::cross(camera->front, camera->up))*(movementVectorXYAxis); //going Right!
-		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
+		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, /*movement.y*/ 0, movement.z));
 	}
-	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) //make jump forward
+	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !recentlyJumped) //make jump forward + up
 	{
 		if (freeCamera)
-			camera->processKeyboard(camera->UP, timeDelta);
+			camera->processKeyboard(camera->FORWARD, timeDelta);
 		camera->rigitBody->setActivationState(true);
-		//
+		
+		recentlyJumped = true; //
 		//camera->rigitBody->applyCentralImpulse(btVector3(0, 80.0, 0));//, btVector3(camera->position.x, camera->position.y, camera->position.z));
 		//neither applyForce, applyImpulse, work
 		vec3 movement = camera->front*movementVectorXYAxis;
 		//camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
-		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, 1.0f*(factor*2), movement.z));
+		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, 80, movement.z));
 		//printf("Detection Space: <%.2f>\n", camera->rigitBody->getFlags());
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 	{
+		//here we should adjust the camera
 		//camera->processKeyboard(camera->UP, timeDelta);
 		camera->rigitBody->setActivationState(true);
 	//	camera->rigitBody->setLinearVelocity(btVector3(0, -3, 0));
-		camera->rigitBody->applyCentralImpulse(btVector3(0, -1.0f, 0));
+		camera->rigitBody->applyCentralImpulse(btVector3(0, -3.0f, 0));
 	}
 	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_RELEASE && 
 		glfwGetKey(window, GLFW_KEY_W) == GLFW_RELEASE &&
@@ -241,13 +243,16 @@ void RenderLoop::doMovement(double timeDelta)
 		//camera->rigitBody->setLinearVelocity(btVector3(movement.x, movement.y, movement.z));
 		camera->rigitBody->setActivationState(true);
 		camera->rigitBody->setLinearVelocity(btVector3(0, 0, 0));
-		camera->rigitBody->applyCentralImpulse(btVector3(0, -5, 0));
+		camera->rigitBody->applyCentralImpulse(btVector3(0, -8, 0));
 	}
 	else { // if the key of movement stops, we should put the velocity to 0 (otherwise it will continue to move)
 		camera->rigitBody->setActivationState(true);
 		//camera->rigitBody->setLinearVelocity(btVector3(0, 0, 0));
 		//activationstate shall be be automatically set to false if no force is applied
 	}
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
+			recentlyJumped = false; //reset if applicable
+
 	if (!freeCamera)
 	{
 		matrix = mat4(); // No yaw or pitch
