@@ -183,7 +183,8 @@ void RenderLoop::doMovement(double timeDelta)
 	// setInterpolationLinearVelocity could maybe work, needs investigation
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) 
 	{
-		//camera->processKeyboard(camera->FORWARD, timeDelta); no need anymore
+		if(freeCamera)
+			camera->processKeyboard(camera->FORWARD, timeDelta);
 		//camera->rigitBody->setLinearVelocity(btVector3(movement.x, movement.y, movement.z));
 		//camera->rigitBody->applyCentralForce(
 		camera->rigitBody->setActivationState(true);
@@ -192,11 +193,11 @@ void RenderLoop::doMovement(double timeDelta)
 		rl->lastImpulse = vec3(-movement.x, -movement.y, -movement.z);
 		//int i = camera->rigitBody->getWorldArrayIndex(); //this works for identification of the object	
 		//camera->rigitBody->applyCentralForce(btVector3(movement.x, movement.y, movement.z));
-	}
-	
+	}	
 	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
-		//camera->processKeyboard(camera->BACKWARD, timeDelta); no need anymore
+		if (freeCamera) 
+				camera->processKeyboard(camera->BACKWARD, timeDelta);
 		camera->rigitBody->setActivationState(true);
 		vec3 movement = camera->front*(-movementVectorXYAxis); //we want to walk backwards
 		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
@@ -205,7 +206,8 @@ void RenderLoop::doMovement(double timeDelta)
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
-		//camera->processKeyboard(camera->LEFT, timeDelta); no need anymore
+		if (freeCamera)
+			camera->processKeyboard(camera->LEFT, timeDelta); 
 		camera->rigitBody->setActivationState(true);
 		vec3 movement = glm::normalize(glm::cross(camera->front, camera->up))*(-movementVectorXYAxis); //going left!
 		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
@@ -213,7 +215,8 @@ void RenderLoop::doMovement(double timeDelta)
 	}
 	else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
-		//camera->processKeyboard(camera->RIGHT, timeDelta); no need anymore
+		if (freeCamera)
+			camera->processKeyboard(camera->RIGHT, timeDelta); 
 		camera->rigitBody->setActivationState(true);
 		vec3 movement = glm::normalize(glm::cross(camera->front, camera->up))*(movementVectorXYAxis); //going Right!
 		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
@@ -221,7 +224,8 @@ void RenderLoop::doMovement(double timeDelta)
 	}
 	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) //make jump forward
 	{
-		//camera->processKeyboard(camera->UP, timeDelta);
+		if (freeCamera)
+			camera->processKeyboard(camera->UP, timeDelta);
 		camera->rigitBody->setActivationState(true);
 		//
 		//camera->rigitBody->applyCentralImpulse(btVector3(0, 80.0, 0));//, btVector3(camera->position.x, camera->position.y, camera->position.z));
