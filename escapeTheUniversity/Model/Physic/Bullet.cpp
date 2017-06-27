@@ -233,11 +233,6 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	mydoor->setDamping(0.7f, 0.7f); //sets linear damping + angular damping
 	mydoor->setMassProps(mass, localInertia);
 	mydoor->setRestitution(0.0f); // 0 for switch off bouncing 
-
-	//mn->collisionObject = mydoor; // Use btCollisionObject since a btRigitBody is just a subclass with mass and inertia which is not needed here
-	//mn->collisionObject->setCollisionShape(shape);
-	//mn->collisionObject->setWorldTransform(trans);
-
 	shapes.push_back(shape);
 	dynamicsWorld->addRigidBody(mydoor);
 

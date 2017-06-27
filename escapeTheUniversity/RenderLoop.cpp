@@ -760,7 +760,8 @@ void RenderLoop::checkGameOverCondition(ModelNode* mn)
 	//+3.90f for setting the "camera of the enemy" to the height of the eyes
 	vec3 enemyPosition = vec3(mn->hirachicalModelMatrix[3].x, mn->hirachicalModelMatrix[3].y + 3.90f, mn->hirachicalModelMatrix[3].z);
 	
-	/* check always for the radius, e.g. player is too near*/
+	/* No Radius detection for  gameplay
+	// check always for the radius, e.g. player is too near
 	vec3 targetDirectionPlayer = vec3(
 		camera->position.x - enemyPosition.x,
 		camera->position.y - enemyPosition.y,
@@ -783,7 +784,7 @@ void RenderLoop::checkGameOverCondition(ModelNode* mn)
 			SoundManager::getInstance()->playSound("Dialog\\exmatriculated.mp3");
 		}
 	} //check radius finished
-	
+	*/
 	//check LineOfSight 
 	vec3 activeSightPoint;
 	if (!endOf1Reached)
