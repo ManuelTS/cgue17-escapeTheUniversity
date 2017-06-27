@@ -4,8 +4,6 @@ Programming (Manuel):
 
 Skymap, with a beautiful night sky von NASA deep field image full of stars in OGLSB as cube map on page 640. Before doing that check "seamless cube map / sky box2".
 
-Game over screen, If the player fails, show a game over screen with text, sound, or music, and restart.
-
 Fade for sound
 
 in the gBuffer try to reduce the single GL_** bit attachments from GL_DEPTH32F_STENCIL8 to GL_DEPTH24F_STENCIL8 for example
@@ -15,7 +13,7 @@ DONE: Rim lighting openGL super Bibile page 634, but only if object is lit from 
 Visualize depth (for overall game not only light perspective): https://learnopengl.com/#!Advanced-OpenGL/Depth-testing
 
 Optimization:
-merge the shadow map FBO into de gbuffer FBO, the latter would only have an additional depth attachment
+https://stackoverflow.com/questions/22419682/glsl-sampler2dshadow-and-shadow2d-clarification/22426507#22426507
 update all external libs
 try to run all in VS 2017
 Tile-based Deferred Shading: https://software.intel.com/en-us/articles/deferred-rendering-for-current-and-future-rendering-pipelines
