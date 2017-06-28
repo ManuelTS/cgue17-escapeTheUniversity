@@ -240,13 +240,13 @@ private:
 			for(int y = -1; y <= 1; y++)
 			{
 	            float pcfDepth = texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-		        shadow += currentDepth - bias > pcfDepth  ? 0.0 : 1.0;        
+		        shadow += currentDepth - bias > pcfDepth  ? 1.0f : 0.0f;        
 			}    
 		
 		shadow /= 9.0f;
 	
-		if(projCoords.z > 1.0) // Avoid over sampling: Keep the shadow at 1.0 when outside the far_plane region of the light's frustum.
-			shadow = 1.0;
+		if(projCoords.z > 1.0f) // Avoid over sampling: Keep the shadow at 1.0 when outside the far_plane region of the light's frustum.
+			shadow = 0.0f;
 
 		return shadow; // 0.x in shadow, 1 not in shadow
 	}
@@ -297,7 +297,7 @@ private:
 	    float shadow = calculateShadow(fragmentPosition, lightDirection, norm); 
 
 		// Calculate Final color	
-		return ambientColor + ((diffuseColor + specularColor) * attenuation * shadow);// + calculateRim(norm, viewDirection);
+		return ambientColor + ((diffuseColor + specularColor) * attenuation * (1.0f - shadow));// + calculateRim(norm, viewDirection);
 	}
 
 	void main()

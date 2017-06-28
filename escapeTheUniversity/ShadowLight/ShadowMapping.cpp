@@ -32,25 +32,15 @@ ShadowMapping::~ShadowMapping()
 
 void ShadowMapping::renderInDepthMap(Node* root, LightNode* ln, const float FOV, const unsigned int screenWidth, const unsigned int screenHeight)
 {
-	const float near_plane = 0.1f; // Check debugger.cpp#renderShadowMap
+	const float near_plane = 1.0f; // Check debugger.cpp#renderShadowMap
 	Frustum* frustum = Frustum::getInstance();
 	// Calculate light space matirx
 	glm::mat4 lightProjection = glm::perspective(frustum->degreesToRadians(95.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, ln->light.position.w); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
-	//lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, ln->lightSphereRadius);
+	//lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, ln->light.position.w);
 	glm::vec3 lightPosition = glm::vec3(ln->light.position);
-	glm::vec3 lightFront = (glm::vec3(0, -100, 0));
-	//glm::vec3 lightFront = glm::normalize(glm::vec3(lightPosition.x, lightPosition.y-5, lightPosition.z)); why does this not work
-	//glm::vec3 lightFront = glm::normalize(glm::vec3(0, -1, 0));
-	//glm::vec3 lightUp = glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)); // look down
+	glm::vec3 lightFront = glm::vec3(0, -20, 0);
 	glm::vec3 lightUp = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f)); // look down
-	//glm lookat is : eye-pos, target, up-vector as parameters. calculates target-eyepos inside the method
-	glm::mat4 lightView = glm::lookAt(lightPosition, lightFront, lightUp);
-	
-	/*
-The first two parameters of gluLookAt are the camera position and the camera target. With just those two the camera isn't fully constrained. Imagine standing somewhere holding a camera.
-You can hold the camera horizontally to take a landscape picture, or you could hold the camera vertically to take a portrait picture.
-In both cases, the position of the camera and the position of the subject of the picture are the same. 
-You could rotate the camera to any angle and those two values don't change. The third parameter, the up vector, selects the orientation of the camera.*/
+	glm::mat4 lightView = glm::lookAt(lightPosition, lightFront, lightUp); //glm lookat is : eye-pos of light, target which it is looking at, up-vector as parameters tilt
 	lightSpaceMatrix = lightProjection * lightView; // Combining these two gives us a light space transformation matrix that transforms each world-space vector into the space as visible from the light source; exactly what we need to render the depth map.
 
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
