@@ -658,7 +658,7 @@ void RenderLoop::draw(Node* current)
 		GAME LOGIC WINNING CONDITION		
 */
 		//doing the checks the other way around, so messages dont overlap
-		if (gameEventCheckIsOn && gamePhasePaper && gamePhaseKey &&  string::npos != mn->name.find("WinningZone"))
+		if (gameEventCheckIsOn && gamePhasePaper && gamePhaseKey &&  string::npos != mn->name.find("Winning"))
 		{
 			checkGamePhaseEnd(mn);
 		}
@@ -669,6 +669,9 @@ void RenderLoop::draw(Node* current)
 		else if (gameEventCheckIsOn && string::npos != mn->name.find("Key"))
 		{	
 			checkGamePhaseKey(mn);			
+		}
+		else if (!gamePhaseEnd && gamePhaseKey  && string::npos != mn->name.find("Winning")) { //avoid unnecessary pass with gamePhasePaper+G
+			checkGamePhaseEndWithoutConstraint(mn);
 		}
 		
 		/* do check if in enemy sight for GAMEOver!*/
@@ -729,6 +732,8 @@ void RenderLoop::checkGamePhaseKey(ModelNode* key)
 		}
 }
 
+
+
 void RenderLoop::checkGamePhasePaper(ModelNode* paper)
 {
 	if (gamePhaseKey && gamePhasePaper == false)
@@ -766,6 +771,21 @@ void RenderLoop::checkGamePhaseEnd(ModelNode* zone)
 		}
 	}
 }
+
+void RenderLoop::checkGamePhaseEndWithoutConstraint(ModelNode* key)
+{
+	if (Frustum::getInstance()->inActionRadius(vec3(key->hirachicalModelMatrix[3])) == 1)
+	{
+		gamePhaseEnd = true;
+		gameEventCheckIsOn = false;
+		Text::getInstance()->addText2Display(Text::YOU_WON);
+	}
+	else
+	{ //we dont want to spam text here
+		//Text::getInstance()->addText2Display(Text::KEY_NOTFOUND);
+	}
+}
+
 
 void RenderLoop::checkGameOverCondition(ModelNode* mn)
 {

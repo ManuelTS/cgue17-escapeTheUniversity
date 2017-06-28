@@ -18,7 +18,7 @@ private:
 public:
 	const float nearD = 0.01f; // Distance from the camera to the near plane
 	const float farD = 100.0f; // Distance from the camera to the far plane
-	const float actionRadius = 5.0f;
+	const float actionRadius = 6.0f;
 	~Frustum();
    /*Returns the pointer to the unique instance of the render loop class.*/
 	static Frustum* Frustum::getInstance()
