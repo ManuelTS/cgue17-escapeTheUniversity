@@ -29,7 +29,7 @@ class RenderLoop
 		void displayLoadingScreen(ModelLoader* ml); // Displays the loading screen
 	
 		void checkGameOverCondition(ModelNode* mn); //checks if the play is too near of the enemy or in sight
-		void drawSphere(ModelNode* sphereNode, const float const* modelMatrix, const float const* inverseModelMatrix, const float const* viewMatrix, const float const* projectionMatrix); // Sets the arguments in the shaders and draws the sphere, if the node is nulltpr nothing is drawn but set. If the second argument is not nullptr other locations are used, used for debugging to draw spheres uneffected by bullet
+		void drawSphere(ModelNode* sphereNode, const float const* modelMatrix, const float const* inverseModelMatrix, const float const* viewMatrix, const float const* projectionMatrix, bool shadow); // Sets the arguments in the shaders and draws the sphere, if the node is nulltpr nothing is drawn but set. If the second argument is not nullptr other locations are used, used for debugging to draw spheres uneffected by bullet
 
 		bool recentlyJumped = false;
 

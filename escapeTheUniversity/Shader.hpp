@@ -248,7 +248,7 @@ private:
 		if(projCoords.z > 1.0f) // Avoid over sampling: Keep the shadow at 1.0 when outside the far_plane region of the light's frustum.
 			shadow = 0.0f;
 
-		return shadow; // 0.x in shadow, 1 not in shadow
+		return shadow;
 	}
 
 	// Source https://imdoingitwrong.wordpress.com/tag/glsl/
@@ -293,11 +293,14 @@ private:
 		float attenuation = 1.0 / (light.shiConLinQua.y + light.shiConLinQua.z * lightFragDist + light.shiConLinQua.w * (lightFragDist * lightFragDist));
 		//float attenuation = calculateAttentuation(fragmentPosition, norm, lightPosition, light.position.w, 0.000f);
 
+		diffuseColor *= attenuation;
+		specularColor *= attenuation;
+
 		//Calculate shadow
 	    float shadow = calculateShadow(fragmentPosition, lightDirection, norm); 
 
 		// Calculate Final color	
-		return ambientColor + ((diffuseColor + specularColor) * attenuation * (1.0f - shadow));// + calculateRim(norm, viewDirection);
+		return ambientColor + ((diffuseColor + specularColor) * (1.0f - shadow));// + calculateRim(norm, viewDirection);
 	}
 
 	void main()
