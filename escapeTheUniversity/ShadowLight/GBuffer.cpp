@@ -70,7 +70,7 @@ void GBuffer::clearFrame()
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, handle);
 	const unsigned int attachment[1] = { GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(1, attachment);
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clean color to black
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clean color to black
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear everything inside the buffer for new clean, fresh iteration
 
 }
