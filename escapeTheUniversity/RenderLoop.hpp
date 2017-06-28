@@ -84,6 +84,7 @@ class RenderLoop
 		bool gamePhaseEnd = false; // reached the safe zone
 		void checkGamePhaseEnd(ModelNode* paper);  //indicates the game-section of the end
 		bool gameOver = false; //indicates if you have been caught and game is over!
+		void checkGamePhaseEndWithoutConstraint(ModelNode* key); //for check on each loop if we are in the winning zone
 
 		glm::vec3 sightPoint1 = glm::vec3(-5.7f, 2.3f, 14.0f); //View-Direction Node at center of d09_hinge for sight of enemy
 		glm::vec3 sightPoint2 = glm::vec3(24.0f, 2.3f, 11.75f); //View-Direction Node at edge of OfficeDesk.003
