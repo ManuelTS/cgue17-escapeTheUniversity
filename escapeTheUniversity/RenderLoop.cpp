@@ -113,7 +113,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 				if (rl->gamePhaseKey)  //this "unlockes" the locked door
 					body->setAngularFactor(btVector3(0, 1, 0));
 
-				const float Y_IMPULSE = 400.0f;
+				const float Y_IMPULSE = 40.0f;
 
 				if (key == GLFW_KEY_Q) // Close
 					body->applyTorqueImpulse(btVector3(0.0f, -Y_IMPULSE, 0.0f));

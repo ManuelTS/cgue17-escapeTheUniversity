@@ -38,7 +38,7 @@ void ShadowMapping::renderInDepthMap(Node* root, LightNode* ln, const float FOV,
 	glm::mat4 lightProjection = glm::perspective(frustum->degreesToRadians(95.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, ln->light.position.w); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
 	//lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, ln->light.position.w);
 	glm::vec3 lightPosition = glm::vec3(ln->light.position);
-	glm::vec3 lightFront = glm::vec3(0, -20, 0);
+	glm::vec3 lightFront = glm::vec3(0, -200, 0);
 	glm::vec3 lightUp = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f)); // look down
 	glm::mat4 lightView = glm::lookAt(lightPosition, lightFront, lightUp); //glm lookat is : eye-pos of light, target which it is looking at, up-vector as parameters tilt
 	lightSpaceMatrix = lightProjection * lightView; // Combining these two gives us a light space transformation matrix that transforms each world-space vector into the space as visible from the light source; exactly what we need to render the depth map.
