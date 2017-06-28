@@ -242,7 +242,7 @@ void Bullet::createDoorHinge(ModelNode* mn)
 void Bullet::createCamera(Camera* c) 
 {
 	btCylinderShape* shape= new btCylinderShape(btVector3(0.7f, 1.9f, 0.2f));
-	shape->setMargin(DEFAULT_COLLISION_MARGIN);
+	shape->setMargin(1.0f);
 	const float mass = 1.0;
 	btVector3 localInertia = btVector3(1.0, 1.0, 1.0);
 	shape->calculateLocalInertia(mass, localInertia);
