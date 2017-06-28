@@ -240,7 +240,7 @@ void Bullet::createDoorHinge(ModelNode* mn)
 
 void Bullet::createCamera(Camera* c) 
 {
-	btCylinderShape* shape= new btCylinderShape(btVector3(0.7f, 2.1f, 0.2f));
+	btCylinderShape* shape= new btCylinderShape(btVector3(0.7f, 1.9f, 0.2f));
 	shape->setMargin(DEFAULT_COLLISION_MARGIN);
 	const float mass = 1.0;
 	btVector3 localInertia = btVector3(1.0, 1.0, 1.0);
@@ -264,8 +264,8 @@ void Bullet::createCamera(Camera* c)
 	//c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
 	c->rigitBody->setLinearFactor(btVector3(1, 1, 1)); // Movement in each direction is allowed http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
 	//c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
-	c->rigitBody->setFriction(0.0f);
-	c->rigitBody->setRestitution(0.0f); //little bounce on the body
+	c->rigitBody->setFriction(0.0f); // No friction, move as free as possible
+	c->rigitBody->setRestitution(0.0f); // No bounce
 	c->rigitBody->setDamping(0.1f, 0.25f); //sets linear damping + angular damping
 	c->rigitBody->setSleepingThresholds(0.2f, 0.2f); // linear, angular 
 

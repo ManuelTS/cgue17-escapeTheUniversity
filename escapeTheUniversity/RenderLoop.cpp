@@ -113,7 +113,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 				if (rl->gamePhaseKey)  //this "unlockes" the locked door
 					body->setAngularFactor(btVector3(0, 1, 0));
 
-				const float Y_IMPULSE = 400.0f;
+				const float Y_IMPULSE = 100.0f;
 
 				if (key == GLFW_KEY_Q) // Close
 					body->applyTorqueImpulse(btVector3(0.0f, -Y_IMPULSE, 0.0f));
@@ -608,8 +608,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	if (blending)
 	{
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_DST_COLOR);
-		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_ONE, GL_ONE);
+		glBlendEquation(GL_MAX);
 	}
 
 	gBuffer->drawDirectionalLight();
