@@ -86,7 +86,8 @@ void Text::init() {
 	}
 }
 
-void Text::write(const char* text, float x, float y, const float scale, const float angle) {
+void Text::write(const char* text, float x, float y, const float scale, const float angle)
+{
 	textShader->useProgram();
 
 	glm::mat4 trans = glm::mat4(1);
@@ -112,7 +113,9 @@ void Text::write(const char* text, float x, float y, const float scale, const fl
 	{
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendEquation(GL_FUNC_ADD);
 	}
+
 
 	for (const char* p = text; *p; p++, cursor += advance)
 	{
