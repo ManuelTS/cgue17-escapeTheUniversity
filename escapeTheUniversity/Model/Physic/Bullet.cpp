@@ -199,14 +199,15 @@ void Bullet::createDoorHinge(ModelNode* mn)
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(mass, groundMotionState, shape, localInertia); // To construct multiple rigit bodies with same construction info
 	btRigidBody *mydoor = new btRigidBody(groundRigidBodyCI);
 	mn->rigidBody = mydoor; // Bidirectional pointer link
-	mydoor->setUserPointer(mn);
-	
-	if(mn->name.find("lockedDoor") != string::npos) //set the locked door to "locked"
-		mydoor->setAngularFactor(btVector3(0, 0, 0));
+	mydoor->setUserPointer(mn);	
 
 	 //values may only be positive here
 	mydoor->setLinearFactor(btVector3(1, 0, 1)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
 	mydoor->setAngularFactor(btVector3(0, 1, 0)); // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_constrain_an_object_to_two_dimensional_movement.2C_skipping_one_of_the_cardinal_axes
+	
+	if (mn->name.find("lockedDoor") != string::npos) //set the locked door to "locked"
+		mydoor->setAngularFactor(btVector3(0, 0, 0));
+
 	mydoor->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f)); // should be 0 0 0, https://en.wikipedia.org/wiki/Angular_velocity
 	//c->rigitBody->setLinearVelocity() // http://bulletphysics.org/mediawiki-1.5.8/index.php/Code_Snippets#I_want_to_cap_the_speed_of_my_spaceship
 	//c->rigitBody->setAnisotropicFriction(btVector3(0.1f, 0.1f, 0.1f)); // https://docs.blender.org/api/intranet/docs/develop/physics-faq.html#What is Anisotropic Friction?
