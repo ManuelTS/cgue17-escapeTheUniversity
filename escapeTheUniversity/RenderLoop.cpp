@@ -223,7 +223,7 @@ void RenderLoop::doMovement(double timeDelta)
 		//neither applyForce, applyImpulse, work
 		vec3 movement = camera->front*movementVectorXYAxis;
 		//camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
-		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y+0.3, movement.z));
+		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y+(0.1*timeDelta), movement.z));
 		//printf("Detection Space: <%.2f>\n", camera->rigitBody->getFlags());
 		}
 	}

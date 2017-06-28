@@ -9,6 +9,7 @@
 \usepackage{verbatim}
 \usepackage{multicol}
 \usepackage{wrapfig}
+
 \usepackage[colorlinks,pdfpagelabels,pdfstartview = FitH,bookmarksopen = true,bookmarksnumbered = true, ,plainpages = false,hypertexnames = false, citecolor=blue,filecolor=blue,linkcolor=blue,urlcolor=blue] {hyperref}
 
 
@@ -75,14 +76,9 @@ Class: 186.831 UE Computergraphics}
 \pagestyle{plain}
 \setcounter{page}{1}
 
-\section{Development Status and Bugs}
-We will try to get rid of all bugs before the 28.06.2017!
-\begin{itemize}
-\item Bullet buggy since openGL world and bullet world are asynchronous in their positions.
-\item Hence for now only partiality collision detection
-\item Inside a light volume everything is culled, no light volumnes in use.
-\item Not much gameplay because the effect point implementations took so much time.
-\end{itemize}
+\section{Development Status}
+We solved the problems with Bullet as well as the gameplay factor.
+We'd loved to implement some ambient light, but with the current approach of Light-Spheres, it was not an easy task.
 
 \section{Controls \label{Controls}}
 
@@ -95,8 +91,10 @@ We will try to get rid of all bugs before the 28.06.2017!
        	S/Lower arrow & Move backwards\\ \hline
        	A/Left arrow & Move left\\ \hline
        	D/Right arrow & Move right\\ \hline
-       	Left click & interaction\\ \hline
-       	Right click & ?\\ \hline
+       	Q/E & Push/Pull door \\ \hline
+       	Space & Run up the stairs \\ \hline
+       	F & Pickup Objective (key,paper) \\ \hline
+        O & Reset GameOver \\ \hline
        	Print & Screenshot\\ \hline
        	Escape/End & Close game\\ \hline
        	 F1& Help\\ \hline
@@ -207,7 +205,7 @@ Point lights done with the \href{http://learnopengl.com/#!Lighting/Light-casters
 
 \subsection{Textures and Blender Models}
 
-For creating and as well as modifying our objects, we used Blender 2.78c freely available from \url{https://www.blender.org/features/2-78/}. All objects (except Animated Female Cyborg)have been reviewed for minimized triangle count. The game playground contains 183 objects, containing 275.378 triangles (according to Blender).
+For creating and as well as modifying our objects, we used Blender 2.78c freely available from \url{https://www.blender.org/features/2-78/}. All objects (except Animated Female Cyborg)have been reviewed for minimized triangle count. The game playground contains 213 objects, containing 277.840 triangles (according to Blender).
 
 \begin{itemize}
 
