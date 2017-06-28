@@ -10,25 +10,16 @@ void AnimatNode::draw()
 		timeAccumulator = 0.0;
 		
 		moveEnemy();
-	
-		
-	
 	}
 	
 	ModelNode::draw();
-	
 }
 
 void AnimatNode::moveEnemy()
 {
-	/*
-	glm::vec3 walkPoint1 = glm::vec3(-5.7f, -0.3275f, 12.0f);
-	glm::vec3 walkPoint2 = glm::vec3(20.5f, -0.3275f, 12.0f);
-	glm::vec3 walkPoint3 = glm::vec3(20.5f, -0.3275f, -13.75f);
-	glm::vec3 walkPoint4 = glm::vec3(-5.7f, -0.3275f, -13.75f);
-	*/
 	glm::vec3 positionEnemy = ModelNode::hirachicalModelMatrix[3];
 	TransformationNode* dn = dynamic_cast<TransformationNode*>(this);
+
 	if(!endOf1Reached)
 	{
 		//positionEnemy.z = positionEnemy.z + 0.05;	
