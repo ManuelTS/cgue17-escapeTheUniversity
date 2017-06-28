@@ -212,19 +212,21 @@ void RenderLoop::doMovement(double timeDelta)
 		vec3 movement = glm::normalize(glm::cross(camera->front, camera->up))*(movementVectorXYAxis); //going Right!
 		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, /*movement.y*/ 0, movement.z));
 	}
-	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !recentlyJumped) //make jump forward + up
+	else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) //make jump forward + up
 	{
 		if (freeCamera)
 			camera->processKeyboard(camera->FORWARD, timeDelta);
 		camera->rigitBody->setActivationState(true);
-		if(!(camera->position.y > 10)) //maximum cap 
-			recentlyJumped = true; //
-			//camera->rigitBody->applyCentralImpulse(btVector3(0, 80.0, 0));//, btVector3(camera->position.x, camera->position.y, camera->position.z));
-			//neither applyForce, applyImpulse, work
-			vec3 movement = camera->front*movementVectorXYAxis;
-			//camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
-			camera->rigitBody->applyCentralImpulse(btVector3(movement.x, 80, movement.z));
-			//printf("Detection Space: <%.2f>\n", camera->rigitBody->getFlags());
+		if (!(camera->position.y > 10)) //maximum cap 
+		{
+	
+		//camera->rigitBody->applyCentralImpulse(btVector3(0, 80.0, 0));//, btVector3(camera->position.x, camera->position.y, camera->position.z));
+		//neither applyForce, applyImpulse, work
+		vec3 movement = camera->front*movementVectorXYAxis;
+		//camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
+		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y+0.3, movement.z));
+		//printf("Detection Space: <%.2f>\n", camera->rigitBody->getFlags());
+		}
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 	{
