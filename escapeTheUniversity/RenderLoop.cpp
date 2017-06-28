@@ -559,7 +559,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 				{
 					glEnable(GL_BLEND);
 					glBlendFunc(GL_ONE, GL_ONE);
-					glBlendEquation(GL_FUNC_ADD);
+					glBlendEquation(GL_MAX);
 				}
 
 				glEnable(GL_CULL_FACE);
@@ -593,7 +593,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	gBuffer->bind4LightPass(); // Return from shadow FBO to light FBO
 	deferredShader->useProgram();
 	gBuffer->bindTextures();
-	realmOfShadows->bindTexture(); // Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
+	//realmOfShadows->bindTexture(); // Write shadow data to deferredShader.frag. Link depth map into deferred Shader fragment
 	glUniform3fv(deferredShader->viewPositionLocation, 1, &camera->position[0]);// Write light data to deferred shader.frag
 	glBindBufferBase(GL_UNIFORM_BUFFER, ml->lightBinding, ml->lightUBO); // OGLB: S. 169, always execute after new program is used
 	glBindBuffer(GL_UNIFORM_BUFFER, ml->lightUBO);
@@ -607,8 +607,8 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 	if (blending)
 	{
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_ONE, GL_ZERO);
-		glBlendEquation(GL_MAX);
+		glBlendFunc(GL_ONE, GL_ONE);
+		glBlendEquation(GL_FUNC_ADD);
 	}
 
 	gBuffer->drawDirectionalLight();
@@ -617,7 +617,7 @@ void RenderLoop::doDeferredShading(GBuffer* gBuffer, ShadowMapping* realmOfShado
 		glDisable(GL_BLEND);
 
 	gBuffer->unbindTexture();
-	realmOfShadows->unbindTexture();
+	//realmOfShadows->unbindTexture();
 
 	if (wireFrameMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
