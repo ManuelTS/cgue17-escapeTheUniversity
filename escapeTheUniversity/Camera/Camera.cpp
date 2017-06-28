@@ -31,8 +31,7 @@ void Camera::processKeyboard(Camera_Movement direction, double deltaTime)
 		position -= glm::normalize(glm::cross(front, up)) * velocity;
 	if (direction == RIGHT)
 		position += glm::normalize(glm::cross(front, up)) * velocity;
-	if (direction == UP)
-		position.y += 1.5f;
+
 	Frustum::getInstance()->setCamDef(position, front, right, up);
 }
 

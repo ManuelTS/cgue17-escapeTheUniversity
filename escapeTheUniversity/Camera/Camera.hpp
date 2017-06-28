@@ -21,8 +21,7 @@ class Camera{
 			FORWARD,
 			BACKWARD,
 			LEFT,
-			RIGHT,
-			UP
+			RIGHT
 		};
 
 		// Camera Attributes

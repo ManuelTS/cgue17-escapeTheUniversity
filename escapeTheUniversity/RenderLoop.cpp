@@ -170,7 +170,6 @@ void RenderLoop::doMovement(double timeDelta)
 	float velocity = camera->movementSpeed * time.delta; //this should give frame-Rate independency
 	vec3 movementVectorXYAxis = vec3(1.0f * velocity, 1.0f * velocity, 1.0f *velocity); //direction of possible axis * factor  (otherwise fast)	
 
-
 	//Camera controls
     //jitter cannot be solved through applying the force just on key-tap 
 	//jitter cannot be solved through applyCentralForce on body (though, keep in mind, force needs to be adjusted to the mass)
