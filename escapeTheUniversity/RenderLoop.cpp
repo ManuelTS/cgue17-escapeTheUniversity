@@ -167,8 +167,8 @@ void RenderLoop::doMovement(double timeDelta)
 		camera->position = vec3(matrix[3]); // only update the position of the camera!
 	}
 
-	float factor = 0.35f; //todo, make factor by setting and adjustable?
-	vec3 movementVectorXYAxis = vec3(1.0f * factor, 1.0f * factor, 1.0f *factor); //direction of possible axis * factor  (otherwise fast)	
+	float velocity = camera->movementSpeed * time.delta; //this should give frame-Rate independency
+	vec3 movementVectorXYAxis = vec3(1.0f * velocity, 1.0f * velocity, 1.0f *velocity); //direction of possible axis * factor  (otherwise fast)	
 
 
 	//Camera controls
@@ -217,14 +217,14 @@ void RenderLoop::doMovement(double timeDelta)
 		if (freeCamera)
 			camera->processKeyboard(camera->FORWARD, timeDelta);
 		camera->rigitBody->setActivationState(true);
-		
-		recentlyJumped = true; //
-		//camera->rigitBody->applyCentralImpulse(btVector3(0, 80.0, 0));//, btVector3(camera->position.x, camera->position.y, camera->position.z));
-		//neither applyForce, applyImpulse, work
-		vec3 movement = camera->front*movementVectorXYAxis;
-		//camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
-		camera->rigitBody->applyCentralImpulse(btVector3(movement.x, 80, movement.z));
-		//printf("Detection Space: <%.2f>\n", camera->rigitBody->getFlags());
+		if(!(camera->position.y > 10)) //maximum cap 
+			recentlyJumped = true; //
+			//camera->rigitBody->applyCentralImpulse(btVector3(0, 80.0, 0));//, btVector3(camera->position.x, camera->position.y, camera->position.z));
+			//neither applyForce, applyImpulse, work
+			vec3 movement = camera->front*movementVectorXYAxis;
+			//camera->rigitBody->applyCentralImpulse(btVector3(movement.x, movement.y, movement.z));
+			camera->rigitBody->applyCentralImpulse(btVector3(movement.x, 80, movement.z));
+			//printf("Detection Space: <%.2f>\n", camera->rigitBody->getFlags());
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 	{
